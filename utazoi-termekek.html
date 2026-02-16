@@ -872,54 +872,67 @@ async function sheetsGet(action, key) {
   return await res.json();
 }
 
+// Fire a GET request to Apps Script without caring about CORS.
+// Uses an <img> src trick: browsers always load images cross-origin, no CORS check.
+function fireAndForget(url) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = img.onerror = () => resolve();
+    img.src = url;
+    // Fallback: resolve after 8s even if no event fires
+    setTimeout(resolve, 8000);
+  });
+}
+
 async function sheetsPost(body) {
   if (!SHEETS_API_URL) return null;
   const json = JSON.stringify(body);
   const b64 = btoa(unescape(encodeURIComponent(json)));
-  // Google Apps Script GET URL limit is ~8KB; keep chunks well under that
   const chunkSize = 6000;
-  // For non-image payloads (setAll, set without large value) try direct first
+
   if (b64.length <= chunkSize) {
     const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-    await fetch(url, {mode: 'no-cors', redirect: 'manual'});
+    await fireAndForget(url);
     return {ok: true};
   }
-  // Chunked for large payloads (images)
+
+  // Chunked upload for large payloads (images)
   const totalChunks = Math.ceil(b64.length / chunkSize);
   const uploadId = Date.now();
   for (let i = 0; i < totalChunks; i++) {
     const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
     const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
     setLoading(true, `Kép feltöltése... ${Math.round((i+1)/totalChunks*100)}%`);
-    await fetch(url, {mode: 'no-cors', redirect: 'manual'});
-    await new Promise(r => setTimeout(r, 100));
+    await fireAndForget(url);
+    await new Promise(r => setTimeout(r, 80));
   }
-  // Fire commit
+
+  // Commit
   setLoading(true, 'Kép mentése...');
   const commitUrl = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
-  await fetch(commitUrl, {mode: 'no-cors', redirect: 'manual'});
-  // Poll for commit confirmation via readable GET (max ~12s)
-  await new Promise(r => setTimeout(r, 1500));
-  for (let attempt = 0; attempt < 8; attempt++) {
+  await fireAndForget(commitUrl);
+
+  // Poll via normal fetch (GET reads have CORS headers from Apps Script)
+  await new Promise(r => setTimeout(r, 2000));
+  for (let attempt = 0; attempt < 10; attempt++) {
     try {
       const pollUrl = `${SHEETS_API_URL}?action=get&key=__commit_${uploadId}`;
       const res = await fetch(pollUrl, {redirect: 'follow'});
       const data = await res.json();
       if (data && data.value) return {ok: true};
     } catch(e) {}
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 1000));
   }
   return {ok: true};
 }
 
 async function deleteImageFromSheets(id) {
   if (!SHEETS_API_URL) return;
-  // Overwrite image key with empty string to free space
   const body = {action: 'set', key: 'img_' + id, value: ''};
   const json = JSON.stringify(body);
   const b64 = btoa(unescape(encodeURIComponent(json)));
   const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-  await fetch(url, {mode: 'no-cors', redirect: 'manual'});
+  await fireAndForget(url);
 }
 
 // ══════════════════════════════════════════════
