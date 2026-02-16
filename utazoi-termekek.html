@@ -1008,23 +1008,16 @@ async function saveData(lightweight = false) {
         key: 'img_' + p.id,
         value: img
       });
-      // Swap to placeholder in memory so it won't re-upload next time
-      const idx = products.findIndex(x => x.id === p.id);
-      if (idx > -1) products[idx].image = '__img__';
     }
-    // Keep products with __img__ placeholder in localStorage
+    // Save products with __img__ to localStorage (so they won't re-upload)
+    // but keep images in memory for immediate display
     if (newImgProducts.length > 0) {
-      localStorage.setItem('products', JSON.stringify(products));
-      // Temporarily restore images ONLY for rendering (don't save back to products)
-      const tempProducts = products.map(p => {
-        const img = imgBackup.get(p.id);
-        return img ? {...p, image: img} : p;
-      });
-      // Swap products temporarily for render
-      const origProducts = products;
-      products = tempProducts;
+      const productsForStorage = products.map(p => ({
+        ...p, 
+        image: (p.image && p.image !== '__img__' && p.image.startsWith('data:')) ? '__img__' : p.image
+      }));
+      localStorage.setItem('products', JSON.stringify(productsForStorage));
       renderAll();
-      products = origProducts; // restore __img__ versions
     }
   } catch(e) {
     showToast('Mentési hiba – az adat lokálisan mentve', 'error');
