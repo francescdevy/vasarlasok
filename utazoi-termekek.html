@@ -844,7 +844,6 @@ const ADMIN_PASSWORD = 'Billa789';
 
 // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
 const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
-
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
@@ -874,30 +873,25 @@ async function sheetsGet(action, key) {
 
 async function sheetsPost(body) {
   if (!SHEETS_API_URL) return null;
-  const json = JSON.stringify(body);
-  const b64 = btoa(unescape(encodeURIComponent(json)));
-  const chunkSize = 5000;
-  if (b64.length <= chunkSize) {
-    const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-    const res = await fetch(url);
+  try {
+    const res = await fetch(SHEETS_API_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
     return await res.json();
+  } catch(e) {
+    // Fallback: GET-based for browsers that block POST redirects (some iOS)
+    const json = JSON.stringify(body);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    if (b64.length <= 7000) {
+      const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
+      const res = await fetch(url);
+      return await res.json();
+    }
+    throw new Error('Adat túl nagy');
   }
-  if (b64.length <= chunkSize) {
-    const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-    const res = await fetch(url);
-    return await res.json();
-  }
-  // Chunked upload for large data (images)
-  const totalChunks = Math.ceil(b64.length / chunkSize);
-  const uploadId = Date.now();
-  for (let i = 0; i < totalChunks; i++) {
-    const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
-    const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
-    await fetch(url);
-  }
-  const url = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
-  const res = await fetch(url);
-  return await res.json();
 }
 
 // ══════════════════════════════════════════════
@@ -911,13 +905,14 @@ function setLoading(on, msg) {
 }
 
 async function loadData() {
-  if (!SHEETS_API_URL) {
-    try { const v = localStorage.getItem('products'); if (v) products = JSON.parse(v); } catch(e){}
-    try { const v = localStorage.getItem('categories'); if (v) categories = JSON.parse(v); } catch(e){}
-    try { const v = localStorage.getItem('currencies'); if (v) currencies = JSON.parse(v); } catch(e){}
-    try { const v = localStorage.getItem('shopOrder'); if (v) shopOrder = JSON.parse(v); } catch(e){}
-    return;
-  }
+  // Load localStorage first as fallback
+  try { const v = localStorage.getItem('products');   if (v) products   = JSON.parse(v); } catch(e){}
+  try { const v = localStorage.getItem('categories'); if (v) categories = JSON.parse(v); } catch(e){}
+  try { const v = localStorage.getItem('currencies'); if (v) currencies = JSON.parse(v); } catch(e){}
+  try { const v = localStorage.getItem('shopOrder');  if (v) shopOrder  = JSON.parse(v); } catch(e){}
+
+  if (!SHEETS_API_URL) return;
+
   setLoading(true, 'Adatok betöltése...');
   try {
     const data = await sheetsGet('getAll');
@@ -928,7 +923,7 @@ async function loadData() {
       if (data.shopOrder)  try { shopOrder  = JSON.parse(data.shopOrder);  } catch(e){}
     }
   } catch(e) {
-    showToast('Betöltési hiba – ellenőrizd az API URL-t', 'error');
+    showToast('Betöltési hiba – lokális adatok betöltve', 'error');
   }
   setLoading(false);
 }
