@@ -971,7 +971,7 @@ async function loadData() {
           products.forEach(async (p, i) => {
             if (p.image === '__img__') {
               try {
-                const imgData = await sheetsGet('get', 'img_' + p.id);
+                const imgData = await sheetsGet('getImg', 'img_' + p.id);
                 if (imgData && imgData.value) {
                   products[i] = {...products[i], image: imgData.value};
                   localStorage.setItem('products', JSON.stringify(products));
@@ -1014,12 +1014,18 @@ async function saveData() {
       shopOrder:  JSON.stringify(shopOrder)
     });
 
-    // Upload only new images (one at a time)
+    // Upload only new images (one at a time, split into 45k char parts)
     for (const p of newImgProducts) {
+      const IMG_PART_SIZE = 45000;
+      const parts = [];
+      for (let i = 0; i < p.image.length; i += IMG_PART_SIZE) {
+        parts.push(p.image.slice(i, i + IMG_PART_SIZE));
+      }
+      setLoading(true, `Kép feltöltése...`);
       await sheetsPost({
-        action: 'set',
+        action: 'setImg',
         key: 'img_' + p.id,
-        value: p.image
+        parts
       });
       // Swap to placeholder in memory so it won't re-upload next time
       const idx = products.findIndex(x => x.id === p.id);
@@ -1510,11 +1516,11 @@ function compressImage(file, maxWidth, maxHeight, quality) {
           w = Math.round(w * ratio);
           h = Math.round(h * ratio);
         }
-        // Iteratively reduce until under 35000 chars (Google Sheets 50k cell limit)
+        // Iteratively reduce until under 130000 chars (3 × 45k Sheets columns)
         let result = compress(w, h, quality);
         let attempts = 0;
-        while (result.length > 35000 && attempts < 8) {
-          quality = Math.max(0.2, quality - 0.1);
+        while (result.length > 130000 && attempts < 8) {
+          quality = Math.max(0.3, quality - 0.1);
           w = Math.round(w * 0.85);
           h = Math.round(h * 0.85);
           result = compress(w, h, quality);
@@ -1532,7 +1538,7 @@ function handleImgUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
   document.querySelector('#imgUploadArea .upload-text').textContent = 'Tömörítés...';
-  compressImage(file, 500, 500, 0.65).then(compressed => {
+  compressImage(file, 800, 800, 0.82).then(compressed => {
     pendingImgBase64 = compressed;
     document.getElementById('imgPreview').src = compressed;
     document.getElementById('imgPreview').style.display = 'block';
