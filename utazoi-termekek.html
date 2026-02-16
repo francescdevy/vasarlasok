@@ -491,6 +491,7 @@
   <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCountries">Országok</button>
   <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageShops">Boltok</button>
   <button class="btn btn-sm" id="btnApiSetup" style="color:#fff" title="Google Sheets összekötés">🔗 Sheets</button>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnBackupRestore">💾 Backup</button>
   <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnExport">📊 Export</button>
   <button class="btn btn-sm" style="background:var(--red);color:#fff" id="btnAdminLogout">Kilép</button>
 </div>
@@ -829,6 +830,22 @@
   </div>
 </div>
 
+<!-- Backup Restore Modal -->
+<div id="backupModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('backupModal')">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <span class="modal-title">💾 Backup visszaállítás</span>
+      <button class="modal-close" onclick="closeModal('backupModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="backupList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:12px;padding:10px;background:var(--cream);border-radius:8px">
+        ℹ️ Automatikus mentések az utolsó 5 változtatásról. Visszaállításkor a jelenlegi adatok felülíródnak.
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
@@ -954,6 +971,9 @@ async function loadData() {
 }
 
 async function saveData(lightweight = false) {
+  // Create backup before saving (keep last 5)
+  createBackup();
+  
   localStorage.setItem('products',   JSON.stringify(products));
   localStorage.setItem('categories', JSON.stringify(categories));
   localStorage.setItem('currencies', JSON.stringify(currencies));
@@ -1023,6 +1043,101 @@ async function saveData(lightweight = false) {
     showToast('Mentési hiba – az adat lokálisan mentve', 'error');
   }
   setLoading(false);
+}
+
+// ══════════════════════════════════════════════
+// BACKUP & RESTORE
+// ══════════════════════════════════════════════
+function createBackup() {
+  try {
+    const backup = {
+      products,
+      categories,
+      currencies,
+      shopOrder,
+      timestamp: new Date().toISOString()
+    };
+    const backupKey = 'backup_' + Date.now();
+    localStorage.setItem(backupKey, JSON.stringify(backup));
+    
+    // Keep only last 5 backups
+    cleanupOldBackups();
+  } catch(e) {
+    console.error('Backup hiba:', e);
+  }
+}
+
+function cleanupOldBackups() {
+  const backups = Object.keys(localStorage)
+    .filter(k => k.startsWith('backup_'))
+    .sort()
+    .reverse();
+  
+  // Delete all but the newest 5
+  backups.slice(5).forEach(k => localStorage.removeItem(k));
+}
+
+function getBackups() {
+  return Object.keys(localStorage)
+    .filter(k => k.startsWith('backup_'))
+    .sort()
+    .reverse()
+    .map(k => {
+      try {
+        const data = JSON.parse(localStorage.getItem(k));
+        return {
+          key: k,
+          timestamp: data.timestamp || 'Ismeretlen',
+          productCount: data.products?.length || 0
+        };
+      } catch(e) {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+function renderBackupList() {
+  const backups = getBackups();
+  const el = document.getElementById('backupList');
+  
+  if (backups.length === 0) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup mentés</div>';
+    return;
+  }
+  
+  el.innerHTML = backups.map(b => {
+    const date = new Date(b.timestamp);
+    const dateStr = date.toLocaleDateString('hu-HU', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--cream);border-radius:8px">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:0.85rem">${dateStr}</div>
+          <div style="font-size:0.75rem;color:var(--muted)">${b.productCount} termék</div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="restoreBackup('${b.key}')">Visszaállít</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function restoreBackup(backupKey) {
+  if (!confirm('Biztosan visszaállítod ezt a mentést? A jelenlegi adatok elvesznek!')) return;
+  
+  try {
+    const backup = JSON.parse(localStorage.getItem(backupKey));
+    products = backup.products || [];
+    categories = backup.categories || [];
+    currencies = backup.currencies || [];
+    shopOrder = backup.shopOrder || [];
+    
+    await saveData();
+    renderAll();
+    showToast('Backup visszaállítva!', 'success');
+    closeAdminPanel();
+  } catch(e) {
+    showToast('Visszaállítási hiba: ' + e.message, 'error');
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1526,6 +1641,12 @@ async function saveProduct() {
   const name = document.getElementById('fName').value.trim();
   if (!name) { showToast('A termék neve kötelező!', 'error'); return; }
 
+  // Check for duplicate name (only for new products)
+  if (!editingId && products.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Ilyen nevű termék már létezik!', 'error');
+    return;
+  }
+
   // Flush any pending tag input values
   const ci = document.getElementById('fCountryInput').value.trim();
   const si = document.getElementById('fShopInput').value.trim();
@@ -1772,6 +1893,10 @@ document.getElementById('btnManageCountries').onclick = () => {
 document.getElementById('btnManageShops').onclick = () => {
   renderShopsList();
   openModal('shopsModal');
+};
+document.getElementById('btnBackupRestore').onclick = () => {
+  renderBackupList();
+  openModal('backupModal');
 };
 
 // ══════════════════════════════════════════════
