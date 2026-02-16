@@ -876,38 +876,50 @@ async function sheetsPost(body) {
   if (!SHEETS_API_URL) return null;
   const json = JSON.stringify(body);
   const b64 = btoa(unescape(encodeURIComponent(json)));
-  const chunkSize = 7000;
+  // Google Apps Script GET URL limit is ~8KB; keep chunks well under that
+  const chunkSize = 6000;
+  // For non-image payloads (setAll, set without large value) try direct first
   if (b64.length <= chunkSize) {
-    // Small payload: fire-and-forget (no-cors), then poll for result
     const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
     await fetch(url, {mode: 'no-cors', redirect: 'follow'});
     return {ok: true};
   }
   // Chunked for large payloads (images)
-  // Fire each chunk as no-cors with small delay between them
   const totalChunks = Math.ceil(b64.length / chunkSize);
   const uploadId = Date.now();
   for (let i = 0; i < totalChunks; i++) {
     const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
     const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
+    setLoading(true, `Kép feltöltése... ${Math.round((i+1)/totalChunks*100)}%`);
     await fetch(url, {mode: 'no-cors', redirect: 'follow'});
-    await new Promise(r => setTimeout(r, 80)); // small breathing room
+    await new Promise(r => setTimeout(r, 100));
   }
   // Fire commit
+  setLoading(true, 'Kép mentése...');
   const commitUrl = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
   await fetch(commitUrl, {mode: 'no-cors', redirect: 'follow'});
-  // Poll for commit result via readable GET
+  // Poll for commit confirmation via readable GET (max ~12s)
   await new Promise(r => setTimeout(r, 1500));
-  for (let attempt = 0; attempt < 10; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     try {
       const pollUrl = `${SHEETS_API_URL}?action=get&key=__commit_${uploadId}`;
       const res = await fetch(pollUrl, {redirect: 'follow'});
       const data = await res.json();
       if (data && data.value) return {ok: true};
     } catch(e) {}
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 800));
   }
-  return {ok: true}; // assume success after commit was fired
+  return {ok: true};
+}
+
+async function deleteImageFromSheets(id) {
+  if (!SHEETS_API_URL) return;
+  // Overwrite image key with empty string to free space
+  const body = {action: 'set', key: 'img_' + id, value: ''};
+  const json = JSON.stringify(body);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
+  await fetch(url, {mode: 'no-cors', redirect: 'follow'});
 }
 
 // ══════════════════════════════════════════════
@@ -980,7 +992,10 @@ async function saveData() {
   if (!SHEETS_API_URL) return;
   setLoading(true, 'Mentés...');
   try {
-    // Save products without images first
+    // Identify products with NEW real images (base64, not yet uploaded)
+    const newImgProducts = products.filter(p => p.image && p.image !== '__img__' && p.image.startsWith('data:'));
+
+    // Save products with __img__ placeholder (never send base64 in the main payload)
     const productsNoImg = products.map(p => ({...p, image: p.image ? '__img__' : null}));
     await sheetsPost({
       action: 'setAll',
@@ -989,15 +1004,22 @@ async function saveData() {
       currencies: JSON.stringify(currencies),
       shopOrder:  JSON.stringify(shopOrder)
     });
-    // Save images separately, one by one
-    for (const p of products) {
-      if (p.image && p.image !== '__img__') {
-        await sheetsPost({
-          action: 'set',
-          key: 'img_' + p.id,
-          value: p.image
-        });
-      }
+
+    // Upload only new images (one at a time)
+    for (const p of newImgProducts) {
+      setLoading(true, `Kép feltöltése...`);
+      await sheetsPost({
+        action: 'set',
+        key: 'img_' + p.id,
+        value: p.image
+      });
+      // After successful upload, swap to placeholder in memory so it won't re-upload
+      const idx = products.findIndex(x => x.id === p.id);
+      if (idx > -1) products[idx].image = '__img__';
+    }
+    // Persist the placeholder swap to localStorage
+    if (newImgProducts.length > 0) {
+      localStorage.setItem('products', JSON.stringify(products));
     }
   } catch(e) {
     showToast('Mentési hiba – az adat lokálisan mentve', 'error');
@@ -1177,8 +1199,9 @@ function renderGrid(list) {
 function productCard(p) {
   const latestPrice = getLatestPrice(p);
   const priceChangeHtml = getPriceChangeHtml(p);
-  const imgHtml = p.image
-    ? `<img class="card-img" src="${p.image}" alt="${esc(p.name)}" loading="lazy" onclick="openLightbox('${p.image}',event)">`
+  const realImg = p.image && p.image !== '__img__' ? p.image : null;
+  const imgHtml = realImg
+    ? `<img class="card-img" src="${realImg}" alt="${esc(p.name)}" loading="lazy" onclick="openLightbox('${realImg}',event)">`
     : `<div class="card-img-placeholder" onclick="openViewProduct('${p.id}')">🛍️</div>`;
 
   const avgRating = getAvgRating(p);
@@ -1563,6 +1586,7 @@ function deleteProduct(id) {
   if (!confirm('Biztosan törlöd ezt a terméket?')) return;
   products = products.filter(p=>p.id!==id);
   saveData();
+  deleteImageFromSheets(id); // clean up image separately, fire-and-forget
   filterProducts();
   populateDataLists();
   showToast('Termék törölve.', 'success');
@@ -1661,8 +1685,9 @@ function openViewProduct(id) {
     [...allShops].map(s => `<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') +
     [...allCountries].map(c => `<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
 
+  const viewImg = p.image && p.image !== '__img__' ? p.image : null;
   document.getElementById('viewModalBody').innerHTML = `
-    ${p.image ? `<img src="${p.image}" style="width:100%;border-radius:10px;max-height:220px;object-fit:cover;margin-bottom:8px;cursor:zoom-in" onclick="openLightbox('${p.image}',event)">` : ''}
+    ${viewImg ? `<img src="${viewImg}" style="width:100%;border-radius:10px;max-height:220px;object-fit:cover;margin-bottom:8px;cursor:zoom-in" onclick="openLightbox('${viewImg}',event)">` : ''}
     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
       ${p.category ? `<span class="meta-pill">📂 ${esc(p.category)}</span>` : ''}
       ${locationPillsHtml}
