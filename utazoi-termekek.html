@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Külföldi vásárlás</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,800;1,300&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --ink: #1c1c1c;
+    --paper: #f5f5f5;
+    --cream: #ebebeb;
+    --warm: #e0e0e0;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --star: #f59e0b;
+    --green: #16a34a;
+    --red: #dc2626;
+    --muted: #777;
+    --border: #d0d0d0;
+    --shadow: rgba(0,0,0,0.08);
+    --card: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+  }
+  header h1 span { color: #93c5fd; }
+  .header-actions { display: flex; gap: 6px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 13px; border-radius: 7px; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-ghost { background: transparent; color: var(--paper); border: 1.5px solid rgba(255,255,255,0.3); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-sm { padding: 5px 9px; font-size: 0.76rem; }
+  .btn-icon { padding: 6px; border-radius: 6px; background: var(--cream); border: 1px solid var(--border); color: var(--ink); cursor: pointer; font-size: 0.9rem; transition: all .15s; }
+  .btn-icon:hover { background: var(--warm); }
+
+  /* ── SEARCH & FILTERS ── */
+  .search-bar {
+    padding: 8px 12px 7px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+  }
+  .search-row {
+    display: flex; gap: 6px; margin-bottom: 6px;
+  }
+  .search-input {
+    flex: 1; padding: 7px 11px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    outline: none; transition: border-color .15s;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-row {
+    display: flex; gap: 5px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-select {
+    padding: 5px 8px; border-radius: 6px;
+    border: 1px solid var(--border); background: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 0.76rem;
+    color: var(--ink); cursor: pointer; outline: none;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+  .btn-clear-filters {
+    padding: 5px 9px; border-radius: 6px; border: 1px solid var(--border);
+    background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.76rem;
+    color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .btn-clear-filters:hover { background: var(--cream); color: var(--ink); border-color: var(--ink); }
+  .result-count {
+    font-size: 0.72rem; color: var(--muted); margin-top: 5px; font-weight: 500;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 10px;
+    padding: 10px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px var(--shadow);
+    transition: transform .18s, box-shadow .18s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px var(--shadow); }
+
+  .card-img-wrap {
+    position: relative;
+    width: 100%; height: 145px;
+    background: var(--cream);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .card-img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .3s;
+    cursor: zoom-in;
+    display: block;
+  }
+  .card:hover .card-img { transform: scale(1.04); }
+  .card-img-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: var(--border);
+    background: var(--cream);
+  }
+  .card-cat-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--ink); color: #fff;
+    font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    pointer-events: none;
+  }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.92);
+    align-items: center; justify-content: center;
+    cursor: zoom-out;
+    padding: 16px;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    animation: lbIn .18s ease;
+    cursor: default;
+  }
+  @keyframes lbIn {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+  .lightbox-close {
+    position: absolute; top: 14px; right: 18px;
+    color: #fff; font-size: 2rem; cursor: pointer;
+    background: none; border: none; line-height: 1;
+    opacity: 0.7; transition: opacity .15s;
+  }
+  .lightbox-close:hover { opacity: 1; }
+
+  .card-body { padding: 8px 10px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .card-name {
+    font-family: 'Fraunces', serif;
+    font-size: 0.98rem; font-weight: 600; line-height: 1.3; color: var(--ink);
+  }
+  .card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+
+  .card-meta {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px;
+  }
+  .meta-pill {
+    font-size: 0.7rem; padding: 2px 7px; border-radius: 20px;
+    background: var(--cream); color: var(--muted); border: 1px solid var(--border);
+  }
+
+  .card-price-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 2px;
+  }
+  .card-price {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem; font-weight: 800; color: var(--ink);
+  }
+  .price-change {
+    font-size: 0.74rem; font-weight: 600; padding: 2px 7px; border-radius: 12px;
+  }
+  .price-up { background: #fde8e8; color: var(--red); }
+  .price-down { background: #e6f5ec; color: var(--green); }
+
+  .stars { color: var(--star); font-size: 0.85rem; letter-spacing: 0px; }
+  .card-note {
+    font-size: 0.76rem; color: var(--muted);
+    background: var(--cream); border-left: 3px solid var(--border);
+    padding: 5px 9px; border-radius: 0 5px 5px 0;
+    font-style: italic;
+  }
+
+  .card-footer {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 5px; justify-content: flex-end;
+  }
+
+  /* Price History */
+  .price-history {
+    margin-top: 6px;
+    background: var(--cream);
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+  }
+  .price-history-title {
+    font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .ph-item {
+    display: grid;
+    grid-template-columns: 70px 76px 1fr 1fr;
+    align-items: baseline; gap: 15px;
+    font-size: 0.78rem; padding: 3px 0; border-bottom: 1px dashed var(--border);
+  }
+  .ph-item:last-child { border-bottom: none; }
+  .ph-date { color: var(--muted); white-space: nowrap; }
+  .ph-val { font-weight: 600; white-space: nowrap; }
+  .ph-loc { color: var(--muted); font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ph-note { color: var(--muted); font-size: 0.72rem; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── MODAL ── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5); z-index: 200;
+    align-items: flex-end; justify-content: center;
+    overflow: hidden;
+  }
+  .overlay.active { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 14px 14px 0 0;
+    width: 100%; max-width: 520px;
+    max-height: 92vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.2);
+    animation: slideUp .2s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem; font-weight: 700;
+  }
+  .modal-close {
+    background: none; border: none; font-size: 1.2rem;
+    cursor: pointer; color: var(--muted); padding: 3px 7px; border-radius: 5px;
+  }
+  .modal-close:hover { background: var(--cream); color: var(--ink); }
+  .modal-body {
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    overflow-y: auto; flex: 1;
+  }
+  .modal-footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 7px; justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  /* ── FORM ── */
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-label { font-size: 0.74rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .form-input, .form-select, .form-textarea {
+    padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px;
+    background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    color: var(--ink); outline: none; transition: border-color .15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 58px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .form-hint { font-size: 0.72rem; color: var(--muted); }
+
+  /* Star Rating */
+  .star-picker { display: flex; gap: 4px; }
+  .star-btn {
+    background: none; border: none; font-size: 1.9rem; cursor: pointer;
+    transition: transform .12s, color .12s; color: #d0d0d0; padding: 0; line-height: 1;
+  }
+  .star-btn.active { color: var(--star); }
+  .star-btn:hover { transform: scale(1.2); color: var(--star); }
+
+  /* Image upload */
+  .img-upload-area {
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 12px; text-align: center; cursor: pointer;
+    transition: all .15s; background: var(--cream);
+    position: relative;
+  }
+  .img-upload-area:hover { border-color: var(--accent); background: #f0f4ff; }
+  .img-upload-area input[type=file] { display: none; }
+  .img-preview { max-height: 100px; border-radius: 6px; max-width: 100%; margin-top: 6px; }
+  .upload-icon { font-size: 1.6rem; margin-bottom: 4px; }
+  .upload-text { font-size: 0.78rem; color: var(--muted); }
+
+  /* Admin panel */
+  .admin-panel {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 7px 12px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78rem;
+    flex-wrap: wrap;
+  }
+  .admin-badge {
+    background: var(--accent); color: #fff;
+    font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* Tag input (multi country/shop) */
+  .tag-input-wrap {
+    display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+    padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 7px;
+    background: #fff; min-height: 38px; cursor: text;
+    transition: border-color .15s;
+  }
+  .tag-input-wrap:focus-within { border-color: var(--accent); }
+  .tag-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--accent-light); color: var(--accent);
+    border: 1px solid #bfdbfe; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; padding: 2px 8px 2px 10px;
+  }
+  .tag-item button {
+    background: none; border: none; cursor: pointer; color: var(--accent);
+    font-size: 0.9rem; line-height: 1; padding: 0; opacity: 0.7;
+  }
+  .tag-item button:hover { opacity: 1; }
+  .tag-input {
+    border: none; outline: none; font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; background: transparent; min-width: 120px; flex: 1;
+  }
+  .cat-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat-chip {
+    padding: 5px 13px; border-radius: 20px;
+    background: var(--cream); border: 1.5px solid var(--border);
+    font-size: 0.8rem; font-weight: 500; cursor: pointer;
+    transition: all .15s; color: var(--ink);
+  }
+  .cat-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* Notifications */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px; z-index: 999;
+    background: var(--ink); color: var(--paper);
+    padding: 12px 18px; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 500;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    transform: translateY(80px); opacity: 0;
+    transition: all .25s;
+    max-width: 280px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-left: 4px solid var(--green); }
+  .toast.error { border-left: 4px solid var(--red); }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--muted);
+  }
+  .empty-icon { font-size: 3.5rem; margin-bottom: 12px; }
+  .empty h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--ink); margin-bottom: 6px; }
+  .empty p { font-size: 0.85rem; }
+
+  /* Category admin */
+  .cat-list { display: flex; flex-direction: column; gap: 6px; }
+  .cat-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; background: var(--cream); border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: box-shadow .15s, opacity .15s;
+  }
+  .cat-item[draggable="true"] { cursor: grab; }
+  .cat-item[draggable="true"]:active { cursor: grabbing; }
+  .cat-item.drag-over { box-shadow: 0 0 0 2px var(--accent); background: var(--accent-light); }
+  .cat-item.dragging { opacity: 0.4; }
+  .drag-handle { color: var(--border); font-size: 1rem; cursor: grab; padding: 0 4px 0 0; user-select: none; flex-shrink: 0; }
+  .drag-handle:hover { color: var(--muted); }
+  .cat-item-name { font-size: 0.88rem; font-weight: 500; flex: 1; }
+
+  /* Login */
+  .login-card {
+    max-width: 340px; margin: 60px auto; padding: 32px;
+    background: var(--card); border-radius: 16px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 8px 30px var(--shadow);
+  }
+  .login-card h2 { font-family: 'Fraunces', serif; font-size: 1.4rem; margin-bottom: 6px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; margin-bottom: 16px; }
+  .tab-btn {
+    flex: 1; padding: 10px; text-align: center;
+    background: var(--cream); border: 1.5px solid var(--border);
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: all .15s; color: var(--muted);
+  }
+  .tab-btn:first-child { border-radius: 8px 0 0 8px; }
+  .tab-btn:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+  .tab-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* Currency tag */
+  .curr-tag { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .grid { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
+    .form-row { grid-template-columns: 1fr; }
+    .filter-select { font-size: 0.72rem; padding: 5px 6px; }
+    header h1 { font-size: 1rem; }
+    .admin-panel { gap: 4px; }
+    .admin-panel span[style*="flex:1"] { display: none; }
+  }
+  @media (min-width: 501px) {
+    .overlay { align-items: center; padding: 12px; }
+    .modal { border-radius: 12px; max-height: 90vh; }
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 4px 0; }
+  .text-center { text-align: center; }
+  .mt-8 { margin-top: 8px; }
+  .gap-8 { gap: 8px; }
+  details summary { cursor: pointer; font-size: 0.78rem; color: var(--muted); font-weight: 600; user-select: none; }
+  details summary:hover { color: var(--ink); }
+  .currency-row { display: grid; grid-template-columns: 2fr 1fr 1.2fr; gap: 8px; }
+</style>
+</head>
+<body>
+
+<div id="loadingBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:var(--accent);color:#fff;padding:6px 16px;font-size:0.82rem;font-weight:600;align-items:center;gap:8px">
+  <span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></span>
+  <span id="loadingMsg">Mentés...</span>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<header>
+  <h1>Külföldi <span>vásárlás</span></h1>
+  <div class="header-actions">
+    <button class="btn btn-primary btn-sm" id="btnAddProduct">+ Termék</button>
+    <button class="btn btn-ghost btn-sm" id="btnAdminToggle">⚙</button>
+  </div>
+</header>
+
+<div id="adminBar" style="display:none" class="admin-panel">
+  <span class="admin-badge">Admin</span>
+  <span style="flex:1">Szerkesztési mód aktív</span>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCats">Kategóriák</button>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCurrencies">Pénznemek</button>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCountries">Országok</button>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageShops">Boltok</button>
+  <button class="btn btn-sm" id="btnApiSetup" style="color:#fff" title="Google Sheets összekötés">🔗 Sheets</button>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnExport">📊 Export</button>
+  <button class="btn btn-sm" style="background:var(--red);color:#fff" id="btnAdminLogout">Kilép</button>
+</div>
+
+<div class="search-bar">
+  <div class="search-row">
+    <input class="search-input" id="searchInput" placeholder="🔍 Keresés név, megjegyzés, hely..." oninput="filterProducts()">
+  </div>
+  <div class="filter-row">
+    <select class="filter-select" id="filterCat" onchange="filterProducts()">
+      <option value="">Minden kategória</option>
+    </select>
+    <select class="filter-select" id="filterCountry" onchange="filterProducts()">
+      <option value="">Minden ország</option>
+    </select>
+    <select class="filter-select" id="filterShop" onchange="filterProducts()">
+      <option value="">Minden bolt</option>
+    </select>
+    <select class="filter-select" id="filterCurr" onchange="filterProducts()">
+      <option value="">Minden pénznem</option>
+    </select>
+    <button class="btn-clear-filters" id="btnClearFilters" onclick="clearFilters()" style="display:none">✕ Szűrők törlése</button>
+  </div>
+  <div class="result-count" id="resultCount"></div>
+</div>
+
+<div class="grid" id="productGrid"></div>
+
+<!-- ══════════════ ADD/EDIT PRODUCT MODAL ══════════════ -->
+<div class="overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="productModalTitle">Új termék hozzáadása</span>
+      <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label">Fotó (opcionális)</label>
+        <label class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('imgFileInput').click()">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Koppints a kép kiválasztásához</div>
+          <img class="img-preview" id="imgPreview" style="display:none">
+        </label>
+        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImgUpload(event)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Termék neve *</label>
+        <input class="form-input" id="fName" placeholder="pl. Nutella 400g">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Rövid leírás</label>
+        <input class="form-input" id="fDesc" placeholder="pl. Mogyorós csokoládékrém, extra krémes">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kategória</label>
+        <select class="form-select" id="fCat">
+          <option value="">Válassz...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Ország / Országok</label>
+        <div class="tag-input-wrap" id="countryTagWrap">
+          <div class="tag-list" id="countryTags"></div>
+          <input class="tag-input" id="fCountryInput" placeholder="+ Ország hozzáadása" list="countryList" autocomplete="off" onkeydown="handleTagKey(event,'country')">
+        </div>
+        <datalist id="countryList"></datalist>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bolt / Boltok</label>
+        <div class="tag-input-wrap" id="shopTagWrap">
+          <div class="tag-list" id="shopTags"></div>
+          <input class="tag-input" id="fShopInput" placeholder="+ Bolt hozzáadása" list="shopList" autocomplete="off" onkeydown="handleTagKey(event,'shop')">
+        </div>
+        <datalist id="shopList"></datalist>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Vásárlás dátuma</label>
+        <input class="form-input" type="date" id="fDate">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Ár és pénznem</label>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
+          <input class="form-input" id="fPrice" type="number" placeholder="Összeg" min="0" step="any">
+          <select class="form-select" id="fCurr">
+            <option value="">Pénznem</option>
+          </select>
+        </div>
+        <input class="form-input" id="fPriceNote" placeholder='Megjegyzés az árhoz (pl. "akció")' style="margin-top:6px">
+        <div class="form-hint" style="margin-top:4px">Az eredeti ár rögzítésre kerül. Később frissíteni is lehet.</div>
+      </div>
+
+      <div class="form-group" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
+        <label class="form-label" style="color:var(--accent)">Értékelés</label>
+        <div class="star-picker" id="starPicker">
+          <button class="star-btn" onclick="setRating(1)">★</button>
+          <button class="star-btn" onclick="setRating(2)">★</button>
+          <button class="star-btn" onclick="setRating(3)">★</button>
+          <button class="star-btn" onclick="setRating(4)">★</button>
+          <button class="star-btn" onclick="setRating(5)">★</button>
+        </div>
+        <div id="ratingLabel" style="font-size:0.78rem;color:var(--muted);margin-top:4px">Koppints egy csillagra</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Megjegyzés</label>
+        <textarea class="form-textarea" id="fNote" placeholder='pl. "Nagyon finom, jó ajándéknak"'></textarea>
+      </div>
+
+      <input type="hidden" id="fUploader">
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('productModal')">Mégse</button>
+      <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PRICE UPDATE MODAL ══════════════ -->
+<div class="overlay" id="priceModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Ár frissítése</span>
+      <button class="modal-close" onclick="closeModal('priceModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Új ár</label>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
+          <input class="form-input" id="pNewPrice" type="number" placeholder="Összeg" min="0" step="any">
+          <select class="form-select" id="pNewCurr"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ország</label>
+          <input class="form-input" id="pNewCountry" placeholder="pl. Olaszország" list="countryList" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bolt</label>
+          <input class="form-input" id="pNewShop" placeholder="pl. Spar" list="shopList" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Megjegyzés (opcionális)</label>
+        <input class="form-input" id="pPriceNote" placeholder='pl. "akció", "new size"'>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dátum</label>
+        <input class="form-input" type="date" id="pNewDate">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('priceModal')">Mégse</button>
+      <button class="btn btn-primary" onclick="savePriceUpdate()">Frissítés</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ADMIN LOGIN MODAL ══════════════ -->
+<div class="overlay" id="loginModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-header">
+      <span class="modal-title">⚙ Admin belépés</span>
+      <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Jelszó</label>
+        <input class="form-input" type="password" id="adminPassword" placeholder="Admin jelszó" onkeydown="if(event.key==='Enter')checkAdminLogin()">
+      </div>
+      <div id="loginError" style="color:var(--red);font-size:0.82rem;display:none">Helytelen jelszó!</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="checkAdminLogin()">Belépés</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CATEGORIES MODAL ══════════════ -->
+<div class="overlay" id="catModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">📂 Kategóriák kezelése</span>
+      <button class="modal-close" onclick="closeModal('catModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cat-list" id="catList"></div>
+      <div class="divider mt-8"></div>
+      <div class="form-group mt-8">
+        <label class="form-label">Új kategória</label>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="newCatInput" placeholder="pl. Csokoládé" onkeydown="if(event.key==='Enter')addCategory()">
+          <button class="btn btn-primary" onclick="addCategory()">+ Hozzáad</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CURRENCIES MODAL ══════════════ -->
+<div class="overlay" id="currModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">💱 Pénznemek kezelése</span>
+      <button class="modal-close" onclick="closeModal('currModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cat-list" id="currList"></div>
+      <div class="divider mt-8"></div>
+      <div class="form-group mt-8">
+        <label class="form-label">Új pénznem (kód + név)</label>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="newCurrCode" placeholder="pl. GBP" style="max-width:90px">
+          <input class="form-input" id="newCurrName" placeholder="Brit font">
+          <button class="btn btn-primary" onclick="addCurrency()">+ Hozzáad</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ COUNTRIES MODAL ══════════════ -->
+<div class="overlay" id="countriesModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">🌍 Országok kezelése</span>
+      <button class="modal-close" onclick="closeModal('countriesModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-hint" style="margin-bottom:8px">Kattints egy névre a szerkesztéshez. A változtatás minden terméknél frissül.</div>
+      <div class="cat-list" id="countriesList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SHOPS MODAL ══════════════ -->
+<div class="overlay" id="shopsModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">🏪 Boltok kezelése</span>
+      <button class="modal-close" onclick="closeModal('shopsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-hint" style="margin-bottom:8px">Kattints egy névre a szerkesztéshez. A változtatás minden terméknél frissül.</div>
+      <div class="cat-list" id="shopsList"></div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="viewModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="viewModalTitle">Termék részletek</span>
+      <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+    </div>
+    <div class="modal-body" id="viewModalBody"></div>
+    <div class="modal-footer" id="viewModalFooter"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ADD REVIEW MODAL ══════════════ -->
+<div class="overlay" id="reviewModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">✍ Saját értékelés</span>
+      <button class="modal-close" onclick="closeModal('reviewModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Neved</label>
+        <input class="form-input" id="rName" placeholder="pl. Anna">
+      </div>
+      <div class="form-group" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
+        <label class="form-label" style="color:var(--accent)">Értékelés</label>
+        <div class="star-picker" id="reviewStarPicker">
+          <button class="star-btn" onclick="setReviewRating(1)">★</button>
+          <button class="star-btn" onclick="setReviewRating(2)">★</button>
+          <button class="star-btn" onclick="setReviewRating(3)">★</button>
+          <button class="star-btn" onclick="setReviewRating(4)">★</button>
+          <button class="star-btn" onclick="setReviewRating(5)">★</button>
+        </div>
+        <div id="reviewRatingLabel" style="font-size:0.78rem;color:var(--muted);margin-top:4px">Koppints egy csillagra</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Megjegyzés</label>
+        <textarea class="form-textarea" id="rNote" placeholder="Írd le tapasztalatod..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('reviewModal')">Mégse</button>
+      <button class="btn btn-primary" onclick="saveReview()">Mentés</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SHEETS SETUP MODAL ══════════════ -->
+<div class="overlay" id="sheetsModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <span class="modal-title">🔗 Google Sheets összekötés</span>
+      <button class="modal-close" onclick="closeModal('sheetsModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="sheetsStatus" style="padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:4px"></div>
+      <div class="form-group">
+        <label class="form-label">Apps Script URL</label>
+        <input class="form-input" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:0.8rem">
+        <div class="form-hint" style="margin-top:4px">Illeszd be a Google Apps Script webalkalmazás URL-jét. Lásd az <strong>apps-script.js</strong> fájl tetején a telepítési útmutatót.</div>
+      </div>
+      <details style="margin-top:8px">
+        <summary style="font-size:0.82rem;font-weight:600;color:var(--accent);cursor:pointer">📋 Rövid telepítési útmutató</summary>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:8px;line-height:1.7;background:var(--cream);padding:10px 12px;border-radius:8px">
+          1. Nyisd meg: <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">sheets.google.com</a> → Új táblázat<br>
+          2. <strong>Bővítmények → Apps Script</strong><br>
+          3. Másold be az <strong>apps-script.js</strong> tartalmát<br>
+          4. <strong>Üzembe helyezés → Új üzembe helyezés</strong><br>
+          &nbsp;&nbsp;&nbsp;→ Típus: Webalkalmazás<br>
+          &nbsp;&nbsp;&nbsp;→ Hozzáférés: <strong>Bárki</strong><br>
+          5. Másold ki a kapott URL-t és illeszd be fentebb<br>
+          6. Kattints a „Mentés és teszt" gombra
+        </div>
+      </details>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="clearSheetsUrl()">Kapcsolat törlése</button>
+      <button class="btn btn-primary" onclick="saveSheetsUrl()">Mentés és teszt</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const ADMIN_PASSWORD = 'Billa789';
+
+// ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
+const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
+
+// Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
+let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
+
+let isAdmin = false;
+let products = [];
+let categories = ['Csokoládé','Keksz','Édességek','Italok','Szeszes italok','Fűszerek','Kozmetikum','Egyéb'];
+let currencies = [{code:'EUR',name:'Euró'},{code:'HUF',name:'Forint'},{code:'USD',name:'Dollár'}];
+let shopOrder = []; // persisted custom shop order
+let editingId = null;
+let currentRating = 0;
+let currentReviewRating = 0;
+let priceUpdateId = null;
+let pendingImgBase64 = null;
+let reviewProductId = null;
+let fCountries = []; // active tag arrays for the form
+let fShops = [];
+
+// ══════════════════════════════════════════════
+// GOOGLE SHEETS API
+// ══════════════════════════════════════════════
+async function sheetsGet(action, key) {
+  if (!SHEETS_API_URL) return null;
+  const url = `${SHEETS_API_URL}?action=${action}${key ? '&key='+key : ''}`;
+  const res = await fetch(url);
+  return await res.json();
+}
+
+async function sheetsPost(body) {
+  if (!SHEETS_API_URL) return null;
+  // Use GET with base64-encoded payload — avoids CORS preflight and mobile redirect issues
+  const json = JSON.stringify(body);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  // Split into chunks if too large (URL limit ~7000 chars safe)
+  // For large payloads use chunked approach
+  const chunkSize = 5000;
+  if (b64.length <= chunkSize) {
+    const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
+    const res = await fetch(url);
+    return await res.json();
+  }
+  // Chunked upload for large data (images)
+  const totalChunks = Math.ceil(b64.length / chunkSize);
+  const uploadId = Date.now();
+  for (let i = 0; i < totalChunks; i++) {
+    const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
+    const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
+    await fetch(url);
+  }
+  const url = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
+  const res = await fetch(url);
+  return await res.json();
+}
+
+// ══════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════
+function setLoading(on, msg) {
+  const el = document.getElementById('loadingBar');
+  if (!el) return;
+  el.style.display = on ? 'flex' : 'none';
+  if (msg) document.getElementById('loadingMsg').textContent = msg;
+}
+
+async function loadData() {
+  if (!SHEETS_API_URL) {
+    try { const v = localStorage.getItem('products'); if (v) products = JSON.parse(v); } catch(e){}
+    try { const v = localStorage.getItem('categories'); if (v) categories = JSON.parse(v); } catch(e){}
+    try { const v = localStorage.getItem('currencies'); if (v) currencies = JSON.parse(v); } catch(e){}
+    try { const v = localStorage.getItem('shopOrder'); if (v) shopOrder = JSON.parse(v); } catch(e){}
+    return;
+  }
+  setLoading(true, 'Adatok betöltése...');
+  try {
+    const data = await sheetsGet('getAll');
+    if (data && data.ok) {
+      if (data.products)   try { products   = JSON.parse(data.products);   } catch(e){}
+      if (data.categories) try { categories = JSON.parse(data.categories); } catch(e){}
+      if (data.currencies) try { currencies = JSON.parse(data.currencies); } catch(e){}
+      if (data.shopOrder)  try { shopOrder  = JSON.parse(data.shopOrder);  } catch(e){}
+    }
+  } catch(e) {
+    showToast('Betöltési hiba – ellenőrizd az API URL-t', 'error');
+  }
+  setLoading(false);
+}
+
+async function saveData() {
+  localStorage.setItem('products',   JSON.stringify(products));
+  localStorage.setItem('categories', JSON.stringify(categories));
+  localStorage.setItem('currencies', JSON.stringify(currencies));
+  localStorage.setItem('shopOrder',  JSON.stringify(shopOrder));
+
+  if (!SHEETS_API_URL) return;
+  setLoading(true, 'Mentés...');
+  try {
+    await sheetsPost({
+      action: 'setAll',
+      products:   JSON.stringify(products),
+      categories: JSON.stringify(categories),
+      currencies: JSON.stringify(currencies),
+      shopOrder:  JSON.stringify(shopOrder)
+    });
+  } catch(e) {
+    showToast('Mentési hiba – az adat lokálisan mentve', 'error');
+  }
+  setLoading(false);
+}
+
+// ══════════════════════════════════════════════
+// TAG INPUT (multi country/shop)
+// ══════════════════════════════════════════════
+function renderTags(type) {
+  const arr = type === 'country' ? fCountries : fShops;
+  const containerId = type === 'country' ? 'countryTags' : 'shopTags';
+  document.getElementById(containerId).innerHTML = arr.map((v,i) => `
+    <span class="tag-item">${esc(v)}<button onclick="removeTag('${type}',${i})">×</button></span>
+  `).join('');
+}
+
+function removeTag(type, idx) {
+  if (type === 'country') fCountries.splice(idx, 1);
+  else fShops.splice(idx, 1);
+  renderTags(type);
+}
+
+function addTag(type, value) {
+  const v = value.trim();
+  if (!v) return;
+  if (type === 'country' && !fCountries.includes(v)) { fCountries.push(v); renderTags('country'); }
+  if (type === 'shop' && !fShops.includes(v)) { fShops.push(v); renderTags('shop'); }
+}
+
+function handleTagKey(e, type) {
+  const input = e.target;
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    addTag(type, input.value);
+    input.value = '';
+  }
+}
+
+function clearTagInputs() {
+  fCountries = []; fShops = [];
+  renderTags('country'); renderTags('shop');
+  document.getElementById('fCountryInput').value = '';
+  document.getElementById('fShopInput').value = '';
+}
+
+function setTagInputs(countries, shops) {
+  fCountries = Array.isArray(countries) ? [...countries] : (countries ? [countries] : []);
+  fShops = Array.isArray(shops) ? [...shops] : (shops ? [shops] : []);
+  renderTags('country'); renderTags('shop');
+  document.getElementById('fCountryInput').value = '';
+  document.getElementById('fShopInput').value = '';
+}
+
+// Also add tag on blur
+document.addEventListener('DOMContentLoaded', () => {});
+function wireTagBlur() {
+  ['fCountryInput','fShopInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('blur', () => {
+      const type = id === 'fCountryInput' ? 'country' : 'shop';
+      addTag(type, el.value);
+      el.value = '';
+    });
+  });
+}
+async function init() {
+  await loadData();
+  renderAll();
+  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pNewDate').value = new Date().toISOString().split('T')[0];
+  updateSheetsStatus();
+  wireTagBlur();
+}
+
+function renderAll() {
+  populateCategorySelects();
+  populateCurrencySelects();
+  filterProducts();
+  populateDataLists();
+}
+
+// ══════════════════════════════════════════════
+// SELECTS
+// ══════════════════════════════════════════════
+function populateCategorySelects() {
+  const opts = ['<option value="">Válassz...</option>', ...categories.map(c=>`<option value="${c}">${c}</option>`)].join('');
+  document.getElementById('fCat').innerHTML = opts;
+  // Filter
+  const fOpts = ['<option value="">Minden kategória</option>', ...categories.map(c=>`<option value="${c}">${c}</option>`)].join('');
+  document.getElementById('filterCat').innerHTML = fOpts;
+}
+
+function populateCurrencySelects() {
+  const opts = ['<option value="">Pénznem</option>', ...currencies.map(c=>`<option value="${c.code}">${c.code} – ${c.name}</option>`)].join('');
+  document.getElementById('fCurr').innerHTML = opts;
+  document.getElementById('pNewCurr').innerHTML = opts;
+  // Filter dropdown: collect ALL currencies ever used in any product's price history
+  const usedCodes = [...new Set(
+    products.flatMap(p =>
+      (p.priceHistory && p.priceHistory.length)
+        ? p.priceHistory.map(ph => ph.currency).filter(Boolean)
+        : [p.currency].filter(Boolean)
+    )
+  )].sort();
+  const knownCodes = new Set(currencies.map(c => c.code));
+  const fOpts = [
+    '<option value="">Minden pénznem</option>',
+    ...usedCodes.map(code => {
+      const label = knownCodes.has(code) ? code : code + ' *';
+      return `<option value="${code}">${label}</option>`;
+    })
+  ].join('');
+  document.getElementById('filterCurr').innerHTML = fOpts;
+}
+
+// ══════════════════════════════════════════════
+// FILTER & RENDER
+// ══════════════════════════════════════════════
+function filterProducts() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const cat = document.getElementById('filterCat').value;
+  const country = document.getElementById('filterCountry').value;
+  const shop = document.getElementById('filterShop').value;
+  const curr = document.getElementById('filterCurr').value;
+
+  const filtered = products.filter(p => {
+    const pCountries = new Set([
+      ...(Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : [])),
+      ...(p.priceHistory||[]).map(ph=>ph.country).filter(Boolean)
+    ]);
+    const pShops = new Set([
+      ...(Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : [])),
+      ...(p.priceHistory||[]).map(ph=>ph.shop).filter(Boolean)
+    ]);
+    const matchQ = !q || [p.name,p.desc,...pShops,...pCountries,p.note,(p.reviews||[]).map(r=>r.note).join(' ')].join(' ').toLowerCase().includes(q);
+    const matchCat = !cat || p.category === cat;
+    const matchCountry = !country || pCountries.has(country);
+    const matchShop = !shop || pShops.has(shop);
+    const matchCurr = !curr || (p.priceHistory||[{currency: p.currency}]).some(ph => ph.currency === curr);
+    return matchQ && matchCat && matchCountry && matchShop && matchCurr;
+  });
+
+  document.getElementById('resultCount').textContent = `${filtered.length} termék / összesen ${products.length}`;
+  renderGrid(filtered);
+  updateFilterOptions();
+  updateClearBtn();
+  // Refresh currency filter to reflect all currencies in history
+  populateCurrencySelects();
+}
+
+function updateFilterOptions() {
+  const countries = getUniqueCountries();
+  const shops = getUniqueShops();
+  const curCountry = document.getElementById('filterCountry').value;
+  const curShop = document.getElementById('filterShop').value;
+  document.getElementById('filterCountry').innerHTML =
+    `<option value="">Minden ország</option>${countries.map(c=>`<option value="${c}" ${c===curCountry?'selected':''}>${c}</option>`).join('')}`;
+  document.getElementById('filterShop').innerHTML =
+    `<option value="">Minden bolt</option>${shops.map(s=>`<option value="${s}" ${s===curShop?'selected':''}>${s}</option>`).join('')}`;
+}
+
+function renderGrid(list) {
+  const grid = document.getElementById('productGrid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">🧳</div>
+      <h3>Nincs találat</h3>
+      <p>Próbálj más keresési feltételt, vagy adj hozzá új terméket!</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(p => productCard(p)).join('');
+}
+
+function productCard(p) {
+  const latestPrice = getLatestPrice(p);
+  const priceChangeHtml = getPriceChangeHtml(p);
+  const imgHtml = p.image
+    ? `<img class="card-img" src="${p.image}" alt="${esc(p.name)}" loading="lazy" onclick="openLightbox('${p.image}',event)">`
+    : `<div class="card-img-placeholder" onclick="openViewProduct('${p.id}')">🛍️</div>`;
+
+  const avgRating = getAvgRating(p);
+  const starsHtml = avgRating > 0 ? `<span class="stars">${'★'.repeat(Math.round(avgRating))}${'☆'.repeat(5-Math.round(avgRating))}</span> <span style="font-size:0.74rem;color:var(--muted)">${avgRating.toFixed(1)}</span>` : '';
+
+  const pCountries = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
+  const pShops = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
+
+  // Collect all unique shops and countries (from product fields + price history)
+  const allShops = new Set(pShops);
+  const allCountries = new Set(pCountries);
+  if (p.priceHistory) {
+    p.priceHistory.forEach(ph => {
+      if (ph.shop) allShops.add(ph.shop);
+      if (ph.country) allCountries.add(ph.country);
+    });
+  }
+  const locationPillsHtml =
+    [...allShops].map(s => `<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') +
+    [...allCountries].map(c => `<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
+
+  // Price history sorted descending by date
+  const sortedHistory = p.priceHistory
+    ? [...p.priceHistory].sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1)
+    : [];
+
+  const priceHistHtml = sortedHistory.length > 1 ? `
+    <details style="margin-top:4px" onclick="event.stopPropagation()">
+      <summary>📊 Ártörténet (${sortedHistory.length} bejegyzés)</summary>
+      <div class="price-history mt-8">
+        ${sortedHistory.map((ph)=>`
+          <div class="ph-item">
+            <span class="ph-date">${ph.date ? new Date(ph.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}) : '–'}</span>
+            <span class="ph-val">${ph.amount} ${ph.currency||p.currency}</span>
+            <span class="ph-loc">${[ph.country ? esc(countryShort(ph.country)) : '', ph.shop ? esc(ph.shop) : ''].filter(Boolean).join(' · ')}</span>
+            <span class="ph-note">${ph.note ? esc(ph.note) : ''}</span>
+          </div>`).join('')}
+      </div>
+    </details>` : '';
+
+  const adminBtns = isAdmin ? `
+    <div class="card-footer">
+      <button class="btn btn-sm btn-icon" title="Szerkesztés" onclick="openEditProduct('${p.id}')">✏️</button>
+      <button class="btn btn-sm" style="background:var(--red);color:#fff;padding:5px 10px;font-size:0.76rem;border-radius:7px" onclick="deleteProduct('${p.id}')">Törlés</button>
+    </div>` : '';
+
+  return `<div class="card" data-id="${p.id}">
+    <div class="card-img-wrap">
+      ${imgHtml}
+      ${p.category ? `<span class="card-cat-badge">${esc(p.category)}</span>` : ''}
+    </div>
+    <div class="card-body" onclick="openViewProduct('${p.id}')" style="cursor:pointer">
+      <div class="card-name">${esc(p.name)}</div>
+      ${p.desc ? `<div class="card-desc">${esc(p.desc)}</div>` : ''}
+      <div class="card-meta">${locationPillsHtml}</div>
+      <div class="card-price-row">
+        <div class="card-price">${latestPrice.amount ? latestPrice.amount + ' ' + (latestPrice.currency||'') : '–'}</div>
+        ${priceChangeHtml}
+      </div>
+      ${priceHistHtml}
+      ${starsHtml ? `<div style="display:flex;align-items:center;gap:5px;margin-top:2px">${starsHtml}</div>` : ''}
+      ${p.note ? `<div class="card-note">"${esc(p.note)}"</div>` : ''}
+    </div>
+    ${adminBtns}
+  </div>`;
+}
+
+function getLatestPrice(p) {
+  if (p.priceHistory && p.priceHistory.length > 0) {
+    return p.priceHistory[p.priceHistory.length - 1];
+  }
+  return {amount: p.price, currency: p.currency, note: p.priceNote};
+}
+
+function getPriceChangeHtml(p) {
+  if (!p.priceHistory || p.priceHistory.length < 2) return '';
+  const sorted = [...p.priceHistory]
+    .filter(ph => ph.amount && ph.currency)
+    .sort((a,b) => (b.date||'') > (a.date||'') ? 1 : -1);
+  // Find the most recent entry, then find the most recent earlier entry with same currency
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const last = sorted[i];
+    for (let j = i + 1; j < sorted.length; j++) {
+      const prev = sorted[j];
+      if (prev.currency === last.currency) {
+        const diff = last.amount - prev.amount;
+        const pct = ((diff / prev.amount) * 100).toFixed(1);
+        if (Math.abs(diff) < 0.001) return '';
+        if (diff > 0) return `<span class="price-change price-up">📈 +${pct}%</span>`;
+        return `<span class="price-change price-down">📉 ${pct}%</span>`;
+      }
+    }
+  }
+  return '';
+}
+
+function getAvgRating(p) {
+  const reviews = p.reviews || [];
+  const all = [...reviews.map(r=>r.rating).filter(r=>r>0)];
+  if (p.rating > 0) all.push(p.rating);
+  if (!all.length) return 0;
+  return all.reduce((a,b)=>a+b,0) / all.length;
+}
+
+// ══════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════
+document.getElementById('btnAdminToggle').onclick = () => {
+  if (isAdmin) { isAdmin = false; updateAdminUI(); return; }
+  openModal('loginModal');
+};
+document.getElementById('btnAdminLogout').onclick = () => {
+  isAdmin = false; updateAdminUI();
+  showToast('Kilépve az admin módból');
+};
+document.getElementById('btnExport').onclick = exportCSV;
+
+// ══════════════════════════════════════════════
+// SHEETS SETUP
+// ══════════════════════════════════════════════
+document.getElementById('btnApiSetup').onclick = () => {
+  const input = document.getElementById('sheetsUrlInput');
+  input.value = SHEETS_API_URL || '';
+  updateSheetsStatus();
+  openModal('sheetsModal');
+};
+
+function updateSheetsStatus() {
+  const el = document.getElementById('sheetsStatus');
+  if (!el) return;
+  if (SHEETS_API_URL) {
+    el.style.background = '#e6f5ec';
+    el.style.color = 'var(--green)';
+    el.innerHTML = '✓ Össze van kötve Google Sheets-szel';
+    document.getElementById('btnApiSetup').style.background = 'rgba(22,163,74,0.25)';
+  } else {
+    el.style.background = '#fef3c7';
+    el.style.color = '#92400e';
+    el.innerHTML = '⚠ Nincs Google Sheets kapcsolat – adatok csak ezen az eszközön elérhetők (localStorage)';
+    document.getElementById('btnApiSetup').style.background = 'rgba(255,255,255,0.15)';
+  }
+}
+
+async function saveSheetsUrl() {
+  const url = document.getElementById('sheetsUrlInput').value.trim();
+  if (!url) { showToast('Add meg az URL-t!', 'error'); return; }
+  if (!url.includes('script.google.com')) { showToast('Ez nem tűnik érvényes Apps Script URL-nek', 'error'); return; }
+  setLoading(true, 'Kapcsolat tesztelése...');
+  try {
+    const testUrl = `${url}?action=getAll`;
+    const res = await fetch(testUrl);
+    const data = await res.json();
+    if (data.ok !== undefined) {
+      SHEETS_API_URL = url;
+      localStorage.setItem('sheetsApiUrl', url);
+      // Ha még nincs adat a Sheets-ben, töltse fel a lokálisat
+      if (!data.products && products.length > 0) {
+        await sheetsPost({
+          action: 'setAll',
+          products: JSON.stringify(products),
+          categories: JSON.stringify(categories),
+          currencies: JSON.stringify(currencies),
+          shopOrder: JSON.stringify(shopOrder)
+        });
+        showToast('Kapcsolódva! Lokális adatok feltöltve.', 'success');
+      } else {
+        // Töltsd le a Sheets adatait
+        if (data.products)   try { products   = JSON.parse(data.products);   } catch(e){}
+        if (data.categories) try { categories = JSON.parse(data.categories); } catch(e){}
+        if (data.currencies) try { currencies = JSON.parse(data.currencies); } catch(e){}
+        if (data.shopOrder)  try { shopOrder  = JSON.parse(data.shopOrder);  } catch(e){}
+        renderAll();
+        showToast('Kapcsolódva! Sheets adatok betöltve.', 'success');
+      }
+      updateSheetsStatus();
+      closeModal('sheetsModal');
+    } else {
+      showToast('A szerver válaszolt, de hibát jelzett', 'error');
+    }
+  } catch(e) {
+    showToast('Nem sikerült kapcsolódni – ellenőrizd az URL-t és a jogosultságokat', 'error');
+  }
+  setLoading(false);
+}
+
+function clearSheetsUrl() {
+  SHEETS_API_URL = '';
+  localStorage.removeItem('sheetsApiUrl');
+  document.getElementById('sheetsUrlInput').value = '';
+  updateSheetsStatus();
+  showToast('Google Sheets kapcsolat törölve', 'success');
+  closeModal('sheetsModal');
+}
+
+function checkAdminLogin() {
+  const pw = document.getElementById('adminPassword').value;
+  if (pw === ADMIN_PASSWORD) {
+    isAdmin = true;
+    closeModal('loginModal');
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('loginError').style.display = 'none';
+    updateAdminUI();
+    showToast('Admin mód aktív! ✓', 'success');
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function updateAdminUI() {
+  document.getElementById('adminBar').style.display = isAdmin ? 'flex' : 'none';
+  filterProducts();
+}
+
+// ══════════════════════════════════════════════
+// ADD / EDIT PRODUCT
+// ══════════════════════════════════════════════
+document.getElementById('btnAddProduct').onclick = () => {
+  editingId = null;
+  pendingImgBase64 = null;
+  document.getElementById('productModalTitle').textContent = 'Új termék hozzáadása';
+  ['fName','fDesc','fPrice','fPriceNote','fNote','fUploader'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCat').value = '';
+  document.getElementById('fCurr').value = '';
+  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+  setRating(0);
+  clearTagInputs();
+  document.getElementById('imgPreview').style.display='none';
+  document.getElementById('imgPreview').src='';
+  document.querySelector('#imgUploadArea .upload-icon').style.display='block';
+  document.querySelector('#imgUploadArea .upload-text').style.display='block';
+  openModal('productModal');
+};
+
+function openEditProduct(id) {
+  if (!isAdmin) return;
+  const p = products.find(x=>x.id===id);
+  if (!p) return;
+  editingId = id;
+  pendingImgBase64 = p.image || null;
+  document.getElementById('productModalTitle').textContent = 'Termék szerkesztése';
+  document.getElementById('fName').value = p.name || '';
+  document.getElementById('fDesc').value = p.desc || '';
+  document.getElementById('fCat').value = p.category || '';
+  document.getElementById('fDate').value = p.date || '';
+  document.getElementById('fNote').value = p.note || '';
+  document.getElementById('fUploader').value = p.uploader || '';
+  const orig = p.priceHistory && p.priceHistory.length ? p.priceHistory[0] : {};
+  document.getElementById('fPrice').value = orig.amount || p.price || '';
+  document.getElementById('fCurr').value = orig.currency || p.currency || '';
+  document.getElementById('fPriceNote').value = orig.note || p.priceNote || '';
+  setRating(p.rating || 0);
+  // Handle both old (string) and new (array) format,
+  // also collect countries/shops from all price history entries
+  const countries = new Set(Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []));
+  const shops = new Set(Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []));
+  (p.priceHistory||[]).forEach(ph => {
+    if (ph.country) countries.add(ph.country);
+    if (ph.shop) shops.add(ph.shop);
+  });
+  setTagInputs([...countries], [...shops]);
+  if (p.image) {
+    document.getElementById('imgPreview').src = p.image;
+    document.getElementById('imgPreview').style.display='block';
+    document.querySelector('#imgUploadArea .upload-icon').style.display='none';
+    document.querySelector('#imgUploadArea .upload-text').style.display='none';
+  } else {
+    document.getElementById('imgPreview').style.display='none';
+    document.querySelector('#imgUploadArea .upload-icon').style.display='block';
+    document.querySelector('#imgUploadArea .upload-text').style.display='block';
+  }
+  openModal('productModal');
+}
+
+function compressImage(file, maxWidth, maxHeight, quality) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxWidth || h > maxHeight) {
+          const ratio = Math.min(maxWidth / w, maxHeight / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleImgUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  // Show loading state
+  document.querySelector('#imgUploadArea .upload-text').textContent = 'Tömörítés...';
+  compressImage(file, 800, 800, 0.72).then(compressed => {
+    pendingImgBase64 = compressed;
+    document.getElementById('imgPreview').src = compressed;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.querySelector('#imgUploadArea .upload-icon').style.display = 'none';
+    document.querySelector('#imgUploadArea .upload-text').style.display = 'none';
+  });
+}
+
+async function saveProduct() {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { showToast('A termék neve kötelező!', 'error'); return; }
+
+  // Flush any pending tag input values
+  const ci = document.getElementById('fCountryInput').value.trim();
+  const si = document.getElementById('fShopInput').value.trim();
+  if (ci) addTag('country', ci);
+  if (si) addTag('shop', si);
+
+  const price = parseFloat(document.getElementById('fPrice').value) || 0;
+  const curr = document.getElementById('fCurr').value;
+  const priceNote = document.getElementById('fPriceNote').value.trim();
+  const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
+
+  const priceEntry = {amount: price, currency: curr, note: priceNote, date};
+
+  if (editingId) {
+    const idx = products.findIndex(x=>x.id===editingId);
+    if (idx > -1) {
+      const existing = products[idx];
+      let ph = existing.priceHistory || [];
+      if (ph.length === 0) ph = [{...priceEntry}];
+      else ph[0] = {...ph[0], amount: price, currency: curr, note: priceNote};
+      products[idx] = {
+        ...existing,
+        name, desc: document.getElementById('fDesc').value.trim(),
+        category: document.getElementById('fCat').value,
+        countries: [...fCountries],
+        shops: [...fShops],
+        country: fCountries[0] || '',
+        shop: fShops[0] || '',
+        date, note: document.getElementById('fNote').value.trim(),
+        uploader: document.getElementById('fUploader').value.trim(),
+        price: ph[0].amount, currency: ph[0].currency, priceNote: ph[0].note,
+        priceHistory: ph,
+        rating: currentRating,
+        image: pendingImgBase64 || existing.image,
+      };
+    }
+    showToast('Termék frissítve! ✓', 'success');
+  } else {
+    const newProduct = {
+      id: 'p' + Date.now(),
+      name, desc: document.getElementById('fDesc').value.trim(),
+      category: document.getElementById('fCat').value,
+      countries: [...fCountries],
+      shops: [...fShops],
+      country: fCountries[0] || '',
+      shop: fShops[0] || '',
+      date, note: document.getElementById('fNote').value.trim(),
+      uploader: document.getElementById('fUploader').value.trim(),
+      price, currency: curr, priceNote,
+      priceHistory: [{...priceEntry}],
+      rating: currentRating,
+      image: pendingImgBase64 || null,
+      reviews: [],
+      createdAt: new Date().toISOString()
+    };
+    products.unshift(newProduct);
+    showToast('Termék hozzáadva! ✓', 'success');
+  }
+
+  await saveData();
+  renderAll();
+  closeModal('productModal');
+}
+
+function deleteProduct(id) {
+  if (!isAdmin) return;
+  if (!confirm('Biztosan törlöd ezt a terméket?')) return;
+  products = products.filter(p=>p.id!==id);
+  saveData();
+  filterProducts();
+  populateDataLists();
+  showToast('Termék törölve.', 'success');
+}
+
+// ══════════════════════════════════════════════
+// COUNTRY CODE MAP
+// ══════════════════════════════════════════════
+const COUNTRY_CODES = {
+  'Magyarország':'HU','Ausztria':'AT','Németország':'DE','Olaszország':'IT',
+  'Franciaország':'FR','Spanyolország':'ES','Csehország':'CZ','Szlovákia':'SK',
+  'Lengyelország':'PL','Horvátország':'HR','Szerbia':'RS','Románia':'RO',
+  'Bulgária':'BG','Görögország':'GR','Törökország':'TR','Egyesült Királyság':'GB',
+  'Hollandia':'NL','Belgium':'BE','Svájc':'CH','Svédország':'SE',
+  'Norvégia':'NO','Dánia':'DK','Finnország':'FI','Portugália':'PT',
+  'Egyesült Államok':'US','Japán':'JP','Kína':'CN','Thaiföld':'TH',
+  'Vietnam':'VN','India':'IN','Észtország':'EE','Lettország':'LV',
+  'Litvánia':'LT','Szlovénia':'SI','Albánia':'AL','Montenegró':'ME',
+};
+function countryShort(name) {
+  if (!name) return '';
+  return COUNTRY_CODES[name] || name;
+}
+
+// ══════════════════════════════════════════════
+// PRICE UPDATE
+// ══════════════════════════════════════════════
+function openPriceUpdate(id) {
+  priceUpdateId = id;
+  const p = products.find(x=>x.id===id);
+  if (!p) return;
+  const latest = getLatestPrice(p);
+  document.getElementById('pNewPrice').value = '';
+  document.getElementById('pNewCurr').value = latest.currency || '';
+  document.getElementById('pPriceNote').value = '';
+  document.getElementById('pNewCountry').value = '';
+  document.getElementById('pNewShop').value = '';
+  document.getElementById('pNewDate').value = new Date().toISOString().split('T')[0];
+  openModal('priceModal');
+}
+
+async function savePriceUpdate() {
+  const p = products.find(x=>x.id===priceUpdateId);
+  if (!p) return;
+  const amount = parseFloat(document.getElementById('pNewPrice').value);
+  if (isNaN(amount)) { showToast('Add meg az új árat!', 'error'); return; }
+  const currency = document.getElementById('pNewCurr').value;
+  const note = document.getElementById('pPriceNote').value.trim();
+  const country = document.getElementById('pNewCountry').value.trim();
+  const shop = document.getElementById('pNewShop').value.trim();
+  const date = document.getElementById('pNewDate').value;
+  if (!p.priceHistory) p.priceHistory = [{amount: p.price, currency: p.currency, note: p.priceNote, date: p.date}];
+  p.priceHistory.push({amount, currency, note, country, shop, date});
+  p.price = amount; p.currency = currency;
+  await saveData();
+  closeModal('priceModal');
+  filterProducts();
+  showToast('Ár frissítve! 💰', 'success');
+}
+
+// ══════════════════════════════════════════════
+// VIEW PRODUCT MODAL
+// ══════════════════════════════════════════════
+function openViewProduct(id) {
+  const p = products.find(x=>x.id===id);
+  if (!p) return;
+  reviewProductId = id;
+  document.getElementById('viewModalTitle').textContent = p.name;
+  const avgRating = getAvgRating(p);
+  const reviews = [...(p.reviews||[])];
+  if (p.rating > 0) reviews.unshift({name: p.uploader || 'Feltöltő', rating: p.rating, note: p.note, date: p.date});
+  const reviewsHtml = reviews.length ? reviews.map(r=>`
+    <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600;font-size:0.85rem">👤 ${esc(r.name||'Névtelen')}</span>
+        <span style="color:var(--star);font-size:0.85rem">${'★'.repeat(r.rating||0)}${'☆'.repeat(5-(r.rating||0))}</span>
+      </div>
+      ${r.note ? `<div style="font-size:0.8rem;color:var(--muted);margin-top:3px;font-style:italic">"${esc(r.note)}"</div>` : ''}
+      ${r.date ? `<div style="font-size:0.7rem;color:var(--border);margin-top:2px">${new Date(r.date).toLocaleDateString('hu-HU')}</div>` : ''}
+    </div>`).join('') : '<div style="color:var(--muted);font-size:0.82rem">Még nincs értékelés.</div>';
+
+  const latestPrice = getLatestPrice(p);
+  const pCountries = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
+  const pShops = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
+
+  // Collect all unique shops and countries
+  const allShops = new Set(pShops);
+  const allCountries = new Set(pCountries);
+  if (p.priceHistory) {
+    p.priceHistory.forEach(ph => {
+      if (ph.shop) allShops.add(ph.shop);
+      if (ph.country) allCountries.add(ph.country);
+    });
+  }
+  const locationPillsHtml =
+    [...allShops].map(s => `<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') +
+    [...allCountries].map(c => `<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
+
+  document.getElementById('viewModalBody').innerHTML = `
+    ${p.image ? `<img src="${p.image}" style="width:100%;border-radius:10px;max-height:220px;object-fit:cover;margin-bottom:8px;cursor:zoom-in" onclick="openLightbox('${p.image}',event)">` : ''}
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+      ${p.category ? `<span class="meta-pill">📂 ${esc(p.category)}</span>` : ''}
+      ${locationPillsHtml}
+      ${p.date ? `<span class="meta-pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}
+    </div>
+    ${p.desc ? `<div style="font-size:0.88rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
+    <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:800;margin-bottom:4px">
+      ${latestPrice.amount ? latestPrice.amount + ' ' + (latestPrice.currency||'') : '–'}
+      ${getPriceChangeHtml(p)}
+    </div>
+    ${p.priceHistory && p.priceHistory.length > 1 ? `<div class="price-history" style="margin-bottom:8px">
+      <div class="price-history-title">Ártörténet</div>
+      ${[...p.priceHistory].sort((a,b)=>(b.date||'')>(a.date||'')?1:-1).map(ph=>`<div class="ph-item">
+        <span class="ph-date">${ph.date ? new Date(ph.date).toLocaleDateString('hu-HU') : '–'}</span>
+        <span class="ph-val">${ph.amount} ${ph.currency||''}</span>
+        <span class="ph-loc">${[ph.country ? esc(countryShort(ph.country)) : '', ph.shop ? esc(ph.shop) : ''].filter(Boolean).join(' · ')}</span>
+        <span class="ph-note">${ph.note ? esc(ph.note) : ''}</span>
+      </div>`).join('')}
+    </div>` : ''}
+    <div style="margin:10px 0 5px;font-weight:600;font-size:0.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px">Értékelések (${reviews.length})</div>
+    ${avgRating > 0 ? `<div style="font-size:1rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avgRating))}${'☆'.repeat(5-Math.round(avgRating))} ${avgRating.toFixed(1)}</div>` : ''}
+    ${reviewsHtml}
+  `;
+  document.getElementById('viewModalFooter').innerHTML = `
+    <button class="btn btn-primary" onclick="closeModal('viewModal');openReviewModal('${id}')">✍ Értékelés</button>
+    <button class="btn btn-primary" onclick="closeModal('viewModal');openPriceUpdate('${id}')">💰 Ár frissítése</button>
+    <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('viewModal')">Bezár</button>
+  `;
+  openModal('viewModal');
+}
+
+// ══════════════════════════════════════════════
+// REVIEWS
+// ══════════════════════════════════════════════
+function openReviewModal(id) {
+  reviewProductId = id;
+  document.getElementById('rName').value = '';
+  document.getElementById('rNote').value = '';
+  setReviewRating(0);
+  openModal('reviewModal');
+}
+
+async function saveReview() {
+  const name = document.getElementById('rName').value.trim();
+  const note = document.getElementById('rNote').value.trim();
+  const rating = currentReviewRating;
+  if (!name) { showToast('Írd be a neved!', 'error'); return; }
+  const p = products.find(x=>x.id===reviewProductId);
+  if (!p) return;
+  if (!p.reviews) p.reviews = [];
+  p.reviews.push({name, note, rating, date: new Date().toISOString().split('T')[0], id: 'r'+Date.now()});
+  await saveData();
+  closeModal('reviewModal');
+  filterProducts();
+  showToast('Értékelés hozzáadva! ✓', 'success');
+}
+
+// ══════════════════════════════════════════════
+// CATEGORIES & CURRENCIES ADMIN
+// ══════════════════════════════════════════════
+document.getElementById('btnManageCats').onclick = () => {
+  renderCatList();
+  openModal('catModal');
+};
+document.getElementById('btnManageCurrencies').onclick = () => {
+  renderCurrList();
+  openModal('currModal');
+};
+document.getElementById('btnManageCountries').onclick = () => {
+  renderCountriesList();
+  openModal('countriesModal');
+};
+document.getElementById('btnManageShops').onclick = () => {
+  renderShopsList();
+  openModal('shopsModal');
+};
+
+// ══════════════════════════════════════════════
+// DRAG & DROP REORDER ENGINE
+// ══════════════════════════════════════════════
+let dragSrc = null;
+
+function makeDraggable(container, onReorder) {
+  container.querySelectorAll('.cat-item[draggable]').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      container.querySelectorAll('.cat-item').forEach(i => i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (item !== dragSrc) {
+        container.querySelectorAll('.cat-item').forEach(i => i.classList.remove('drag-over'));
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === item) return;
+      item.classList.remove('drag-over');
+      // reorder in DOM
+      const items = [...container.querySelectorAll('.cat-item[draggable]')];
+      const srcIdx = items.indexOf(dragSrc);
+      const tgtIdx = items.indexOf(item);
+      if (srcIdx < tgtIdx) item.after(dragSrc);
+      else item.before(dragSrc);
+      // extract new order from DOM and save
+      onReorder([...container.querySelectorAll('.cat-item[draggable]')].map(el => el.dataset.value));
+    });
+  });
+}
+
+function renderCatList() {
+  const el = document.getElementById('catList');
+  el.innerHTML = categories.map(c=>`
+    <div class="cat-item" draggable="true" data-value="${esc(c)}">
+      <span class="drag-handle" title="Húzd át az átrendezéshez">⠿</span>
+      <span class="cat-item-name">📂 ${esc(c)}</span>
+      <button class="btn btn-sm btn-danger" onclick="removeCategory('${esc(c)}')">✕</button>
+    </div>`).join('');
+  makeDraggable(el, async newOrder => {
+    categories = newOrder;
+    await saveData();
+    populateCategorySelects();
+  });
+}
+
+function renderShopsList() {
+  const shops = getUniqueShops();
+  const el = document.getElementById('shopsList');
+  if (!shops.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Még nincs rögzített bolt.</div>'; return; }
+  el.innerHTML = shops.map(s => `
+    <div class="cat-item" draggable="true" data-value="${esc(s)}">
+      <span class="drag-handle" title="Húzd át az átrendezéshez">⠿</span>
+      <span class="cat-item-name">🏪 ${esc(s)}</span>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-sm btn-icon" onclick="startEditShop('${esc(s)}')" title="Szerkesztés">✏️</button>
+      </div>
+    </div>`).join('');
+  makeDraggable(el, async newOrder => {
+    shopOrder = newOrder;
+    await saveData();
+    populateDataLists();
+    updateFilterOptions();
+  });
+}
+
+async function addCategory() {
+  const v = document.getElementById('newCatInput').value.trim();
+  if (!v || categories.includes(v)) return;
+  categories.push(v);
+  document.getElementById('newCatInput').value = '';
+  await saveData();
+  renderCatList();
+  populateCategorySelects();
+  showToast('Kategória hozzáadva!', 'success');
+}
+
+async function removeCategory(c) {
+  categories = categories.filter(x=>x!==c);
+  await saveData();
+  renderCatList();
+  populateCategorySelects();
+}
+
+function renderCurrList() {
+  document.getElementById('currList').innerHTML = currencies.map(c=>`
+    <div class="cat-item">
+      <span class="cat-item-name">💱 <strong>${esc(c.code)}</strong> – ${esc(c.name)}</span>
+      <button class="btn btn-sm btn-danger" onclick="removeCurrency('${esc(c.code)}')">✕</button>
+    </div>`).join('');
+}
+
+async function addCurrency() {
+  const code = document.getElementById('newCurrCode').value.trim().toUpperCase();
+  const name = document.getElementById('newCurrName').value.trim();
+  if (!code || !name) { showToast('Add meg a kódot és a nevet!', 'error'); return; }
+  if (currencies.some(c=>c.code===code)) { showToast('Ez a pénznem már létezik!', 'error'); return; }
+  currencies.push({code, name});
+  document.getElementById('newCurrCode').value = '';
+  document.getElementById('newCurrName').value = '';
+  await saveData();
+  renderCurrList();
+  populateCurrencySelects();
+  showToast('Pénznem hozzáadva!', 'success');
+}
+
+async function removeCurrency(code) {
+  currencies = currencies.filter(c=>c.code!==code);
+  await saveData();
+  renderCurrList();
+  populateCurrencySelects();
+}
+
+// ══════════════════════════════════════════════
+// COUNTRIES & SHOPS ADMIN
+// ══════════════════════════════════════════════
+function getUniqueCountries() {
+  return [...new Set(products.flatMap(p => {
+    const fromFields = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
+    const fromHistory = (p.priceHistory||[]).map(ph => ph.country).filter(Boolean);
+    return [...fromFields, ...fromHistory];
+  }))].sort();
+}
+function getUniqueShops() {
+  const all = [...new Set(products.flatMap(p => {
+    const fromFields = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
+    const fromHistory = (p.priceHistory||[]).map(ph => ph.shop).filter(Boolean);
+    return [...fromFields, ...fromHistory];
+  }))];
+  const ordered = shopOrder.filter(s => all.includes(s));
+  const rest = all.filter(s => !shopOrder.includes(s)).sort();
+  return [...ordered, ...rest];
+}
+
+function populateDataLists() {
+  const countries = getUniqueCountries();
+  const shops = getUniqueShops();
+  document.getElementById('countryList').innerHTML = countries.map(c=>`<option value="${esc(c)}">`).join('');
+  document.getElementById('shopList').innerHTML = shops.map(s=>`<option value="${esc(s)}">`).join('');
+}
+
+function renderCountriesList() {
+  const countries = getUniqueCountries();
+  const el = document.getElementById('countriesList');
+  if (!countries.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Még nincs rögzített ország.</div>'; return; }
+  el.innerHTML = countries.map(c => `
+    <div class="cat-item" id="ci-c-${btoa(encodeURIComponent(c)).replace(/=/g,'')}">
+      <span class="cat-item-name">🌍 <span class="editable-val">${esc(c)}</span></span>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-sm btn-icon" onclick="startEditCountry('${esc(c)}')" title="Szerkesztés">✏️</button>
+      </div>
+    </div>`).join('');
+}
+
+function startEditCountry(oldVal) {
+  const newVal = prompt('Ország átnevezése:', oldVal);
+  if (!newVal || newVal.trim() === oldVal) return;
+  const trimmed = newVal.trim();
+  products.forEach(p => {
+    if (p.country === oldVal) p.country = trimmed;
+    if (Array.isArray(p.countries)) p.countries = p.countries.map(c => c === oldVal ? trimmed : c);
+    if (Array.isArray(p.priceHistory)) p.priceHistory.forEach(ph => { if (ph.country === oldVal) ph.country = trimmed; });
+  });
+  saveData();
+  renderCountriesList();
+  filterProducts();
+  populateDataLists();
+  showToast('Ország átnevezve: ' + trimmed, 'success');
+}
+
+function startEditShop(oldVal) {
+  const newVal = prompt('Bolt átnevezése:', oldVal);
+  if (!newVal || newVal.trim() === oldVal) return;
+  const trimmed = newVal.trim();
+  products.forEach(p => {
+    if (p.shop === oldVal) p.shop = trimmed;
+    if (Array.isArray(p.shops)) p.shops = p.shops.map(s => s === oldVal ? trimmed : s);
+    if (Array.isArray(p.priceHistory)) p.priceHistory.forEach(ph => { if (ph.shop === oldVal) ph.shop = trimmed; });
+  });
+  shopOrder = shopOrder.map(s => s === oldVal ? trimmed : s);
+  saveData();
+  renderShopsList();
+  filterProducts();
+  populateDataLists();
+  showToast('Bolt átnevezve: ' + trimmed, 'success');
+}
+
+// ══════════════════════════════════════════════
+// STAR RATING
+// ══════════════════════════════════════════════
+const ratingLabels = ['','Gyenge','Megfelelő','Jó','Nagyon jó','Kiváló'];
+function setRating(n) {
+  currentRating = n;
+  updateStarDisplay('#starPicker', n);
+  const lbl = document.getElementById('ratingLabel');
+  if (lbl) lbl.textContent = n > 0 ? ratingLabels[n] + ' (' + n + '/5)' : 'Koppints egy csillagra';
+}
+function setReviewRating(n) {
+  currentReviewRating = n;
+  updateStarDisplay('#reviewStarPicker', n);
+  const lbl = document.getElementById('reviewRatingLabel');
+  if (lbl) lbl.textContent = n > 0 ? ratingLabels[n] + ' (' + n + '/5)' : 'Koppints egy csillagra';
+}
+function updateStarDisplay(selector, n) {
+  const btns = document.querySelectorAll(selector + ' .star-btn');
+  btns.forEach((b, i) => {
+    b.classList.toggle('active', i < n);
+  });
+  // Hover preview
+  btns.forEach((b, i) => {
+    b.onmouseenter = () => btns.forEach((bb, j) => bb.style.color = j <= i ? 'var(--star)' : '#d0d0d0');
+    b.onmouseleave = () => btns.forEach((bb, j) => bb.style.color = '');
+  });
+}
+
+// ══════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  document.body.style.overflow = '';
+}
+function isFormDirty() {
+  return !!(
+    document.getElementById('fName').value.trim() ||
+    document.getElementById('fDesc').value.trim() ||
+    document.getElementById('fPrice').value.trim() ||
+    document.getElementById('fNote').value.trim() ||
+    fCountries.length || fShops.length ||
+    pendingImgBase64
+  );
+}
+// Close on overlay click — guard product form if dirty
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click', e=>{
+    if (e.target !== o) return;
+    if (o.id === 'productModal' && isFormDirty()) {
+      if (!confirm('Biztosan ki akarsz lépni? A kitöltött adatok elvesznek.')) return;
+    }
+    closeModal(o.id);
+  });
+});
+
+// ══════════════════════════════════════════════
+// CLEAR FILTERS
+// ══════════════════════════════════════════════
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterCat').value = '';
+  document.getElementById('filterCountry').value = '';
+  document.getElementById('filterShop').value = '';
+  document.getElementById('filterCurr').value = '';
+  filterProducts();
+}
+function updateClearBtn() {
+  const hasFilter = !!(
+    document.getElementById('searchInput').value ||
+    document.getElementById('filterCat').value ||
+    document.getElementById('filterCountry').value ||
+    document.getElementById('filterShop').value ||
+    document.getElementById('filterCurr').value
+  );
+  document.getElementById('btnClearFilters').style.display = hasFilter ? 'inline-flex' : 'none';
+}
+
+// ══════════════════════════════════════════════
+// CSV EXPORT
+// ══════════════════════════════════════════════
+function exportCSV() {
+  const headers = ['Név','Leírás','Kategória','Ország','Bolt','Dátum','Ár','Pénznem','Értékelés','Megjegyzés','Feltöltő'];
+  const rows = products.map(p => {
+    const latest = getLatestPrice(p);
+    const pCountries = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
+    const pShops = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
+    return [
+      p.name, p.desc||'', p.category||'',
+      pCountries.join(', '), pShops.join(', '),
+      p.date||'', latest.amount||'', latest.currency||'',
+      getAvgRating(p).toFixed(1), p.note||'', p.uploader||''
+    ].map(v => '"' + String(v).replace(/"/g,'""') + '"');
+  });
+  const csv = [headers.map(h=>'"'+h+'"').join(','), ...rows.map(r=>r.join(','))].join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'kulfoldi-vasarlasok.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportálva! ✓', 'success');
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════════
+function openLightbox(src, e) {
+  if (e) e.stopPropagation();
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.getElementById('lightboxImg').src = '';
+  // restore overflow only if no modal is open
+  if (!document.querySelector('.overlay.active')) {
+    document.body.style.overflow = '';
+  }
+}
+
+// Escape key: close topmost open layer
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  // 1. lightbox first
+  if (document.getElementById('lightbox').classList.contains('active')) {
+    closeLightbox(); return;
+  }
+  // 2. find topmost active overlay (last in DOM order)
+  const active = [...document.querySelectorAll('.overlay.active')];
+  if (!active.length) return;
+  const top = active[active.length - 1];
+  // productModal: guard if dirty
+  if (top.id === 'productModal' && isFormDirty()) {
+    if (!confirm('Biztosan ki akarsz lépni? A kitöltött adatok elvesznek.')) return;
+  }
+  closeModal(top.id);
+});
+
+// ══════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
