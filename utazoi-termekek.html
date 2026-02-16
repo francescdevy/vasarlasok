@@ -844,7 +844,7 @@
 
   // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
   const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
-  
+
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
@@ -1025,7 +1025,7 @@ async function saveData() {
       for (let i = 0; i < img.length; i += IMG_PART_SIZE) {
         parts.push(img.slice(i, i + IMG_PART_SIZE));
       }
-      setLoading(true, `Kép feltöltése...`);
+
       await sheetsPost({
         action: 'setImg',
         key: 'img_' + p.id,
