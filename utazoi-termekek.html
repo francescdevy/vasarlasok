@@ -840,10 +840,10 @@
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-  const ADMIN_PASSWORD = 'Billa789';
+const ADMIN_PASSWORD = 'Billa789';
 
-  // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
-  const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
+// ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
+const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
 
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
@@ -885,52 +885,6 @@ async function sheetsWrite(url, body) {
   } catch(e) {
     // Ignore CORS/network errors - request may still have arrived
   }
-}
-
-async function sheetsPost(body) {
-  if (!SHEETS_API_URL) return null;
-  
-  // setImg already has parts - send directly without re-chunking
-  if (body.action === 'setImg') {
-    await sheetsWrite(SHEETS_API_URL, body);
-    return {ok: true};
-  }
-
-  const json = JSON.stringify(body);
-  const b64 = btoa(unescape(encodeURIComponent(json)));
-  const chunkSize = 6000;
-
-  if (b64.length <= chunkSize) {
-    await sheetsWrite(SHEETS_API_URL, body);
-    return {ok: true};
-  }
-
-  // Chunked upload for large payloads
-  const totalChunks = Math.ceil(b64.length / chunkSize);
-  const uploadId = Date.now();
-  for (let i = 0; i < totalChunks; i++) {
-    const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
-    setLoading(true, `Kép feltöltése... ${Math.round((i+1)/totalChunks*100)}%`);
-    await sheetsWrite(SHEETS_API_URL, {method: 'chunk', id: uploadId, i, total: totalChunks, data: chunk});
-    await new Promise(r => setTimeout(r, 80));
-  }
-
-  // Commit
-  setLoading(true, 'Kép mentése...');
-  await sheetsWrite(SHEETS_API_URL, {method: 'chunkcommit', id: uploadId});
-
-  // Poll via normal GET fetch
-  await new Promise(r => setTimeout(r, 2000));
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      const pollUrl = `${SHEETS_API_URL}?action=get&key=__commit_${uploadId}`;
-      const res = await fetch(pollUrl, {redirect: 'follow'});
-      const data = await res.json();
-      if (data && data.value) return {ok: true};
-    } catch(e) {}
-    await new Promise(r => setTimeout(r, 1000));
-  }
-  return {ok: true};
 }
 
 async function deleteImageFromSheets(id) {
@@ -1013,7 +967,7 @@ async function saveData() {
 
     // Save products with __img__ placeholder (never send base64 in the main payload)
     const productsNoImg = products.map(p => ({...p, image: p.image ? '__img__' : null}));
-    await sheetsPost({
+    await sheetsWrite(SHEETS_API_URL, {
       action: 'setAll',
       products:   JSON.stringify(productsNoImg),
       categories: JSON.stringify(categories),
@@ -1027,7 +981,7 @@ async function saveData() {
     // Upload only new images (one at a time, single cell per image)
     for (const p of newImgProducts) {
       const img = imgBackup.get(p.id);
-      await sheetsPost({
+      await sheetsWrite(SHEETS_API_URL, {
         action: 'set',
         key: 'img_' + p.id,
         value: img
@@ -1387,7 +1341,7 @@ async function saveSheetsUrl() {
       localStorage.setItem('sheetsApiUrl', url);
       // Ha még nincs adat a Sheets-ben, töltse fel a lokálisat
       if (!data.products && products.length > 0) {
-        await sheetsPost({
+        await sheetsWrite(SHEETS_API_URL, {
           action: 'setAll',
           products: JSON.stringify(products),
           categories: JSON.stringify(categories),
