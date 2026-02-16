@@ -844,7 +844,7 @@
 
   // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
   const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
-
+  
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
@@ -1014,12 +1014,16 @@ async function saveData() {
       shopOrder:  JSON.stringify(shopOrder)
     });
 
+    // Save original image data before upload (filter returns references, not copies)
+    const imgBackup = new Map(newImgProducts.map(p => [p.id, p.image]));
+
     // Upload only new images (one at a time, split into 45k char parts)
     for (const p of newImgProducts) {
+      const img = imgBackup.get(p.id);
       const IMG_PART_SIZE = 45000;
       const parts = [];
-      for (let i = 0; i < p.image.length; i += IMG_PART_SIZE) {
-        parts.push(p.image.slice(i, i + IMG_PART_SIZE));
+      for (let i = 0; i < img.length; i += IMG_PART_SIZE) {
+        parts.push(img.slice(i, i + IMG_PART_SIZE));
       }
       setLoading(true, `Kép feltöltése...`);
       await sheetsPost({
@@ -1031,14 +1035,11 @@ async function saveData() {
       const idx = products.findIndex(x => x.id === p.id);
       if (idx > -1) products[idx].image = '__img__';
     }
-    // Persist the placeholder swap to localStorage
+    // Restore images from backup so they show immediately in UI
     if (newImgProducts.length > 0) {
-      // Restore images in memory from the originals (don't fetch from sheets - they're already here)
-      for (const p of newImgProducts) {
-        const idx = products.findIndex(x => x.id === p.id);
-        if (idx > -1) {
-          products[idx].image = p.image; // p.image still has the original base64
-        }
+      for (const [id, img] of imgBackup) {
+        const idx = products.findIndex(x => x.id === id);
+        if (idx > -1) products[idx].image = img;
       }
       localStorage.setItem('products', JSON.stringify(products));
       renderAll();
