@@ -1502,17 +1502,30 @@ function compressImage(file, maxWidth, maxHeight, quality) {
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
+        const compress = (w, h, q) => {
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          return canvas.toDataURL('image/jpeg', q);
+        };
         let w = img.width, h = img.height;
         if (w > maxWidth || h > maxHeight) {
           const ratio = Math.min(maxWidth / w, maxHeight / h);
           w = Math.round(w * ratio);
           h = Math.round(h * ratio);
         }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        // Iteratively reduce until under 35000 chars (Google Sheets 50k cell limit)
+        let result = compress(w, h, quality);
+        let attempts = 0;
+        while (result.length > 35000 && attempts < 8) {
+          quality = Math.max(0.2, quality - 0.1);
+          w = Math.round(w * 0.85);
+          h = Math.round(h * 0.85);
+          result = compress(w, h, quality);
+          attempts++;
+        }
+        resolve(result);
       };
       img.src = ev.target.result;
     };
@@ -1523,9 +1536,8 @@ function compressImage(file, maxWidth, maxHeight, quality) {
 function handleImgUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
-  // Show loading state
   document.querySelector('#imgUploadArea .upload-text').textContent = 'Tömörítés...';
-  compressImage(file, 800, 800, 0.72).then(compressed => {
+  compressImage(file, 500, 500, 0.65).then(compressed => {
     pendingImgBase64 = compressed;
     document.getElementById('imgPreview').src = compressed;
     document.getElementById('imgPreview').style.display = 'block';
