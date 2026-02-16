@@ -840,10 +840,10 @@
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-const ADMIN_PASSWORD = 'Billa789';
+  const ADMIN_PASSWORD = 'Billa789';
 
   // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
-const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
+  const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
 
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
@@ -868,7 +868,7 @@ let fShops = [];
 async function sheetsGet(action, key) {
   if (!SHEETS_API_URL) return null;
   const url = `${SHEETS_API_URL}?action=${action}${key ? '&key='+key : ''}`;
-  const res = await fetch(url);
+  const res = await fetch(url, {redirect: 'follow'});
   return await res.json();
 }
 
@@ -879,7 +879,7 @@ async function sheetsPost(body) {
   const chunkSize = 4000;
   if (b64.length <= chunkSize) {
     const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-    const res = await fetch(url);
+    const res = await fetch(url, {redirect: 'follow'});
     return await res.json();
   }
   // Chunked for large payloads (images)
@@ -888,12 +888,12 @@ async function sheetsPost(body) {
   for (let i = 0; i < totalChunks; i++) {
     const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
     const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
-    const res = await fetch(url);
+    const res = await fetch(url, {redirect: 'follow'});
     const result = await res.json();
     if (!result.ok) throw new Error('Chunk ' + i + ' failed');
   }
   const url = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
-  const res = await fetch(url);
+  const res = await fetch(url, {redirect: 'follow'});
   return await res.json();
 }
 
