@@ -874,12 +874,17 @@ async function sheetsGet(action, key) {
 
 async function sheetsPost(body) {
   if (!SHEETS_API_URL) return null;
-  // Use GET with base64-encoded payload — avoids CORS preflight and mobile redirect issues
   const json = JSON.stringify(body);
   const b64 = btoa(unescape(encodeURIComponent(json)));
-  // Split into chunks if too large (URL limit ~7000 chars safe)
-  // For large payloads use chunked approach
+  console.log('b64 hossza:', b64.length);
   const chunkSize = 5000;
+  if (b64.length <= chunkSize) {
+    console.log('single GET');
+    const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
+    const res = await fetch(url);
+    return await res.json();
+  }
+  console.log('chunked, darabok:', Math.ceil(b64.length / chunkSize));
   if (b64.length <= chunkSize) {
     const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
     const res = await fetch(url);
