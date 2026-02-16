@@ -842,7 +842,7 @@
 // ══════════════════════════════════════════════
 const ADMIN_PASSWORD = 'Billa789';
 
-// ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
+  // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
 const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
 
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
@@ -874,25 +874,27 @@ async function sheetsGet(action, key) {
 
 async function sheetsPost(body) {
   if (!SHEETS_API_URL) return null;
-  try {
-    const res = await fetch(SHEETS_API_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(body)
-    });
+  const json = JSON.stringify(body);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const chunkSize = 4000;
+  if (b64.length <= chunkSize) {
+    const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
+    const res = await fetch(url);
     return await res.json();
-  } catch(e) {
-    // Fallback: GET-based for browsers that block POST redirects (some iOS)
-    const json = JSON.stringify(body);
-    const b64 = btoa(unescape(encodeURIComponent(json)));
-    if (b64.length <= 7000) {
-      const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-      const res = await fetch(url);
-      return await res.json();
-    }
-    throw new Error('Adat túl nagy');
   }
+  // Chunked for large payloads (images)
+  const totalChunks = Math.ceil(b64.length / chunkSize);
+  const uploadId = Date.now();
+  for (let i = 0; i < totalChunks; i++) {
+    const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
+    const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
+    const res = await fetch(url);
+    const result = await res.json();
+    if (!result.ok) throw new Error('Chunk ' + i + ' failed');
+  }
+  const url = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
+  const res = await fetch(url);
+  return await res.json();
 }
 
 // ══════════════════════════════════════════════
