@@ -844,6 +844,7 @@ const ADMIN_PASSWORD = 'Billa789';
 
 // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
 const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
+
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
@@ -917,7 +918,34 @@ async function loadData() {
   try {
     const data = await sheetsGet('getAll');
     if (data && data.ok) {
-      if (data.products)   try { products   = JSON.parse(data.products);   } catch(e){}
+      if (data.products) {
+        try {
+          const sheetsProds = JSON.parse(data.products);
+          // Restore images: use localStorage image if available, else fetch from Sheets
+          const localMap = new Map();
+          try {
+            const lp = JSON.parse(localStorage.getItem('products') || '[]');
+            lp.forEach(p => { if (p.image && p.image !== '__img__') localMap.set(p.id, p.image); });
+          } catch(e){}
+          products = sheetsProds.map(p => ({
+            ...p,
+            image: p.image === '__img__' ? (localMap.get(p.id) || '__img__') : p.image
+          }));
+          // Fetch missing images from Sheets in background
+          products.forEach(async (p, i) => {
+            if (p.image === '__img__') {
+              try {
+                const imgData = await sheetsGet('get', 'img_' + p.id);
+                if (imgData && imgData.value) {
+                  products[i] = {...products[i], image: imgData.value};
+                  localStorage.setItem('products', JSON.stringify(products));
+                  renderAll();
+                }
+              } catch(e){}
+            }
+          });
+        } catch(e){}
+      }
       if (data.categories) try { categories = JSON.parse(data.categories); } catch(e){}
       if (data.currencies) try { currencies = JSON.parse(data.currencies); } catch(e){}
       if (data.shopOrder)  try { shopOrder  = JSON.parse(data.shopOrder);  } catch(e){}
@@ -937,13 +965,25 @@ async function saveData() {
   if (!SHEETS_API_URL) return;
   setLoading(true, 'Mentés...');
   try {
+    // Save products without images first
+    const productsNoImg = products.map(p => ({...p, image: p.image ? '__img__' : null}));
     await sheetsPost({
       action: 'setAll',
-      products:   JSON.stringify(products),
+      products:   JSON.stringify(productsNoImg),
       categories: JSON.stringify(categories),
       currencies: JSON.stringify(currencies),
       shopOrder:  JSON.stringify(shopOrder)
     });
+    // Save images separately, one by one
+    for (const p of products) {
+      if (p.image && p.image !== '__img__') {
+        await sheetsPost({
+          action: 'set',
+          key: 'img_' + p.id,
+          value: p.image
+        });
+      }
+    }
   } catch(e) {
     showToast('Mentési hiba – az adat lokálisan mentve', 'error');
   }
