@@ -1014,8 +1014,8 @@ async function saveData() {
       shopOrder:  JSON.stringify(shopOrder)
     });
 
-    // Save original image data before upload (filter returns references, not copies)
-    const imgBackup = new Map(newImgProducts.map(p => [p.id, p.image]));
+    // Save original image data AS VALUES before upload (not references!)
+    const imgBackup = new Map(newImgProducts.map(p => [p.id, (' ' + p.image).slice(1)]));
 
     // Upload only new images (one at a time, split into 45k char parts)
     for (const p of newImgProducts) {
