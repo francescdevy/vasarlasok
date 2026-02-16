@@ -1016,19 +1016,31 @@ async function saveData() {
 
     // Upload only new images (one at a time)
     for (const p of newImgProducts) {
-      setLoading(true, `Kép feltöltése...`);
       await sheetsPost({
         action: 'set',
         key: 'img_' + p.id,
         value: p.image
       });
-      // After successful upload, swap to placeholder in memory so it won't re-upload
+      // Swap to placeholder in memory so it won't re-upload next time
       const idx = products.findIndex(x => x.id === p.id);
       if (idx > -1) products[idx].image = '__img__';
     }
     // Persist the placeholder swap to localStorage
     if (newImgProducts.length > 0) {
       localStorage.setItem('products', JSON.stringify(products));
+      // Fetch images back from sheets so they appear in the UI
+      for (const p of newImgProducts) {
+        const idx = products.findIndex(x => x.id === p.id);
+        if (idx === -1) continue;
+        try {
+          const imgData = await sheetsGet('get', 'img_' + p.id);
+          if (imgData && imgData.value) {
+            products[idx].image = imgData.value;
+            localStorage.setItem('products', JSON.stringify(products));
+            renderAll();
+          }
+        } catch(e) {}
+      }
     }
   } catch(e) {
     showToast('Mentési hiba – az adat lokálisan mentve', 'error');
