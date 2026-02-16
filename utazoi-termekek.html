@@ -840,10 +840,10 @@
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-const ADMIN_PASSWORD = 'Billa789';
+  const ADMIN_PASSWORD = 'Billa789';
 
-// ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
-const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
+  // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
+  const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec'; 
 
 // Ha be van állítva az admin panelből, az felülírja — egyébként a beégetett URL-t használja
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
@@ -953,7 +953,7 @@ async function loadData() {
   setLoading(false);
 }
 
-async function saveData() {
+async function saveData(lightweight = false) {
   localStorage.setItem('products',   JSON.stringify(products));
   localStorage.setItem('categories', JSON.stringify(categories));
   localStorage.setItem('currencies', JSON.stringify(currencies));
@@ -962,6 +962,28 @@ async function saveData() {
   if (!SHEETS_API_URL) return;
   setLoading(true, 'Mentés...');
   try {
+    // Lightweight mode: only save categories/currencies/shopOrder (skip products)
+    if (lightweight) {
+      await sheetsWrite(SHEETS_API_URL, {
+        action: 'set',
+        key: 'categories',
+        value: JSON.stringify(categories)
+      });
+      await sheetsWrite(SHEETS_API_URL, {
+        action: 'set',
+        key: 'currencies',
+        value: JSON.stringify(currencies)
+      });
+      await sheetsWrite(SHEETS_API_URL, {
+        action: 'set',
+        key: 'shopOrder',
+        value: JSON.stringify(shopOrder)
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Full save with products and images
     // Identify products with NEW real images (base64, not yet uploaded)
     const newImgProducts = products.filter(p => p.image && p.image !== '__img__' && p.image.startsWith('data:'));
 
@@ -1839,7 +1861,7 @@ async function addCategory() {
   if (!v || categories.includes(v)) return;
   categories.push(v);
   document.getElementById('newCatInput').value = '';
-  await saveData();
+  await saveData(true); // lightweight - only categories
   renderCatList();
   populateCategorySelects();
   showToast('Kategória hozzáadva!', 'success');
@@ -1847,7 +1869,7 @@ async function addCategory() {
 
 async function removeCategory(c) {
   categories = categories.filter(x=>x!==c);
-  await saveData();
+  await saveData(true); // lightweight - only categories
   renderCatList();
   populateCategorySelects();
 }
@@ -1868,7 +1890,7 @@ async function addCurrency() {
   currencies.push({code, name});
   document.getElementById('newCurrCode').value = '';
   document.getElementById('newCurrName').value = '';
-  await saveData();
+  await saveData(true);
   renderCurrList();
   populateCurrencySelects();
   showToast('Pénznem hozzáadva!', 'success');
@@ -1876,7 +1898,7 @@ async function addCurrency() {
 
 async function removeCurrency(code) {
   currencies = currencies.filter(c=>c.code!==code);
-  await saveData();
+  await saveData(true);
   renderCurrList();
   populateCurrencySelects();
 }
