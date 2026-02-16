@@ -889,6 +889,13 @@ async function sheetsWrite(url, body) {
 
 async function sheetsPost(body) {
   if (!SHEETS_API_URL) return null;
+  
+  // setImg already has parts - send directly without re-chunking
+  if (body.action === 'setImg') {
+    await sheetsWrite(SHEETS_API_URL, body);
+    return {ok: true};
+  }
+
   const json = JSON.stringify(body);
   const b64 = btoa(unescape(encodeURIComponent(json)));
   const chunkSize = 6000;
@@ -898,7 +905,7 @@ async function sheetsPost(body) {
     return {ok: true};
   }
 
-  // Chunked upload for large payloads (images)
+  // Chunked upload for large payloads
   const totalChunks = Math.ceil(b64.length / chunkSize);
   const uploadId = Date.now();
   for (let i = 0; i < totalChunks; i++) {
@@ -912,7 +919,7 @@ async function sheetsPost(body) {
   setLoading(true, 'Kép mentése...');
   await sheetsWrite(SHEETS_API_URL, {method: 'chunkcommit', id: uploadId});
 
-  // Poll via normal GET fetch (reads always have CORS headers)
+  // Poll via normal GET fetch
   await new Promise(r => setTimeout(r, 2000));
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
@@ -1014,8 +1021,8 @@ async function saveData() {
       shopOrder:  JSON.stringify(shopOrder)
     });
 
-    // Save original image data AS VALUES before upload (not references!)
-    const imgBackup = new Map(newImgProducts.map(p => [p.id, (' ' + p.image).slice(1)]));
+    // Save original image data AS VALUES before upload
+    const imgBackup = new Map(newImgProducts.map(p => [p.id, String(p.image)]));
 
     // Upload only new images (one at a time, split into 45k char parts)
     for (const p of newImgProducts) {
