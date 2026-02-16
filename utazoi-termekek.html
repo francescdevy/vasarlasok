@@ -1027,20 +1027,15 @@ async function saveData() {
     }
     // Persist the placeholder swap to localStorage
     if (newImgProducts.length > 0) {
-      localStorage.setItem('products', JSON.stringify(products));
-      // Fetch images back from sheets so they appear in the UI
+      // Restore images in memory from the originals (don't fetch from sheets - they're already here)
       for (const p of newImgProducts) {
         const idx = products.findIndex(x => x.id === p.id);
-        if (idx === -1) continue;
-        try {
-          const imgData = await sheetsGet('get', 'img_' + p.id);
-          if (imgData && imgData.value) {
-            products[idx].image = imgData.value;
-            localStorage.setItem('products', JSON.stringify(products));
-            renderAll();
-          }
-        } catch(e) {}
+        if (idx > -1) {
+          products[idx].image = p.image; // p.image still has the original base64
+        }
       }
+      localStorage.setItem('products', JSON.stringify(products));
+      renderAll();
     }
   } catch(e) {
     showToast('Mentési hiba – az adat lokálisan mentve', 'error');
