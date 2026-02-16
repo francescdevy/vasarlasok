@@ -872,16 +872,19 @@ async function sheetsGet(action, key) {
   return await res.json();
 }
 
-// Fire a GET request to Apps Script without caring about CORS.
-// Uses an <img> src trick: browsers always load images cross-origin, no CORS check.
-function fireAndForget(url) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = img.onerror = () => resolve();
-    img.src = url;
-    // Fallback: resolve after 8s even if no event fires
-    setTimeout(resolve, 8000);
-  });
+// POST with text/plain body — no CORS preflight, works on mobile
+// Apps Script doPost() receives it directly without redirect issues
+async function sheetsWrite(url, body) {
+  const json = JSON.stringify(body);
+  try {
+    await fetch(url, {
+      method: 'POST',
+      body: json,
+      headers: {'Content-Type': 'text/plain'}
+    });
+  } catch(e) {
+    // Ignore CORS/network errors - request may still have arrived
+  }
 }
 
 async function sheetsPost(body) {
@@ -891,8 +894,7 @@ async function sheetsPost(body) {
   const chunkSize = 6000;
 
   if (b64.length <= chunkSize) {
-    const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-    await fireAndForget(url);
+    await sheetsWrite(SHEETS_API_URL, body);
     return {ok: true};
   }
 
@@ -901,18 +903,16 @@ async function sheetsPost(body) {
   const uploadId = Date.now();
   for (let i = 0; i < totalChunks; i++) {
     const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
-    const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
     setLoading(true, `Kép feltöltése... ${Math.round((i+1)/totalChunks*100)}%`);
-    await fireAndForget(url);
+    await sheetsWrite(SHEETS_API_URL, {method: 'chunk', id: uploadId, i, total: totalChunks, data: chunk});
     await new Promise(r => setTimeout(r, 80));
   }
 
   // Commit
   setLoading(true, 'Kép mentése...');
-  const commitUrl = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
-  await fireAndForget(commitUrl);
+  await sheetsWrite(SHEETS_API_URL, {method: 'chunkcommit', id: uploadId});
 
-  // Poll via normal fetch (GET reads have CORS headers from Apps Script)
+  // Poll via normal GET fetch (reads always have CORS headers)
   await new Promise(r => setTimeout(r, 2000));
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
@@ -928,11 +928,7 @@ async function sheetsPost(body) {
 
 async function deleteImageFromSheets(id) {
   if (!SHEETS_API_URL) return;
-  const body = {action: 'set', key: 'img_' + id, value: ''};
-  const json = JSON.stringify(body);
-  const b64 = btoa(unescape(encodeURIComponent(json)));
-  const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-  await fireAndForget(url);
+  await sheetsWrite(SHEETS_API_URL, {action: 'set', key: 'img_' + id, value: ''});
 }
 
 // ══════════════════════════════════════════════
