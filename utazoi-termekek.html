@@ -881,7 +881,7 @@ async function sheetsPost(body) {
   // For non-image payloads (setAll, set without large value) try direct first
   if (b64.length <= chunkSize) {
     const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-    await fetch(url, {mode: 'no-cors', redirect: 'follow'});
+    await fetch(url, {mode: 'no-cors', redirect: 'manual'});
     return {ok: true};
   }
   // Chunked for large payloads (images)
@@ -891,13 +891,13 @@ async function sheetsPost(body) {
     const chunk = b64.slice(i * chunkSize, (i + 1) * chunkSize);
     const url = `${SHEETS_API_URL}?method=chunk&id=${uploadId}&i=${i}&total=${totalChunks}&data=${encodeURIComponent(chunk)}`;
     setLoading(true, `Kép feltöltése... ${Math.round((i+1)/totalChunks*100)}%`);
-    await fetch(url, {mode: 'no-cors', redirect: 'follow'});
+    await fetch(url, {mode: 'no-cors', redirect: 'manual'});
     await new Promise(r => setTimeout(r, 100));
   }
   // Fire commit
   setLoading(true, 'Kép mentése...');
   const commitUrl = `${SHEETS_API_URL}?method=chunkcommit&id=${uploadId}`;
-  await fetch(commitUrl, {mode: 'no-cors', redirect: 'follow'});
+  await fetch(commitUrl, {mode: 'no-cors', redirect: 'manual'});
   // Poll for commit confirmation via readable GET (max ~12s)
   await new Promise(r => setTimeout(r, 1500));
   for (let attempt = 0; attempt < 8; attempt++) {
@@ -919,7 +919,7 @@ async function deleteImageFromSheets(id) {
   const json = JSON.stringify(body);
   const b64 = btoa(unescape(encodeURIComponent(json)));
   const url = `${SHEETS_API_URL}?method=post&data=${encodeURIComponent(b64)}`;
-  await fetch(url, {mode: 'no-cors', redirect: 'follow'});
+  await fetch(url, {mode: 'no-cors', redirect: 'manual'});
 }
 
 // ══════════════════════════════════════════════
