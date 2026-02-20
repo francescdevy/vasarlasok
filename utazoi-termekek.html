@@ -1133,24 +1133,26 @@ function productCard(p) {
 }
 
 function getLatestPrice(p) {
-  if (p.priceHistory && p.priceHistory.length > 0) return p.priceHistory[p.priceHistory.length - 1];
+  if (p.priceHistory && p.priceHistory.length > 0) {
+    const sorted = [...p.priceHistory].filter(ph => ph.amount).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
+    if (sorted.length) return sorted[0];
+  }
   return {amount: p.price, currency: p.currency, note: p.priceNote};
 }
 
 function getPriceChangeHtml(p) {
   if (!p.priceHistory || p.priceHistory.length < 2) return '';
   const sorted = [...p.priceHistory].filter(ph => ph.amount && ph.currency).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
-  for (let i = 0; i < sorted.length - 1; i++) {
-    for (let j = i + 1; j < sorted.length; j++) {
-      if (sorted[j].currency === sorted[i].currency) {
-        const diff = sorted[i].amount - sorted[j].amount;
-        const pct = ((diff / sorted[j].amount) * 100).toFixed(1);
-        if (Math.abs(diff) < 0.001) return '';
-        return diff > 0 ? `<span class="price-change price-up">📈 +${pct}%</span>` : `<span class="price-change price-down">📉 ${pct}%</span>`;
-      }
-    }
-  }
-  return '';
+  if (sorted.length < 2) return '';
+  const latest = sorted[0];
+  const prev = sorted.slice(1).find(ph => ph.currency === latest.currency);
+  if (!prev) return '';
+  const diff = latest.amount - prev.amount;
+  if (Math.abs(diff) < 0.001) return '';
+  const pct = ((diff / prev.amount) * 100).toFixed(1);
+  return diff > 0
+    ? `<span class="price-change price-up">📈 +${pct}%</span>`
+    : `<span class="price-change price-down">📉 ${pct}%</span>`;
 }
 
 function getAvgRating(p) {
@@ -1340,6 +1342,7 @@ async function saveProduct() {
 
   const price = parseFloat(document.getElementById('fPrice').value) || 0;
   const curr = document.getElementById('fCurr').value;
+  if (price > 0 && !curr) { showToast('Add meg a pénznemet!', 'error'); document.getElementById('fCurr').focus(); return; }
   const priceNote = document.getElementById('fPriceNote').value.trim();
   const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
   const priceEntry = price > 0 ? {amount: price, currency: curr, note: priceNote, date} : null;
@@ -1479,9 +1482,10 @@ async function savePriceUpdate() {
   const p = products.find(x=>x.id===priceUpdateId); if (!p) return;
   const amount = parseFloat(document.getElementById('pNewPrice').value);
   if (isNaN(amount) || amount <= 0) { showToast('Add meg az új árat!', 'error'); return; }
+  const currency = document.getElementById('pNewCurr').value;
+  if (!currency) { showToast('Válassz pénznemet!', 'error'); document.getElementById('pNewCurr').focus(); return; }
   const note = document.getElementById('pPriceNote').value.trim();
   if (note.length > 10000) { showToast('A megjegyzés túl hosszú!', 'error'); return; }
-  const currency = document.getElementById('pNewCurr').value;
   const country = document.getElementById('pNewCountry').value.trim();
   const shop = document.getElementById('pNewShop').value.trim();
   const date = document.getElementById('pNewDate').value;
