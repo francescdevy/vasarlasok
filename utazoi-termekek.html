@@ -605,7 +605,6 @@
 
   // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
   const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
-  
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
@@ -678,23 +677,45 @@ async function loadData() {
             });
           } catch(e){}
 
-          products = sheetsProds.map(p => ({
-            ...p,
-            image: p.image === '__img__' ? (localMap.get(p.id + '_img') || '__img__') : p.image,
-            images: (localMap.get(p.id + '_images') || p.images || []).filter(img => img && img !== '__img__')
-          }));
+          products = sheetsProds.map(p => {
+            const localImgs = localMap.get(p.id + '_images');
+            // Ha localStorage-ban megvan a teljes tömb, azt használjuk
+            const validLocalImgs = localImgs ? localImgs.filter(img => img && img !== '__img__') : [];
+            const expectedCount = p._imgCount || (p.images ? p.images.length : 0);
+            // Ha a local tömb tartalmazza az összes képet, OK; különben Sheets-ből kell pótolni
+            const images = validLocalImgs.length === expectedCount && validLocalImgs.length > 0
+              ? validLocalImgs
+              : []; // Sheets async betöltés fogja pótolni
+            return {
+              ...p,
+              image: null,
+              images
+            };
+          });
 
-                  products.forEach(async (p, i) => {
-            if (p.image === '__img__' && (!p.images || !p.images.length)) {
-              try {
+          // Hiányzó képek betöltése Sheetsből — minden indexelt cella lekérése
+          products.forEach(async (p, i) => {
+            const hasImgs = p.images && p.images.length > 0;
+            if (hasImgs) return; // localStorage-ból már visszaállt, nincs szükség Sheets lekérésre
+            try {
+              // Próbáljuk az indexelt img_<id>_0, img_<id>_1, ... cellákat
+              const recovered = [];
+              for (let idx = 0; idx < 20; idx++) {
+                const imgData = await sheetsGet('get', `img_${p.id}_${idx}`);
+                if (imgData && imgData.value) recovered.push(imgData.value);
+                else break; // Ha üres a cella, megálljunk
+              }
+              if (!recovered.length) {
+                // Visszafallback: régi egyes img_ cella
                 const imgData = await sheetsGet('get', 'img_' + p.id);
-                if (imgData && imgData.value) {
-                  products[i] = {...products[i], image: imgData.value, images: [imgData.value]};
-                  saveToLocalStorage();
-                  renderAll();
-                }
-              } catch(e){}
-            }
+                if (imgData && imgData.value) recovered.push(imgData.value);
+              }
+              if (recovered.length) {
+                products[i] = {...products[i], images: recovered, image: null};
+                saveToLocalStorage();
+                renderAll();
+              }
+            } catch(e){}
           });
         } catch(e){}
       }
@@ -737,12 +758,15 @@ async function saveData(lightweight = false) {
       return hasNewImg || hasNewImgInArr;
     });
 
-    const productsForSheets = products.map(p => ({
-      ...p,
-      image: (p.image && p.image !== '__img__') ? '__img__' : p.image,
-      // images tömb: minden data: URL → '__img__' (Sheets nem tárolja a tömböt, csak az utolsót külön cellában)
-      images: (p.images || []).map(img => (img && img.startsWith('data:')) ? '__img__' : img)
-    }));
+    const productsForSheets = products.map(p => {
+      const imgs = getImages(p);
+      return {
+        ...p,
+        image: '__img__',
+        images: imgs.map(() => '__img__'), // placeholder per kép, count megmarad
+        _imgCount: imgs.length            // segít visszatöltésnél
+      };
+    });
 
     await sheetsWrite(SHEETS_API_URL, {
       action: 'setAll',
@@ -753,10 +777,16 @@ async function saveData(lightweight = false) {
     });
 
     for (const p of productsWithNewImgs) {
-        const newImgs = (p.images || []).filter(img => img && img.startsWith('data:'));
-      const imgToUpload = newImgs.length ? newImgs[newImgs.length - 1] : (p.image && p.image.startsWith('data:') ? p.image : null);
-      if (imgToUpload) {
-        await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'img_' + p.id, value: imgToUpload });
+      const allImgs = getImages(p); // teljes tömb, base64 és régi is
+      for (let i = 0; i < allImgs.length; i++) {
+        if (allImgs[i] && allImgs[i].startsWith('data:')) {
+          await sheetsWrite(SHEETS_API_URL, { action: 'set', key: `img_${p.id}_${i}`, value: allImgs[i] });
+        }
+      }
+      // Régi egyes img_ kulcs kompatibilitáshoz (utolsó kép)
+      const lastImg = allImgs[allImgs.length - 1];
+      if (lastImg && lastImg.startsWith('data:')) {
+        await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'img_' + p.id, value: lastImg });
       }
     }
 
