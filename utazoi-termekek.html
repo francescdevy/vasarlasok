@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Külföldi vásárlás</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,800;1,300&family=DM+Sans:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
   :root {
     --ink: #1c1c1c;
@@ -22,24 +22,24 @@
     --shadow: rgba(0,0,0,0.08);
     --card: #ffffff;
     
-    /* Design System - Typography */
-    --font-primary: 'DM Sans', sans-serif;
-    --text-xs: 0.7rem;    /*  ← Extra kicsi (pillák, eredmény számláló) /*  */
-    --text-sm: 0.78rem;   /*  ← Kicsi (leírás, gombok, inputok) */
-    --text-base: 0.85rem; /*  ← Normál (ár, gomb szöveg) */
-    --text-lg: 0.92rem;    /* ← Nagy (termék név) */
+    /* Design System - Typography (betűtípus & méretek) */
+    --font-primary: 'DM Sans', sans-serif;  /* ← Itt változtatod a betűtípust */
+    --text-xs: 0.7rem;    /* Extra kicsi (pillák, eredmény számláló) */
+    --text-sm: 0.78rem;   /* Kicsi (leírás, gombok, inputok) */
+    --text-base: 0.85rem; /* Normál (ár, gomb szöveg) */
+    --text-lg: 0.92rem;   /* Nagy (termék név) */
     
-    /* Design System - Spacing */
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 12px;
-    --space-lg: 16px;
+    /* Design System - Spacing (távolságok) */
+    --space-xs: 4px;   /* Extra kicsi térköz */
+    --space-sm: 8px;   /* Kis térköz */
+    --space-md: 12px;  /* Közepes térköz */
+    --space-lg: 16px;  /* Nagy térköz */
     
-    /* Design System - Borders */
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-pill: 20px;
+    /* Design System - Borders (lekerekítések) */
+    --radius-sm: 6px;   /* Kis lekerekítés */
+    --radius-md: 8px;   /* Közepes lekerekítés */
+    --radius-lg: 12px;  /* Nagy lekerekítés */
+    --radius-pill: 20px; /* Pill shape */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -66,7 +66,7 @@
     box-shadow: 0 2px 8px var(--shadow);
   }
   header h1 {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-primary);
     font-size: 1.15rem;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -196,13 +196,59 @@
     overflow: hidden;
     flex-shrink: 0;
   }
+  
+  /* Image gallery */
+  .img-gallery {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .img-gallery-track {
+    display: flex;
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+  
+  .img-gallery-slide {
+    min-width: 100%;
+    height: 100%;
+    flex-shrink: 0;
+  }
+  
   .card-img {
     width: 100%; height: 100%; object-fit: cover;
-    transition: transform .3s;
     cursor: zoom-in;
     display: block;
   }
   .card:hover .card-img { transform: scale(1.04); }
+  
+  /* Gallery dots */
+  .img-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    pointer-events: none;
+  }
+  
+  .img-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    transition: all 0.2s;
+  }
+  
+  .img-dot.active {
+    background: rgba(255,255,255,0.95);
+    width: 18px;
+    border-radius: 3px;
+  }
+  
   .card-img-placeholder {
     width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
@@ -214,6 +260,7 @@
     background: var(--ink); color: #fff;
     font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 20px;
     pointer-events: none;
+    z-index: 2;
   }
 
   /* ── LIGHTBOX ── */
@@ -378,7 +425,7 @@
     flex-shrink: 0;
   }
   .modal-title {
-    font-family: 'Fraunces', serif;
+    font-family: var(--font-primary);
     font-size: 1rem; font-weight: 700;
   }
   .modal-close {
@@ -500,7 +547,7 @@
     text-align: center; padding: 60px 20px; color: var(--muted);
   }
   .empty-icon { font-size: 3.5rem; margin-bottom: 12px; }
-  .empty h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--ink); margin-bottom: 6px; }
+  .empty h3 { font-family: var(--font-primary); font-size: 1.2rem; color: var(--ink); margin-bottom: 6px; }
   .empty p { font-size: 0.85rem; }
 
   /* Category admin */
@@ -526,7 +573,7 @@
     border: 1.5px solid var(--border);
     box-shadow: 0 8px 30px var(--shadow);
   }
-  .login-card h2 { font-family: 'Fraunces', serif; font-size: 1.4rem; margin-bottom: 6px; }
+  .login-card h2 { font-family: var(--font-primary); font-size: 1.4rem; margin-bottom: 6px; }
 
   /* Tabs */
   .tabs { display: flex; gap: 0; margin-bottom: 16px; }
@@ -945,6 +992,32 @@
   </div>
 </div>
 
+<!-- Image Upload Modal -->
+<div id="imageUploadModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('imageUploadModal')">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">📷 Kép hozzáadása</span>
+      <button class="modal-close" onclick="closeModal('imageUploadModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:12px">
+        <label for="quickImgInput" style="display:inline-block;padding:12px 20px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-weight:600">
+          📤 Kép kiválasztása
+        </label>
+        <input type="file" id="quickImgInput" accept="image/*" style="display:none" onchange="handleQuickImageUpload(event)">
+      </div>
+      <div id="quickImgPreviewArea" style="display:none;text-align:center">
+        <img id="quickImgPreview" style="max-width:100%;max-height:200px;border-radius:8px;margin-bottom:8px">
+        <div style="font-size:0.78rem;color:var(--muted)">Kattints a mentés gombra a kép hozzáadásához</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('imageUploadModal')">Mégse</button>
+      <button class="btn btn-primary" id="btnSaveQuickImage" onclick="saveQuickImage()" disabled>Mentés</button>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
@@ -974,6 +1047,8 @@ let currentRating = 0;
 let currentReviewRating = 0;
 let priceUpdateId = null;
 let pendingImgBase64 = null;
+let quickImageProductId = null;
+let quickImageBase64 = null;
 let reviewProductId = null;
 let fCountries = []; // active tag arrays for the form
 let fShops = [];
@@ -1302,10 +1377,82 @@ function wireTagBlur() {
 async function init() {
   await loadData();
   renderAll();
+  updateAdminUI(); // Show admin bar if session is active
   document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('pNewDate').value = new Date().toISOString().split('T')[0];
   updateSheetsStatus();
   wireTagBlur();
+}
+
+// ══════════════════════════════════════════════
+// IMAGE GALLERY SWIPE
+// ══════════════════════════════════════════════
+function initGallerySwipe() {
+  document.querySelectorAll('.img-gallery').forEach(gallery => {
+    const track = gallery.querySelector('.img-gallery-track');
+    const slides = gallery.querySelectorAll('.img-gallery-slide');
+    const dots = gallery.querySelectorAll('.img-dot');
+    
+    if (slides.length <= 1) return; // No swipe needed for single image
+    
+    let currentIndex = 0;
+    let startX = 0;
+    let isDragging = false;
+    let startTranslate = 0;
+    
+    const updateGallery = (index) => {
+      currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    };
+    
+    const handleStart = (e) => {
+      isDragging = true;
+      startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+      startTranslate = -currentIndex * 100;
+      track.style.transition = 'none';
+    };
+    
+    const handleMove = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+      const diff = currentX - startX;
+      const percent = (diff / gallery.offsetWidth) * 100;
+      track.style.transform = `translateX(${startTranslate + percent}%)`;
+    };
+    
+    const handleEnd = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      track.style.transition = 'transform 0.3s ease';
+      
+      const currentX = e.type.includes('mouse') ? e.pageX : e.changedTouches[0].pageX;
+      const diff = currentX - startX;
+      const threshold = 50; // pixels
+      
+      if (diff > threshold && currentIndex > 0) {
+        updateGallery(currentIndex - 1);
+      } else if (diff < -threshold && currentIndex < slides.length - 1) {
+        updateGallery(currentIndex + 1);
+      } else {
+        updateGallery(currentIndex); // Snap back
+      }
+    };
+    
+    // Touch events
+    gallery.addEventListener('touchstart', handleStart, {passive: true});
+    gallery.addEventListener('touchmove', handleMove, {passive: false});
+    gallery.addEventListener('touchend', handleEnd, {passive: true});
+    
+    // Mouse events for desktop testing
+    gallery.addEventListener('mousedown', handleStart);
+    gallery.addEventListener('mousemove', handleMove);
+    gallery.addEventListener('mouseup', handleEnd);
+    gallery.addEventListener('mouseleave', handleEnd);
+  });
 }
 
 function renderAll() {
@@ -1313,6 +1460,8 @@ function renderAll() {
   populateCurrencySelects();
   filterProducts();
   populateDataLists();
+  // Initialize gallery swipe after render
+  setTimeout(initGallerySwipe, 100);
 }
 
 // ══════════════════════════════════════════════
@@ -1411,10 +1560,23 @@ function renderGrid(list) {
 function productCard(p) {
   const latestPrice = getLatestPrice(p);
   const priceChangeHtml = getPriceChangeHtml(p);
-  const realImg = p.image && p.image !== '__img__' ? p.image : null;
-  const imgHtml = realImg
-    ? `<img class="card-img" src="${realImg}" alt="${esc(p.name)}" loading="lazy" onclick="openLightbox('${realImg}',event)">`
+  
+  // Support both old (image) and new (images) format
+  const images = p.images && p.images.length > 0 
+    ? p.images.filter(img => img && img !== '__img__')
+    : (p.image && p.image !== '__img__' ? [p.image] : []);
+  
+  // On card: show only latest (last) image
+  const latestImage = images.length > 0 ? images[images.length - 1] : null;
+  
+  const imgHtml = latestImage
+    ? `<img class="card-img" src="${latestImage}" alt="${esc(p.name)}" loading="lazy" onclick="event.stopPropagation();openLightbox('${latestImage}', event)">`
     : `<div class="card-img-placeholder" onclick="openViewProduct('${p.id}')">🛍️</div>`;
+  
+  // Show image count badge if multiple images
+  const imgCountBadge = images.length > 1 
+    ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.7rem;pointer-events:none">📷 ${images.length}</div>`
+    : '';
 
   const avgRating = getAvgRating(p);
   const starsHtml = avgRating > 0 ? `<span class="stars">${'★'.repeat(Math.round(avgRating))}${'☆'.repeat(5-Math.round(avgRating))}</span> <span style="font-size:0.74rem;color:var(--muted)">${avgRating.toFixed(1)}</span>` : '';
@@ -1470,6 +1632,7 @@ function productCard(p) {
     <div class="card-img-wrap">
       ${imgHtml}
       ${p.category ? `<span class="card-cat-badge">${esc(p.category)}</span>` : ''}
+      ${imgCountBadge}
       ${starsHtml ? `<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.78rem;display:flex;align-items:center;gap:4px">${starsHtml.replace('color:var(--muted)', 'color:rgba(255,255,255,0.8)')}</div>` : ''}
     </div>
     <div class="card-body" onclick="openViewProduct('${p.id}')" style="cursor:pointer">
@@ -1710,6 +1873,9 @@ function compressImage(file, maxWidth, maxHeight, quality) {
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
+          // Better quality rendering
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, w, h);
           return canvas.toDataURL('image/jpeg', q);
         };
@@ -1719,15 +1885,15 @@ function compressImage(file, maxWidth, maxHeight, quality) {
           w = Math.round(w * ratio);
           h = Math.round(h * ratio);
         }
-        // Iteratively reduce until under 45000 chars
+        // Iteratively reduce until under 48000 chars (closer to 50k limit)
         let result = compress(w, h, quality);
         let attempts = 0;
-        while (result.length > 45000 && attempts < 8) {
-          // Reduce quality more gradually, keep minimum higher for text readability
-          quality = Math.max(0.55, quality - 0.05);
-          // Reduce size less aggressively
-          w = Math.round(w * 0.92);
-          h = Math.round(h * 0.92);
+        while (result.length > 48000 && attempts < 10) {
+          // Reduce quality very gradually, keep minimum high for text readability
+          quality = Math.max(0.65, quality - 0.04);
+          // Reduce size very gently
+          w = Math.round(w * 0.94);
+          h = Math.round(h * 0.94);
           result = compress(w, h, quality);
           attempts++;
         }
@@ -1743,7 +1909,7 @@ function handleImgUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
   document.querySelector('#imgUploadArea .upload-text').textContent = 'Tömörítés...';
-  compressImage(file, 1000, 1000, 0.90).then(compressed => {
+  compressImage(file, 1200, 1200, 0.92).then(compressed => {
     pendingImgBase64 = compressed;
     document.getElementById('imgPreview').src = compressed;
     document.getElementById('imgPreview').style.display = 'block';
@@ -1759,6 +1925,24 @@ async function saveProduct() {
   // Check for duplicate name (only for new products)
   if (!editingId && products.some(p => p.name.toLowerCase() === name.toLowerCase())) {
     showToast('Ilyen nevű termék már létezik!', 'error');
+    return;
+  }
+  
+  // Validate field lengths (Google Sheets 50k character limit per cell)
+  const desc = document.getElementById('fDesc').value.trim();
+  const note = document.getElementById('fNote').value.trim();
+  const MAX_FIELD_LENGTH = 10000; // Safe limit for text fields
+  
+  if (name.length > MAX_FIELD_LENGTH) {
+    showToast('A termék neve túl hosszú! Maximum 10000 karakter.', 'error');
+    return;
+  }
+  if (desc.length > MAX_FIELD_LENGTH) {
+    showToast('A leírás túl hosszú! Maximum 10000 karakter.', 'error');
+    return;
+  }
+  if (note.length > MAX_FIELD_LENGTH) {
+    showToast('A megjegyzés túl hosszú! Maximum 10000 karakter.', 'error');
     return;
   }
 
@@ -1804,7 +1988,11 @@ async function saveProduct() {
         priceNote: ph.length > 0 ? ph[0].note : priceNote,
         priceHistory: ph,
         rating: currentRating,
-        image: pendingImgBase64 || existing.image,
+        // Add new image to images array if provided
+        images: pendingImgBase64 
+          ? [...(existing.images || [existing.image].filter(Boolean)), pendingImgBase64]
+          : (existing.images || [existing.image].filter(Boolean)),
+        image: null, // Deprecated, kept for backward compatibility
       };
     }
     showToast('Termék frissítve! ✓', 'success');
@@ -1822,7 +2010,8 @@ async function saveProduct() {
       price, currency: curr, priceNote,
       priceHistory: priceEntry ? [priceEntry] : [],
       rating: currentRating,
-      image: pendingImgBase64 || null,
+      images: pendingImgBase64 ? [pendingImgBase64] : [],
+      image: null, // Deprecated
       reviews: [],
       createdAt: new Date().toISOString()
     };
@@ -1844,6 +2033,92 @@ function deleteProduct(id) {
   filterProducts();
   populateDataLists();
   showToast('Termék törölve.', 'success');
+}
+
+async function deleteImage(productId, imageIndex, event) {
+  event.stopPropagation();
+  if (!isAdmin) return;
+  if (!confirm('Biztosan törlöd ezt a képet?')) return;
+  
+  const p = products.find(x => x.id === productId);
+  if (!p || !p.images) return;
+  
+  p.images.splice(imageIndex, 1);
+  await saveData();
+  closeModal('viewModal');
+  showToast('Kép törölve!', 'success');
+  filterProducts();
+}
+
+async function deleteImageReversed(productId, reversedIndex, event) {
+  event.stopPropagation();
+  if (!isAdmin) return;
+  if (!confirm('Biztosan törlöd ezt a képet?')) return;
+  
+  const p = products.find(x => x.id === productId);
+  if (!p || !p.images) return;
+  
+  // Convert reversed index back to original array index
+  const originalIndex = p.images.length - 1 - reversedIndex;
+  p.images.splice(originalIndex, 1);
+  await saveData();
+  closeModal('viewModal');
+  showToast('Kép törölve!', 'success');
+  filterProducts();
+}
+
+// Keyboard navigation for gallery
+document.addEventListener('keydown', (e) => {
+  const modal = document.getElementById('viewModal');
+  if (!modal || modal.style.display === 'none') return;
+  
+  const gallery = modal.querySelector('.img-gallery');
+  if (!gallery) return;
+  
+  const productId = gallery.getAttribute('data-id');
+  if (!productId) return;
+  
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    galleryPrev(productId, e);
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    galleryNext(productId, e);
+  }
+});
+
+function galleryPrev(productId, event) {
+  event.stopPropagation();
+  const gallery = document.querySelector(`.img-gallery[data-id="${productId}"]`);
+  if (!gallery) return;
+  
+  const track = gallery.querySelector('.img-gallery-track');
+  const slides = gallery.querySelectorAll('.img-gallery-slide');
+  const dots = gallery.querySelectorAll('.img-dot');
+  
+  let currentIndex = 0;
+  dots.forEach((dot, i) => { if (dot.classList.contains('active')) currentIndex = i; });
+  
+  const newIndex = currentIndex > 0 ? currentIndex - 1 : slides.length - 1;
+  track.style.transform = `translateX(-${newIndex * 100}%)`;
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === newIndex));
+}
+
+function galleryNext(productId, event) {
+  event.stopPropagation();
+  const gallery = document.querySelector(`.img-gallery[data-id="${productId}"]`);
+  if (!gallery) return;
+  
+  const track = gallery.querySelector('.img-gallery-track');
+  const slides = gallery.querySelectorAll('.img-gallery-slide');
+  const dots = gallery.querySelectorAll('.img-dot');
+  
+  let currentIndex = 0;
+  dots.forEach((dot, i) => { if (dot.classList.contains('active')) currentIndex = i; });
+  
+  const newIndex = currentIndex < slides.length - 1 ? currentIndex + 1 : 0;
+  track.style.transform = `translateX(-${newIndex * 100}%)`;
+  dots.forEach((dot, i) => dot.classList.toggle('active', i === newIndex));
 }
 
 // ══════════════════════════════════════════════
@@ -1886,15 +2161,27 @@ async function savePriceUpdate() {
   const p = products.find(x=>x.id===priceUpdateId);
   if (!p) return;
   const amount = parseFloat(document.getElementById('pNewPrice').value);
-  if (isNaN(amount)) { showToast('Add meg az új árat!', 'error'); return; }
-  const currency = document.getElementById('pNewCurr').value;
+  if (isNaN(amount) || amount <= 0) { showToast('Add meg az új árat!', 'error'); return; }
+  
   const note = document.getElementById('pPriceNote').value.trim();
+  if (note.length > 10000) {
+    showToast('A megjegyzés túl hosszú! Maximum 10000 karakter.', 'error');
+    return;
+  }
+  
+  const currency = document.getElementById('pNewCurr').value;
   const country = document.getElementById('pNewCountry').value.trim();
   const shop = document.getElementById('pNewShop').value.trim();
   const date = document.getElementById('pNewDate').value;
-  if (!p.priceHistory) p.priceHistory = [{amount: p.price, currency: p.currency, note: p.priceNote, date: p.date}];
+  
+  // Initialize price history if empty, but only with valid existing price
+  if (!p.priceHistory) {
+    p.priceHistory = (p.price && p.price > 0) ? [{amount: p.price, currency: p.currency, note: p.priceNote, date: p.date}] : [];
+  }
+  
   p.priceHistory.push({amount, currency, note, country, shop, date});
-  p.price = amount; p.currency = currency;
+  p.price = amount;
+  p.currency = currency;
   await saveData();
   closeModal('priceModal');
   filterProducts();
@@ -1939,16 +2226,41 @@ function openViewProduct(id) {
     [...allShops].map(s => `<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') +
     [...allCountries].map(c => `<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
 
-  const viewImg = p.image && p.image !== '__img__' ? p.image : null;
+  // Get images array (backward compatible) - REVERSE so newest is first
+  const images = p.images && p.images.length > 0 
+    ? [...p.images].filter(img => img && img !== '__img__').reverse()
+    : (p.image && p.image !== '__img__' ? [p.image] : []);
+  
+  // Gallery HTML with swipe
+  const galleryHtml = images.length > 0 ? `
+    <div class="img-gallery" data-id="${p.id}" style="height:280px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative">
+      <div class="img-gallery-track">
+        ${images.map((img, idx) => `
+          <div class="img-gallery-slide">
+            <img src="${img}" style="width:100%;height:100%;object-fit:cover" onclick="openLightbox('${img}', event)">
+            ${isAdmin ? `<button class="btn btn-sm btn-danger" style="position:absolute;top:8px;right:8px;z-index:10" onclick="deleteImageReversed('${p.id}', ${idx}, event)">🗑️</button>` : ''}
+          </div>
+        `).join('')}
+      </div>
+      ${images.length > 1 ? `
+        <div class="img-dots">
+          ${images.map((_, i) => `<div class="img-dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+        </div>
+        <button class="gallery-nav gallery-nav-prev" onclick="galleryPrev('${p.id}', event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button>
+        <button class="gallery-nav gallery-nav-next" onclick="galleryNext('${p.id}', event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>
+      ` : ''}
+    </div>
+  ` : '';
+  
   document.getElementById('viewModalBody').innerHTML = `
-    ${viewImg ? `<img src="${viewImg}" style="width:100%;border-radius:10px;max-height:220px;object-fit:cover;margin-bottom:8px;cursor:zoom-in" onclick="openLightbox('${viewImg}',event)">` : ''}
+    ${galleryHtml}
     <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
       ${p.category ? `<span class="meta-pill">📂 ${esc(p.category)}</span>` : ''}
       ${locationPillsHtml}
       ${p.date ? `<span class="meta-pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}
     </div>
     ${p.desc ? `<div style="font-size:0.88rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
-    <div style="font-family:'Fraunces',serif;font-size:1.3rem;font-weight:800;margin-bottom:4px">
+    <div style="font-family:var(--font-primary);font-size:1.3rem;font-weight:800;margin-bottom:4px">
       ${latestPrice.amount ? latestPrice.amount + ' ' + (latestPrice.currency||'') : '–'}
       ${getPriceChangeHtml(p)}
     </div>
@@ -1966,11 +2278,54 @@ function openViewProduct(id) {
     ${reviewsHtml}
   `;
   document.getElementById('viewModalFooter').innerHTML = `
+    <button class="btn btn-primary" onclick="closeModal('viewModal');openImageUploadModal('${id}')">📷 Kép hozzáadása</button>
     <button class="btn btn-primary" onclick="closeModal('viewModal');openReviewModal('${id}')">✍ Értékelés</button>
     <button class="btn btn-primary" onclick="closeModal('viewModal');openPriceUpdate('${id}')">💰 Ár frissítése</button>
     <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('viewModal')">Bezár</button>
   `;
   openModal('viewModal');
+  // Initialize gallery swipe after modal opens
+  setTimeout(initGallerySwipe, 100);
+}
+
+// ══════════════════════════════════════════════
+// QUICK IMAGE UPLOAD (without full edit)
+// ══════════════════════════════════════════════
+function openImageUploadModal(productId) {
+  quickImageProductId = productId;
+  quickImageBase64 = null;
+  document.getElementById('quickImgInput').value = '';
+  document.getElementById('quickImgPreviewArea').style.display = 'none';
+  document.getElementById('btnSaveQuickImage').disabled = true;
+  openModal('imageUploadModal');
+}
+
+function handleQuickImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  compressImage(file, 1200, 1200, 0.92).then(compressed => {
+    quickImageBase64 = compressed;
+    document.getElementById('quickImgPreview').src = compressed;
+    document.getElementById('quickImgPreviewArea').style.display = 'block';
+    document.getElementById('btnSaveQuickImage').disabled = false;
+  });
+}
+
+async function saveQuickImage() {
+  if (!quickImageProductId || !quickImageBase64) return;
+  
+  const p = products.find(x => x.id === quickImageProductId);
+  if (!p) return;
+  
+  // Add new image to images array
+  if (!p.images) p.images = [];
+  p.images.push(quickImageBase64);
+  
+  await saveData();
+  closeModal('imageUploadModal');
+  showToast('Kép hozzáadva! ✓', 'success');
+  filterProducts();
 }
 
 // ══════════════════════════════════════════════
