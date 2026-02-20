@@ -601,10 +601,10 @@
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-  const ADMIN_PASSWORD = 'Billa789';
+const ADMIN_PASSWORD = 'Billa789';
+// ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
 
-  // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
-  const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
+const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
@@ -919,8 +919,12 @@ function initGallerySwipe() {
     const updateGallery = (index) => {
       currentIndex = Math.max(0, Math.min(index, slides.length - 1));
       track.style.transform = `translateX(-${currentIndex * 100}%)`;
+      track.style.transition = 'transform 0.3s ease';
       dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
     };
+    // Kitesszük a gallery elemre, hogy galleryNav is tudja hívni
+    gallery._update = updateGallery;
+    gallery._getIndex = () => currentIndex;
     const handleStart = (e) => {
       isDragging = true;
       startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
@@ -1048,11 +1052,9 @@ document.getElementById('viewModalBody').addEventListener('click', e => {
   const imgEl = e.target.closest('.gallery-img-clickable');
   if (imgEl) {
     e.stopPropagation();
-    const p = products.find(x => x.id === imgEl.dataset.pid);
-    if (!p) return;
-    const imgs = getImages(p).reverse();
-    const idx = parseInt(imgEl.dataset.idx);
-    if (imgs[idx]) openLightbox(imgs[idx]);
+    // Mindig a kattintott kép src-jét nyitjuk meg – nem index alapján
+    const src = imgEl.src;
+    if (src) openLightbox(src);
   }
 });
 
@@ -1434,16 +1436,18 @@ function galleryNav(productId, dir, event) {
   event.stopPropagation();
   const gallery = document.querySelector(`.img-gallery[data-id="${productId}"]`);
   if (!gallery) return;
-  const track = gallery.querySelector('.img-gallery-track');
   const slides = gallery.querySelectorAll('.img-gallery-slide');
-  const dots = gallery.querySelectorAll('.img-dot');
-  let cur = 0;
-  dots.forEach((dot, i) => { if (dot.classList.contains('active')) cur = i; });
+  const cur = gallery._getIndex ? gallery._getIndex() : [...gallery.querySelectorAll('.img-dot')].findIndex(d => d.classList.contains('active'));
   const n = dir === 'prev'
     ? (cur > 0 ? cur - 1 : slides.length - 1)
     : (cur < slides.length - 1 ? cur + 1 : 0);
-  track.style.transform = `translateX(-${n * 100}%)`;
-  dots.forEach((dot, i) => dot.classList.toggle('active', i === n));
+  if (gallery._update) {
+    gallery._update(n); // swipe handler currentIndex is also updated
+  } else {
+    const track = gallery.querySelector('.img-gallery-track');
+    track.style.transform = `translateX(-${n * 100}%)`;
+    gallery.querySelectorAll('.img-dot').forEach((dot, i) => dot.classList.toggle('active', i === n));
+  }
 }
 function galleryPrev(id, e) { galleryNav(id, 'prev', e); }
 function galleryNext(id, e) { galleryNav(id, 'next', e); }
