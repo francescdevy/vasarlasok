@@ -5,1888 +5,1003 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Külföldi vásárlás</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
+:root{--ink:#1c1c1c;--paper:#f5f5f5;--cream:#ebebeb;--accent:#2563eb;--al:#dbeafe;--star:#f59e0b;--green:#16a34a;--red:#dc2626;--muted:#777;--bd:#d0d0d0;--sh:rgba(0,0,0,.08);--card:#fff;--f:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--f);background:var(--paper);color:var(--ink);min-height:100vh}
 
-  :root {
-    --ink: #1c1c1c;
-    --paper: #f5f5f5;
-    --cream: #ebebeb;
-    --warm: #e0e0e0;
-    --accent: #2563eb;
-    --accent-light: #dbeafe;
-    --star: #f59e0b;
-    --green: #16a34a;
-    --red: #dc2626;
-    --muted: #777;
-    --border: #d0d0d0;
-    --shadow: rgba(0,0,0,0.08);
-    --card: #ffffff;
-    --font-primary: 'DM Sans', sans-serif;
-    --text-xs: 0.7rem;
-    --text-sm: 0.78rem;
-    --text-base: 0.85rem;
-    --text-lg: 0.92rem;
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 12px;
-    --space-lg: 16px;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-pill: 20px;
-  }
+/* ── STICKY TOP ── */
+#topbar{position:sticky;top:0;z-index:100;background:var(--ink);box-shadow:0 2px 8px var(--sh)}
+header{color:var(--paper);padding:10px 14px;display:flex;align-items:center;gap:8px}
+header h1{font-size:1.1rem;font-weight:800;letter-spacing:-.5px;flex:1;white-space:nowrap}
+header h1 span{color:#93c5fd}
+.hbtn{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:6px;border:none;font-family:var(--f);font-size:.82rem;font-weight:600;cursor:pointer;transition:.15s}
+.hbtn-pr{background:var(--accent);color:#fff}.hbtn-pr:hover{background:#1d4ed8}
+.hbtn-gh{background:transparent;color:var(--paper);border:1.5px solid rgba(255,255,255,.3)}.hbtn-gh:hover{background:rgba(255,255,255,.1)}
+.hbtn-act{background:rgba(255,255,255,.2);color:#fff}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-primary); background: var(--paper); color: var(--ink); min-height: 100vh; }
+/* search bar */
+#searchBar{background:var(--cream);border-bottom:1px solid var(--bd);padding:8px 12px;display:none}
+#searchBar.open{display:block}
+.s-row{display:flex;gap:6px;margin-bottom:6px}
+.s-inp{flex:1;padding:7px 10px;border:1.5px solid var(--bd);border-radius:8px;background:#fff;font-family:var(--f);font-size:.84rem;outline:none;transition:.15s}
+.s-inp:focus{border-color:var(--accent)}
+.f-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.fsel{padding:5px 7px;border-radius:6px;border:1px solid var(--bd);background:#fff;font-family:var(--f);font-size:.76rem;color:var(--ink);cursor:pointer;outline:none}
+.fsel:focus{border-color:var(--accent)}
+.fclear{padding:5px 8px;border-radius:6px;border:1px solid var(--bd);background:#fff;font-family:var(--f);font-size:.76rem;color:var(--muted);cursor:pointer;display:none;white-space:nowrap}
+.fclear:hover{background:var(--cream);color:var(--ink)}
+#rCount{font-size:.7rem;color:var(--muted);margin-top:5px;font-weight:500}
 
-  header {
-    background: var(--ink); color: var(--paper);
-    padding: 10px 14px; position: sticky; top: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    box-shadow: 0 2px 8px var(--shadow);
-  }
-  header h1 { font-family: var(--font-primary); font-size: 1.15rem; font-weight: 800; letter-spacing: -0.5px; white-space: nowrap; }
-  header h1 span { color: #93c5fd; }
-  .header-actions { display: flex; gap: 6px; align-items: center; }
+/* admin bar */
+#adminBar{display:none;background:#111;color:var(--paper);padding:6px 12px;align-items:center;gap:5px;flex-wrap:wrap;font-size:.78rem}
+.ab{background:rgba(255,255,255,.15);color:#fff;padding:4px 9px;border-radius:6px;border:none;font-family:var(--f);font-size:.76rem;font-weight:600;cursor:pointer}
+.ab-red{background:var(--red)}
+.ab-badge{background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
 
-  .btn {
-    display: inline-flex; align-items: center; gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); border: none;
-    font-family: var(--font-primary); font-size: var(--text-base); font-weight: 600;
-    cursor: pointer; transition: all .15s;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #1d4ed8; }
-  .btn-ghost { background: transparent; color: var(--paper); border: 1.5px solid rgba(255,255,255,0.3); }
-  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-danger:hover { background: #b91c1c; }
-  .btn-sm { padding: var(--space-xs) var(--space-sm); font-size: var(--text-sm); }
-  .btn-icon { padding: var(--space-xs); border-radius: var(--radius-sm); background: var(--cream); border: 1px solid var(--border); color: var(--ink); cursor: pointer; font-size: var(--text-base); transition: all .15s; }
-  .btn-icon:hover { background: var(--warm); }
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden;box-shadow:0 1px 6px var(--sh);transition:.18s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 14px var(--sh)}
+.c-img-wrap{position:relative;width:100%;height:200px;background:var(--cream);overflow:hidden;flex-shrink:0}
+.c-img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block;transition:.18s}
+.card:hover .c-img{transform:scale(1.04)}
+.c-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--bd);cursor:pointer}
+.c-cat{position:absolute;top:8px;left:8px;background:var(--ink);color:#fff;font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:20px;pointer-events:none;z-index:2}
+.c-body{padding:8px 10px;flex:1;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.c-name{font-size:.9rem;font-weight:600;line-height:1.3}
+.c-desc{font-size:.78rem;color:var(--muted);line-height:1.4}
+.c-meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pill{font-size:.7rem;padding:2px 7px;border-radius:20px;background:var(--cream);color:var(--muted);border:1px solid var(--bd)}
+.c-pr-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.c-pr{font-size:.84rem;font-weight:700}
+.pch{font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:8px}
+.pup{background:#fde8e8;color:var(--red)}.pdn{background:#e6f5ec;color:var(--green)}
+.stars{color:var(--star);font-size:.78rem}
+.c-foot{padding:7px 10px;border-top:1px solid var(--bd);display:flex;gap:5px;justify-content:flex-end}
 
-  .search-bar { padding: var(--space-sm) var(--space-md); background: var(--cream); border-bottom: 1px solid var(--border); }
-  .search-row { display: flex; gap: var(--space-xs); margin-bottom: var(--space-xs); }
-  .search-input { flex: 1; padding: var(--space-sm) 11px; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: #fff; font-family: var(--font-primary); font-size: var(--text-base); outline: none; transition: border-color .15s; }
-  .search-input:focus { border-color: var(--accent); }
-  .filter-row { display: flex; gap: var(--space-xs); flex-wrap: wrap; align-items: center; }
-  .filter-select { padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fff; font-family: var(--font-primary); font-size: var(--text-sm); color: var(--ink); cursor: pointer; outline: none; }
-  .filter-select:focus { border-color: var(--accent); }
-  .btn-clear-filters { padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); border: 1px solid var(--border); background: #fff; font-family: var(--font-primary); font-size: var(--text-sm); color: var(--muted); cursor: pointer; transition: all .15s; white-space: nowrap; }
-  .btn-clear-filters:hover { background: var(--cream); color: var(--ink); border-color: var(--ink); }
-  .result-count { font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-xs); font-weight: 500; }
+/* price history compact */
+.ph{margin-top:5px;background:var(--cream);border-radius:8px;padding:7px 9px;border:1px solid var(--bd)}
+.ph-title{font-size:.7rem;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.ph-row{display:flex;align-items:baseline;gap:6px;font-size:.77rem;padding:2px 0;border-bottom:1px dashed var(--bd);overflow:hidden;white-space:nowrap}
+.ph-row:last-child{border:none}
+.ph-d{color:var(--muted);flex-shrink:0;min-width:52px}
+.ph-v{font-weight:600;flex-shrink:0}
+.ph-x{color:var(--muted);font-size:.71rem;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+/* detail view – multiline ok */
+.ph-det{display:grid;grid-template-columns:90px auto 1fr;gap:10px;font-size:.8rem;padding:3px 0;border-bottom:1px dashed var(--bd);align-items:baseline}
+.ph-det:last-child{border:none}
+.ph-det .ph-x{white-space:normal;overflow:visible;text-overflow:unset}
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; padding: 10px; }
+/* gallery */
+.gallery{position:relative;width:100%;height:100%;overflow:hidden}
+.g-track{display:flex;height:100%;transition:transform .3s ease}
+.g-slide{min-width:100%;height:100%;flex-shrink:0;position:relative}
+.g-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:none}
+.g-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.5);transition:.2s}
+.g-dot.on{background:rgba(255,255,255,.95);width:18px;border-radius:3px}
 
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px var(--shadow); transition: transform .18s, box-shadow .18s; display: flex; flex-direction: column; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px var(--shadow); }
-  .card-img-wrap { position: relative; width: 100%; height: 200px; background: var(--cream); overflow: hidden; flex-shrink: 0; }
-  .card-img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; display: block; transition: transform .18s; }
-  .card:hover .card-img { transform: scale(1.04); }
-  .card-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--border); background: var(--cream); cursor: pointer; }
-  .card-cat-badge { position: absolute; top: 8px; left: 8px; background: var(--ink); color: #fff; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; pointer-events: none; z-index: 2; }
+/* lightbox */
+.lb{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.92);align-items:center;justify-content:center;cursor:zoom-out;padding:16px}
+.lb.on{display:flex}
+.lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;cursor:default;animation:lbIn .18s ease}
+@keyframes lbIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.lb-x{position:absolute;top:14px;right:18px;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;opacity:.7}
+.lb-x:hover{opacity:1}
 
-  .img-gallery { position: relative; width: 100%; height: 100%; overflow: hidden; }
-  .img-gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; }
-  .img-gallery-slide { min-width: 100%; height: 100%; flex-shrink: 0; position: relative; }
-  .img-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: none; }
-  .img-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); transition: all 0.2s; }
-  .img-dot.active { background: rgba(255,255,255,0.95); width: 18px; border-radius: 3px; }
+/* overlay/modal */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
+.modal{background:var(--card);border-radius:14px 14px 0 0;width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 -4px 30px rgba(0,0,0,.2);animation:up .2s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mh{padding:12px 16px 10px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mt{font-size:1rem;font-weight:700}
+.mx{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);padding:3px 7px;border-radius:5px}
+.mx:hover{background:var(--cream);color:var(--ink)}
+.mb{padding:14px 16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+.mf{padding:10px 16px;border-top:1px solid var(--bd);display:flex;gap:7px;justify-content:flex-end;flex-shrink:0}
 
-  .lightbox { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; cursor: zoom-out; padding: 16px; }
-  .lightbox.active { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); animation: lbIn .18s ease; cursor: default; }
-  @keyframes lbIn { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .lightbox-close { position: absolute; top: 14px; right: 18px; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; line-height: 1; opacity: 0.7; transition: opacity .15s; }
-  .lightbox-close:hover { opacity: 1; }
+/* forms */
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:.73rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.fi,.fsel2,.fta{padding:8px 11px;border:1.5px solid var(--bd);border-radius:7px;background:#fff;font-family:var(--f);font-size:.84rem;color:var(--ink);outline:none;transition:.15s}
+.fi:focus,.fsel2:focus,.fta:focus{border-color:var(--accent)}
+.fta{resize:vertical;min-height:58px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fhint{font-size:.71rem;color:var(--muted)}
 
-  .card-body { padding: var(--space-sm) 10px; flex: 1; display: flex; flex-direction: column; gap: var(--space-xs); }
-  .card-name { font-family: var(--font-primary); font-size: var(--text-lg); font-weight: 600; line-height: 1.3; color: var(--ink); }
-  .card-desc { font-size: var(--text-sm); color: var(--muted); line-height: 1.4; }
-  .card-meta { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-xs); }
-  .meta-pill { font-size: var(--text-xs); padding: 2px 7px; border-radius: var(--radius-pill); background: var(--cream); color: var(--muted); border: 1px solid var(--border); }
-  .card-price-row { display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-xs); }
-  .card-price { font-family: var(--font-primary); font-size: var(--text-base); font-weight: 700; color: var(--ink); }
-  .price-change { font-size: var(--text-xs); font-weight: 600; padding: 2px 7px; border-radius: var(--radius-lg); }
-  .price-up { background: #fde8e8; color: var(--red); }
-  .price-down { background: #e6f5ec; color: var(--green); }
-  .stars { color: var(--star); font-size: var(--text-sm); }
+/* stars */
+.sp{display:flex;gap:4px}
+.sb{background:none;border:none;font-size:1.9rem;cursor:pointer;transition:.12s;color:#d0d0d0;padding:0;line-height:1}
+.sb.on{color:var(--star)}.sb:hover{transform:scale(1.2);color:var(--star)}
 
-  .card-footer { padding: 8px 12px; border-top: 1px solid var(--border); display: flex; gap: 5px; justify-content: flex-end; }
+/* img upload */
+.iu{border:2px dashed var(--bd);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:.15s;background:var(--cream)}
+.iu:hover{border-color:var(--accent);background:#f0f4ff}
+.iu input{display:none}
+.ip{max-height:100px;border-radius:6px;max-width:100%;margin-top:6px}
 
-  .price-history { margin-top: 6px; background: var(--cream); border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border); }
-  .price-history-title { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .ph-item { 
-  display: grid; 
-  grid-template-columns: 70px 1fr; /* Mobil: csak 2 oszlop */
-  align-items: baseline; 
-  gap: 8px; 
-  font-size: 0.78rem; 
-  padding: 3px 0; 
-  border-bottom: 1px dashed var(--border); 
+/* tags */
+.tw{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding:6px 8px;border:1.5px solid var(--bd);border-radius:7px;background:#fff;min-height:38px;cursor:text;transition:.15s}
+.tw:focus-within{border-color:var(--accent)}
+.ti{display:inline-flex;align-items:center;gap:4px;background:var(--al);color:var(--accent);border:1px solid #bfdbfe;border-radius:20px;font-size:.78rem;font-weight:600;padding:2px 8px 2px 10px}
+.ti button{background:none;border:none;cursor:pointer;color:var(--accent);font-size:.9rem;line-height:1;opacity:.7}.ti button:hover{opacity:1}
+.tin{border:none;outline:none;font-family:var(--f);font-size:.84rem;background:transparent;min-width:100px;flex:1}
+
+/* cat drag list */
+.cl{display:flex;flex-direction:column;gap:6px}
+.ci{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--cream);border-radius:8px;border:1px solid var(--bd);transition:.15s}
+.ci[draggable]{cursor:grab}.ci[draggable]:active{cursor:grabbing}
+.ci.do{box-shadow:0 0 0 2px var(--accent);background:var(--al)}.ci.drag{opacity:.4}
+.dh{color:var(--bd);font-size:1rem;cursor:grab;padding:0 4px 0 0;user-select:none;flex-shrink:0}
+.dh:hover{color:var(--muted)}
+.cn{font-size:.88rem;font-weight:500;flex:1}
+
+/* btns */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:7px 12px;border-radius:6px;border:none;font-family:var(--f);font-size:.84rem;font-weight:600;cursor:pointer;transition:.15s}
+.bp{background:var(--accent);color:#fff}.bp:hover{background:#1d4ed8}
+.bg{background:var(--cream);color:var(--ink)}.bg:hover{background:#ddd}
+.br{background:var(--red);color:#fff}.br:hover{background:#b91c1c}
+.bi{padding:5px;border-radius:6px;background:var(--cream);border:1px solid var(--bd);color:var(--ink);cursor:pointer;font-size:.84rem;transition:.15s}.bi:hover{background:#ddd}
+.bsm{padding:4px 8px;font-size:.76rem}
+
+/* toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--ink);color:var(--paper);padding:11px 16px;border-radius:10px;font-size:.84rem;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.3);transform:translateY(80px);opacity:0;transition:.25s;max-width:270px}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-left:4px solid var(--green)}.toast.err{border-left:4px solid var(--red)}
+
+/* loading */
+#lb2{display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:var(--accent);color:#fff;padding:5px 14px;font-size:.8rem;font-weight:600;align-items:center;gap:8px}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* scroll to top (mobile) */
+#stt{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-family:var(--f);font-size:.8rem;font-weight:600;cursor:pointer;z-index:90;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:.2s;opacity:0}
+#stt.on{opacity:1}
+@media(min-width:501px){#stt{display:none!important}}
+@media(max-width:500px){#stt{display:block}}
+
+/* empty */
+.empty{text-align:center;padding:60px 20px;color:var(--muted);grid-column:1/-1}
+.empty-ico{font-size:3.5rem;margin-bottom:12px}
+
+/* details */
+details summary{cursor:pointer;font-size:.78rem;color:var(--muted);font-weight:600;user-select:none}
+details summary:hover{color:var(--ink)}
+
+@media(max-width:500px){
+  .grid{grid-template-columns:1fr;padding:8px;gap:8px}
+  .frow{grid-template-columns:1fr}
+  header h1{font-size:.95rem}
+  .modal{max-height:95vh}
 }
-  .ph-item:last-child { border-bottom: none; }
-  .ph-date { color: var(--muted); white-space: nowrap; }
-  .ph-val { font-weight: 600; white-space: nowrap; }
-  .ph-loc { color: var(--muted); font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ph-note { color: var(--muted); font-size: 0.72rem; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ph-extra { 
-  font-size: 0.7rem; 
-  color: var(--muted); 
-  display: none; /* Alapból rejtve */
+@media(min-width:501px){
+  .ov{align-items:center;padding:12px}
+  .modal{border-radius:12px;max-height:90vh}
 }
-@media (min-width: 400px) {
-  .ph-item { 
-    grid-template-columns: 70px 76px 1fr; 
-    gap: 15px; 
-  }
-  .ph-extra { 
-    display: block; /* Nagyobb képernyőn mutatjuk */
-  }
-}
-
-  /* ── MODAL (egységes overlay osztály mindenhol) ── */
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; overflow: hidden; }
-  .overlay.active { display: flex; }
-  .modal { background: var(--card); border-radius: 14px 14px 0 0; width: 100%; max-width: 520px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 -4px 30px rgba(0,0,0,0.2); animation: slideUp .2s ease; }
-  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-header { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  .modal-title { font-family: var(--font-primary); font-size: 1rem; font-weight: 700; }
-  .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); padding: 3px 7px; border-radius: 5px; }
-  .modal-close:hover { background: var(--cream); color: var(--ink); }
-  .modal-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
-  .modal-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 7px; justify-content: flex-end; flex-shrink: 0; }
-
-  .form-group { display: flex; flex-direction: column; gap: 4px; }
-  .form-label { font-size: 0.74rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
-  .form-input, .form-select, .form-textarea { padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px; background: #fff; font-family: var(--font-primary); font-size: var(--text-base); color: var(--ink); outline: none; transition: border-color .15s; }
-  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
-  .form-textarea { resize: vertical; min-height: 58px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .form-hint { font-size: 0.72rem; color: var(--muted); }
-
-  .star-picker { display: flex; gap: 4px; }
-  .star-btn { background: none; border: none; font-size: 1.9rem; cursor: pointer; transition: transform .12s, color .12s; color: #d0d0d0; padding: 0; line-height: 1; }
-  .star-btn.active { color: var(--star); }
-  .star-btn:hover { transform: scale(1.2); color: var(--star); }
-
-  .img-upload-area { border: 2px dashed var(--border); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all .15s; background: var(--cream); position: relative; }
-  .img-upload-area:hover { border-color: var(--accent); background: #f0f4ff; }
-  .img-upload-area input[type=file] { display: none; }
-  .img-preview { max-height: 100px; border-radius: 6px; max-width: 100%; margin-top: 6px; }
-  .upload-icon { font-size: 1.6rem; margin-bottom: 4px; }
-  .upload-text { font-size: 0.78rem; color: var(--muted); }
-
-  .admin-panel { background: var(--ink); color: var(--paper); padding: 7px 12px; display: flex; align-items: center; gap: 6px; font-size: 0.78rem; flex-wrap: wrap; }
-  .admin-badge { background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  .tag-input-wrap { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 7px; background: #fff; min-height: 38px; cursor: text; transition: border-color .15s; }
-  .tag-input-wrap:focus-within { border-color: var(--accent); }
-  .tag-item { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-light); color: var(--accent); border: 1px solid #bfdbfe; border-radius: 20px; font-size: 0.78rem; font-weight: 600; padding: 2px 8px 2px 10px; }
-  .tag-item button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 0.9rem; line-height: 1; padding: 0; opacity: 0.7; }
-  .tag-item button:hover { opacity: 1; }
-  .tag-input { border: none; outline: none; font-family: var(--font-primary); font-size: var(--text-base); background: transparent; min-width: 120px; flex: 1; }
-
-  .toast { position: fixed; bottom: 20px; right: 20px; z-index: 999; background: var(--ink); color: var(--paper); padding: 12px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 6px 20px rgba(0,0,0,0.3); transform: translateY(80px); opacity: 0; transition: all .25s; max-width: 280px; }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-left: 4px solid var(--green); }
-  .toast.error { border-left: 4px solid var(--red); }
-
-  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
-  .empty-icon { font-size: 3.5rem; margin-bottom: 12px; }
-  .empty h3 { font-family: var(--font-primary); font-size: 1.2rem; color: var(--ink); margin-bottom: 6px; }
-  .empty p { font-size: 0.85rem; }
-
-  .cat-list { display: flex; flex-direction: column; gap: 6px; }
-  .cat-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--cream); border-radius: 8px; border: 1px solid var(--border); transition: box-shadow .15s, opacity .15s; }
-  .cat-item[draggable="true"] { cursor: grab; }
-  .cat-item[draggable="true"]:active { cursor: grabbing; }
-  .cat-item.drag-over { box-shadow: 0 0 0 2px var(--accent); background: var(--accent-light); }
-  .cat-item.dragging { opacity: 0.4; }
-  .drag-handle { color: var(--border); font-size: 1rem; cursor: grab; padding: 0 4px 0 0; user-select: none; flex-shrink: 0; }
-  .drag-handle:hover { color: var(--muted); }
-  .cat-item-name { font-size: 0.88rem; font-weight: 500; flex: 1; }
-
-  .tab-btn { flex: 1; padding: 10px; text-align: center; background: var(--cream); border: 1.5px solid var(--border); font-family: var(--font-primary); font-size: var(--text-base); font-weight: 600; cursor: pointer; transition: all .15s; color: var(--muted); }
-  .tab-btn:first-child { border-radius: 8px 0 0 8px; }
-  .tab-btn:last-child { border-radius: 0 8px 8px 0; border-left: none; }
-  .tab-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-
-  @media (max-width: 500px) {
-    .grid { grid-template-columns: 1fr; padding: 8px; gap: 8px; }
-    .form-row { grid-template-columns: 1fr; }
-    .filter-select { font-size: 0.72rem; padding: 5px 6px; }
-    header h1 { font-size: 1rem; }
-    .admin-panel { gap: 4px; }
-    .admin-panel span[style*="flex:1"] { display: none; }
-  }
-  @media (min-width: 501px) {
-    .overlay { align-items: center; padding: 12px; }
-    .modal { border-radius: 12px; max-height: 90vh; }
-  }
-
-  .divider { height: 1px; background: var(--border); margin: 4px 0; }
-  .mt-8 { margin-top: 8px; }
-  details summary { cursor: pointer; font-size: 0.78rem; color: var(--muted); font-weight: 600; user-select: none; }
-  details summary:hover { color: var(--ink); }
-  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<div id="loadingBar" style="display:none;position:fixed;top:0;left:0;right:0;z-index:300;background:var(--accent);color:#fff;padding:6px 16px;font-size:0.82rem;font-weight:600;align-items:center;gap:8px">
-  <span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></span>
-  <span id="loadingMsg">Mentés...</span>
+<div id="lb2">
+  <span class="spin"></span>
+  <span id="lbMsg">Mentés...</span>
 </div>
 
-<header>
-  <h1>Külföldi <span>vásárlás</span></h1>
-  <div class="header-actions">
-    <button class="btn btn-primary btn-sm" id="btnAddProduct">+ Termék</button>
-    <button class="btn btn-ghost btn-sm" id="btnAdminToggle">⚙</button>
+<!-- STICKY TOP BAR -->
+<div id="topbar">
+  <header>
+    <h1>Külföldi <span>vásárlás</span></h1>
+    <button class="hbtn hbtn-gh" id="btnSearch" title="Keresés / Szűrők" onclick="toggleSearch()">🔍</button>
+    <button class="hbtn hbtn-pr" id="btnAdd">+ Termék</button>
+    <button class="hbtn hbtn-gh" id="btnAdmin" title="Admin" onclick="adminClick()">⚙</button>
+  </header>
+  <div id="searchBar">
+    <div class="s-row">
+      <input class="s-inp" id="sInp" placeholder="Keresés név, megjegyzés, hely..." oninput="filter()">
+      <button class="hbtn hbtn-gh" style="white-space:nowrap;font-size:.76rem" onclick="toggleSearch()">✕ Zár</button>
+    </div>
+    <div class="f-row">
+      <select class="fsel" id="fCat" onchange="filter()"><option value="">Minden kategória</option></select>
+      <select class="fsel" id="fCnt" onchange="filter()"><option value="">Minden ország</option></select>
+      <select class="fsel" id="fShp" onchange="filter()"><option value="">Minden bolt</option></select>
+      <select class="fsel" id="fCur" onchange="filter()"><option value="">Minden pénznem</option></select>
+      <button class="fclear" id="btnCF" onclick="clearF()">✕ Törlés</button>
+    </div>
+    <div id="rCount"></div>
   </div>
-</header>
-
-<div id="adminBar" style="display:none" class="admin-panel">
-  <span class="admin-badge">Admin</span>
-  <span style="flex:1">Szerkesztési mód aktív</span>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCats">Kategóriák</button>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCurrencies">Pénznemek</button>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageCountries">Országok</button>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnManageShops">Boltok</button>
-  <button class="btn btn-sm" id="btnApiSetup" style="color:#fff" title="Google Sheets összekötés">🔗 Sheets</button>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnBackupRestore">💾 Backup</button>
-  <button class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff" id="btnExport">📊 Export</button>
-  <button class="btn btn-sm" style="background:var(--red);color:#fff" id="btnAdminLogout">Kilép</button>
+  <div id="adminBar">
+    <span class="ab-badge">Admin</span>
+    <button class="ab" id="btnCats">Kategóriák</button>
+    <button class="ab" id="btnCurrs">Pénznemek</button>
+    <button class="ab" id="btnCnts">Országok</button>
+    <button class="ab" id="btnShps">Boltok</button>
+    <button class="ab" id="btnSheets">🔗 Sheets</button>
+    <button class="ab" id="btnBak">💾 Backup</button>
+    <button class="ab" onclick="exportCSV()">📊 Export</button>
+    <button class="ab ab-red" id="btnLogout">Kilép</button>
+  </div>
 </div>
 
-<div class="search-bar">
-  <div class="search-row">
-    <input class="search-input" id="searchInput" placeholder="🔍 Keresés név, megjegyzés, hely..." oninput="filterProducts()">
-  </div>
-  <div class="filter-row">
-    <select class="filter-select" id="filterCat" onchange="filterProducts()"><option value="">Minden kategória</option></select>
-    <select class="filter-select" id="filterCountry" onchange="filterProducts()"><option value="">Minden ország</option></select>
-    <select class="filter-select" id="filterShop" onchange="filterProducts()"><option value="">Minden bolt</option></select>
-    <select class="filter-select" id="filterCurr" onchange="filterProducts()"><option value="">Minden pénznem</option></select>
-    <button class="btn-clear-filters" id="btnClearFilters" onclick="clearFilters()" style="display:none">✕ Szűrők törlése</button>
-  </div>
-  <div class="result-count" id="resultCount"></div>
-</div>
+<div class="grid" id="grid"></div>
 
-<div class="grid" id="productGrid"></div>
+<!-- scroll to top -->
+<button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ Tetejére</button>
 
-<!-- ADD/EDIT PRODUCT MODAL -->
-<div class="overlay" id="productModal">
+<!-- ── MODALS ── -->
+
+<!-- Product modal -->
+<div class="ov" id="mProd">
   <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="productModalTitle">Új termék hozzáadása</span>
-      <button class="modal-close" onclick="closeModal('productModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Fotó (opcionális)</label>
-        <label class="img-upload-area" id="imgUploadArea" for="imgFileInput">
-          <div class="upload-icon">📷</div>
-          <div class="upload-text">Koppints a kép kiválasztásához</div>
-          <img class="img-preview" id="imgPreview" style="display:none">
+    <div class="mh"><span class="mt" id="mProdT">Új termék</span><button class="mx" onclick="closeM('mProd')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <label class="fl">Fotó</label>
+        <label class="iu" id="iuArea" for="iuFile">
+          <div id="iuIco">📷</div>
+          <div id="iuTxt" style="font-size:.78rem;color:var(--muted)">Koppints a kép kiválasztásához</div>
+          <img class="ip" id="iuPrev" style="display:none">
         </label>
-        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImgUpload(event)">
+        <input type="file" id="iuFile" accept="image/*" onchange="handleImg(event)">
       </div>
-      <div class="form-group">
-        <label class="form-label">Termék neve *</label>
-        <input class="form-input" id="fName" placeholder="pl. Nutella 400g" onkeydown="handleFormEnter(event)">
+      <div class="fg"><label class="fl">Termék neve *</label><input class="fi" id="fN" placeholder="pl. Nutella 400g" onkeydown="pEnter(event)"></div>
+      <div class="fg"><label class="fl">Rövid leírás</label><input class="fi" id="fD" placeholder="pl. Mogyorós csokoládékrém" onkeydown="pEnter(event)"></div>
+      <div class="fg"><label class="fl">Kategória</label><select class="fsel2" id="fCatS"><option value="">Válassz...</option></select></div>
+      <div class="fg">
+        <label class="fl">Ország / Országok</label>
+        <div class="tw" id="cntWrap"><div id="cntTags"></div><input class="tin" id="fCntI" placeholder="+ Ország" list="cntList" autocomplete="off" onkeydown="tagKey(event,'c')"></div>
+        <datalist id="cntList"></datalist>
       </div>
-      <div class="form-group">
-        <label class="form-label">Rövid leírás</label>
-        <input class="form-input" id="fDesc" placeholder="pl. Mogyorós csokoládékrém, extra krémes" onkeydown="handleFormEnter(event)">
+      <div class="fg">
+        <label class="fl">Bolt / Boltok</label>
+        <div class="tw" id="shpWrap"><div id="shpTags"></div><input class="tin" id="fShpI" placeholder="+ Bolt" list="shpList" autocomplete="off" onkeydown="tagKey(event,'s')"></div>
+        <datalist id="shpList"></datalist>
       </div>
-      <div class="form-group">
-        <label class="form-label">Kategória</label>
-        <select class="form-select" id="fCat"><option value="">Válassz...</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Ország / Országok</label>
-        <div class="tag-input-wrap" id="countryTagWrap">
-          <div class="tag-list" id="countryTags"></div>
-          <input class="tag-input" id="fCountryInput" placeholder="+ Ország hozzáadása" list="countryList" autocomplete="off" onkeydown="handleTagKey(event,'country')">
-        </div>
-        <datalist id="countryList"></datalist>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Bolt / Boltok</label>
-        <div class="tag-input-wrap" id="shopTagWrap">
-          <div class="tag-list" id="shopTags"></div>
-          <input class="tag-input" id="fShopInput" placeholder="+ Bolt hozzáadása" list="shopList" autocomplete="off" onkeydown="handleTagKey(event,'shop')">
-        </div>
-        <datalist id="shopList"></datalist>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Vásárlás dátuma</label>
-        <input class="form-input" type="date" id="fDate">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Ár és pénznem</label>
+      <div class="fg"><label class="fl">Dátum</label><input class="fi" type="date" id="fDt"></div>
+      <div class="fg">
+        <label class="fl">Ár és pénznem</label>
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
-          <input class="form-input" id="fPrice" type="number" placeholder="Összeg" min="0" step="any" onkeydown="handleFormEnter(event)">
-          <select class="form-select" id="fCurr"><option value="">Pénznem</option></select>
+          <input class="fi" id="fP" type="number" placeholder="Összeg" min="0" step="any" onkeydown="pEnter(event)">
+          <select class="fsel2" id="fCurS"><option value="">Pénznem</option></select>
         </div>
-        <input class="form-input" id="fPriceNote" placeholder='Megjegyzés az árhoz (pl. "akció")' style="margin-top:6px" onkeydown="handleFormEnter(event)">
-        <div class="form-hint" style="margin-top:4px">Az eredeti ár rögzítésre kerül. Később frissíteni is lehet.</div>
+        <input class="fi" id="fPN" placeholder='Megjegyzés az árhoz' style="margin-top:6px" onkeydown="pEnter(event)">
+        <div class="fhint" style="margin-top:3px">Az ár rögzítésre kerül, később frissíthető.</div>
       </div>
-      <div class="form-group" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
-        <label class="form-label" style="color:var(--accent)">Értékelés</label>
-        <div class="star-picker" id="starPicker">
-          <button class="star-btn" onclick="setRating(1)">★</button>
-          <button class="star-btn" onclick="setRating(2)">★</button>
-          <button class="star-btn" onclick="setRating(3)">★</button>
-          <button class="star-btn" onclick="setRating(4)">★</button>
-          <button class="star-btn" onclick="setRating(5)">★</button>
-        </div>
-        <div id="ratingLabel" style="font-size:0.78rem;color:var(--muted);margin-top:4px">Koppints egy csillagra</div>
+      <div class="fg" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
+        <label class="fl" style="color:var(--accent)">Értékelés</label>
+        <div class="sp" id="sp"><button class="sb" onclick="setR(1)">★</button><button class="sb" onclick="setR(2)">★</button><button class="sb" onclick="setR(3)">★</button><button class="sb" onclick="setR(4)">★</button><button class="sb" onclick="setR(5)">★</button></div>
+        <div id="rLbl" style="font-size:.77rem;color:var(--muted);margin-top:3px">Koppints egy csillagra</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Megjegyzés</label>
-        <textarea class="form-textarea" id="fNote" placeholder='pl. "Nagyon finom, jó ajándéknak"'></textarea>
-      </div>
-      <input type="hidden" id="fUploader">
+      <div class="fg"><label class="fl">Megjegyzés</label><textarea class="fta" id="fNt" placeholder="Tapasztalat..." onkeydown="pEnterTA(event)"></textarea></div>
+      <input type="hidden" id="fUp">
     </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('productModal')">Mégse</button>
-      <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct()">Mentés</button>
+    <div class="mf">
+      <button class="btn bg" onclick="closeM('mProd')">Mégse</button>
+      <button class="btn bp" onclick="saveProd()">Mentés</button>
     </div>
   </div>
 </div>
 
-<!-- PRICE UPDATE MODAL -->
-<div class="overlay" id="priceModal">
+<!-- Price modal -->
+<div class="ov" id="mPrice">
   <div class="modal" style="max-width:380px">
-    <div class="modal-header">
-      <span class="modal-title">Ár frissítése</span>
-      <button class="modal-close" onclick="closeModal('priceModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Új ár</label>
+    <div class="mh"><span class="mt">Ár frissítése</span><button class="mx" onclick="closeM('mPrice')">✕</button></div>
+    <div class="mb">
+      <div class="fg">
+        <label class="fl">Új ár</label>
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
-          <input class="form-input" id="pNewPrice" type="number" placeholder="Összeg" min="0" step="any">
-          <select class="form-select" id="pNewCurr"></select>
+          <input class="fi" id="pP" type="number" placeholder="Összeg" min="0" step="any" onkeydown="eS(event,savePr)">
+          <select class="fsel2" id="pC"></select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Ország</label>
-          <input class="form-input" id="pNewCountry" placeholder="pl. Olaszország" list="countryList" autocomplete="off">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Bolt</label>
-          <input class="form-input" id="pNewShop" placeholder="pl. Spar" list="shopList" autocomplete="off">
-        </div>
+      <div class="frow">
+        <div class="fg"><label class="fl">Ország</label><input class="fi" id="pCnt" placeholder="pl. Olaszország" list="cntList" autocomplete="off" onkeydown="eS(event,savePr)"></div>
+        <div class="fg"><label class="fl">Bolt</label><input class="fi" id="pShp" placeholder="pl. Spar" list="shpList" autocomplete="off" onkeydown="eS(event,savePr)"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Megjegyzés (opcionális)</label>
-        <input class="form-input" id="pPriceNote" placeholder='pl. "akció", "new size"'>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Dátum</label>
-        <input class="form-input" type="date" id="pNewDate">
-      </div>
+      <div class="fg"><label class="fl">Megjegyzés</label><input class="fi" id="pNote" placeholder='pl. "akció"' onkeydown="eS(event,savePr)"></div>
+      <div class="fg"><label class="fl">Dátum</label><input class="fi" type="date" id="pDt" onkeydown="eS(event,savePr)"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('priceModal')">Mégse</button>
-      <button class="btn btn-primary" onclick="savePriceUpdate()">Frissítés</button>
-    </div>
+    <div class="mf"><button class="btn bg" onclick="closeM('mPrice')">Mégse</button><button class="btn bp" onclick="savePr()">Frissítés</button></div>
   </div>
 </div>
 
-<!-- ADMIN LOGIN MODAL -->
-<div class="overlay" id="loginModal">
-  <div class="modal" style="max-width:360px">
-    <div class="modal-header">
-      <span class="modal-title">⚙ Admin belépés</span>
-      <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+<!-- Login modal -->
+<div class="ov" id="mLogin">
+  <div class="modal" style="max-width:340px">
+    <div class="mh"><span class="mt">⚙ Admin belépés</span><button class="mx" onclick="closeM('mLogin')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Jelszó</label><input class="fi" type="password" id="aPw" placeholder="Admin jelszó" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div id="aErr" style="color:var(--red);font-size:.82rem;display:none">Helytelen jelszó!</div>
     </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Jelszó</label>
-        <input class="form-input" type="password" id="adminPassword" placeholder="Admin jelszó" onkeydown="if(event.key==='Enter')checkAdminLogin()">
-      </div>
-      <div id="loginError" style="color:var(--red);font-size:0.82rem;display:none">Helytelen jelszó!</div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" onclick="checkAdminLogin()">Belépés</button>
-    </div>
+    <div class="mf"><button class="btn bp" onclick="doLogin()">Belépés</button></div>
   </div>
 </div>
 
-<!-- CATEGORIES MODAL -->
-<div class="overlay" id="catModal">
+<!-- Cats modal -->
+<div class="ov" id="mCats">
   <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <span class="modal-title">📂 Kategóriák kezelése</span>
-      <button class="modal-close" onclick="closeModal('catModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="cat-list" id="catList"></div>
-      <div class="divider mt-8"></div>
-      <div class="form-group mt-8">
-        <label class="form-label">Új kategória</label>
-        <div style="display:flex;gap:8px">
-          <input class="form-input" id="newCatInput" placeholder="pl. Csokoládé" onkeydown="if(event.key==='Enter')addCategory()">
-          <button class="btn btn-primary" onclick="addCategory()">+ Hozzáad</button>
-        </div>
+    <div class="mh"><span class="mt">📂 Kategóriák</span><button class="mx" onclick="closeM('mCats')">✕</button></div>
+    <div class="mb">
+      <div class="cl" id="catList"></div>
+      <hr style="border:none;border-top:1px solid var(--bd);margin:8px 0">
+      <div class="fg"><label class="fl">Új kategória</label>
+        <div style="display:flex;gap:8px"><input class="fi" id="newCat" placeholder="pl. Csokoládé" onkeydown="if(event.key==='Enter')addCat()"><button class="btn bp" onclick="addCat()">+ Hozzáad</button></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- CURRENCIES MODAL -->
-<div class="overlay" id="currModal">
+<!-- Currencies modal -->
+<div class="ov" id="mCurrs">
   <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <span class="modal-title">💱 Pénznemek kezelése</span>
-      <button class="modal-close" onclick="closeModal('currModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="cat-list" id="currList"></div>
-      <div class="divider mt-8"></div>
-      <div class="form-group mt-8">
-        <label class="form-label">Új pénznem (kód + név)</label>
-        <div style="display:flex;gap:8px">
-          <input class="form-input" id="newCurrCode" placeholder="pl. GBP" style="max-width:90px">
-          <input class="form-input" id="newCurrName" placeholder="Brit font">
-          <button class="btn btn-primary" onclick="addCurrency()">+ Hozzáad</button>
+    <div class="mh"><span class="mt">💱 Pénznemek</span><button class="mx" onclick="closeM('mCurrs')">✕</button></div>
+    <div class="mb">
+      <div class="cl" id="currList"></div>
+      <hr style="border:none;border-top:1px solid var(--bd);margin:8px 0">
+      <div class="fg"><label class="fl">Új (kód + név)</label>
+        <div style="display:flex;gap:6px">
+          <input class="fi" id="nCC" placeholder="GBP" style="max-width:80px">
+          <input class="fi" id="nCN" placeholder="Brit font" style="flex:1">
+          <button class="btn bp" onclick="addCurr()">+</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- COUNTRIES MODAL -->
-<div class="overlay" id="countriesModal">
+<!-- Countries modal -->
+<div class="ov" id="mCnts">
   <div class="modal" style="max-width:420px">
-    <div class="modal-header">
-      <span class="modal-title">🌍 Országok kezelése</span>
-      <button class="modal-close" onclick="closeModal('countriesModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-hint" style="margin-bottom:8px">Kattints egy névre a szerkesztéshez. A változtatás minden terméknél frissül.</div>
-      <div class="cat-list" id="countriesList"></div>
-    </div>
+    <div class="mh"><span class="mt">🌍 Országok</span><button class="mx" onclick="closeM('mCnts')">✕</button></div>
+    <div class="mb"><div class="fhint" style="margin-bottom:6px">Kattints a szerkesztéshez – minden terméknél frissül.</div><div class="cl" id="cntList"></div></div>
   </div>
 </div>
 
-<!-- SHOPS MODAL -->
-<div class="overlay" id="shopsModal">
+<!-- Shops modal -->
+<div class="ov" id="mShps">
   <div class="modal" style="max-width:420px">
-    <div class="modal-header">
-      <span class="modal-title">🏪 Boltok kezelése</span>
-      <button class="modal-close" onclick="closeModal('shopsModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-hint" style="margin-bottom:8px">Kattints egy névre a szerkesztéshez. A változtatás minden terméknél frissül.</div>
-      <div class="cat-list" id="shopsList"></div>
-    </div>
+    <div class="mh"><span class="mt">🏪 Boltok</span><button class="mx" onclick="closeM('mShps')">✕</button></div>
+    <div class="mb"><div class="fhint" style="margin-bottom:6px">Kattints a szerkesztéshez – minden terméknél frissül.</div><div class="cl" id="shpList2"></div></div>
   </div>
 </div>
 
-<!-- VIEW PRODUCT MODAL -->
-<div class="overlay" id="viewModal">
+<!-- View product modal -->
+<div class="ov" id="mView">
   <div class="modal" style="max-width:520px">
-    <div class="modal-header">
-      <span class="modal-title" id="viewModalTitle">Termék részletek</span>
-      <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
-    </div>
-    <div class="modal-body" id="viewModalBody"></div>
-    <div class="modal-footer" id="viewModalFooter"></div>
+    <div class="mh"><span class="mt" id="mViewT"></span><button class="mx" onclick="closeM('mView')">✕</button></div>
+    <div class="mb" id="mViewB"></div>
+    <div class="mf" id="mViewF"></div>
   </div>
 </div>
 
-<!-- ADD REVIEW MODAL -->
-<div class="overlay" id="reviewModal">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <span class="modal-title">✍ Saját értékelés</span>
-      <button class="modal-close" onclick="closeModal('reviewModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Neved</label>
-        <input class="form-input" id="rName" placeholder="pl. Anna">
+<!-- Review modal -->
+<div class="ov" id="mRev">
+  <div class="modal" style="max-width:380px">
+    <div class="mh"><span class="mt">✍ Értékelés</span><button class="mx" onclick="closeM('mRev')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Neved</label><input class="fi" id="rN" placeholder="pl. Anna" onkeydown="eS(event,saveRev)"></div>
+      <div class="fg" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
+        <label class="fl" style="color:var(--accent)">Értékelés</label>
+        <div class="sp" id="sp2"><button class="sb" onclick="setRR(1)">★</button><button class="sb" onclick="setRR(2)">★</button><button class="sb" onclick="setRR(3)">★</button><button class="sb" onclick="setRR(4)">★</button><button class="sb" onclick="setRR(5)">★</button></div>
+        <div id="rLbl2" style="font-size:.77rem;color:var(--muted);margin-top:3px">Koppints egy csillagra</div>
       </div>
-      <div class="form-group" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
-        <label class="form-label" style="color:var(--accent)">Értékelés</label>
-        <div class="star-picker" id="reviewStarPicker">
-          <button class="star-btn" onclick="setReviewRating(1)">★</button>
-          <button class="star-btn" onclick="setReviewRating(2)">★</button>
-          <button class="star-btn" onclick="setReviewRating(3)">★</button>
-          <button class="star-btn" onclick="setReviewRating(4)">★</button>
-          <button class="star-btn" onclick="setReviewRating(5)">★</button>
-        </div>
-        <div id="reviewRatingLabel" style="font-size:0.78rem;color:var(--muted);margin-top:4px">Koppints egy csillagra</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Megjegyzés</label>
-        <textarea class="form-textarea" id="rNote" placeholder="Írd le tapasztalatod..."></textarea>
-      </div>
+      <div class="fg"><label class="fl">Megjegyzés</label><textarea class="fta" id="rNote" placeholder="Tapasztalatod..." onkeydown="esSTA(event,saveRev)"></textarea></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('reviewModal')">Mégse</button>
-      <button class="btn btn-primary" onclick="saveReview()">Mentés</button>
-    </div>
+    <div class="mf"><button class="btn bg" onclick="closeM('mRev')">Mégse</button><button class="btn bp" onclick="saveRev()">Mentés</button></div>
   </div>
 </div>
 
-<!-- SHEETS SETUP MODAL -->
-<div class="overlay" id="sheetsModal">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-header">
-      <span class="modal-title">🔗 Google Sheets összekötés</span>
-      <button class="modal-close" onclick="closeModal('sheetsModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="sheetsStatus" style="padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:4px"></div>
-      <div class="form-group">
-        <label class="form-label">Apps Script URL</label>
-        <input class="form-input" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:0.8rem">
-        <div class="form-hint" style="margin-top:4px">Illeszd be a Google Apps Script webalkalmazás URL-jét.</div>
+<!-- Sheets modal -->
+<div class="ov" id="mSheets">
+  <div class="modal" style="max-width:470px">
+    <div class="mh"><span class="mt">🔗 Google Sheets</span><button class="mx" onclick="closeM('mSheets')">✕</button></div>
+    <div class="mb">
+      <div id="shSt" style="padding:9px 13px;border-radius:8px;font-size:.84rem;margin-bottom:4px"></div>
+      <div class="fg">
+        <label class="fl">Apps Script URL</label>
+        <input class="fi" id="shUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:.78rem">
+        <div class="fhint" style="margin-top:3px">Illeszd be a Google Apps Script webalkalmazás URL-jét.</div>
       </div>
       <details style="margin-top:8px">
-        <summary style="font-size:0.82rem;font-weight:600;color:var(--accent);cursor:pointer">📋 Rövid telepítési útmutató</summary>
-        <div style="font-size:0.8rem;color:var(--muted);margin-top:8px;line-height:1.7;background:var(--cream);padding:10px 12px;border-radius:8px">
-          1. Nyisd meg: <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">sheets.google.com</a> → Új táblázat<br>
-          2. <strong>Bővítmények → Apps Script</strong><br>
+        <summary style="color:var(--accent)">📋 Telepítési útmutató</summary>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:7px;line-height:1.7;background:var(--cream);padding:9px 11px;border-radius:8px">
+          1. <a href="https://sheets.google.com" target="_blank" style="color:var(--accent)">sheets.google.com</a> → Új táblázat<br>
+          2. Bővítmények → Apps Script<br>
           3. Másold be az <strong>apps-script.js</strong> tartalmát<br>
-          4. <strong>Üzembe helyezés → Új üzembe helyezés</strong><br>
-          &nbsp;&nbsp;&nbsp;→ Típus: Webalkalmazás, Hozzáférés: <strong>Bárki</strong><br>
-          5. Másold ki a kapott URL-t és illeszd be fentebb
+          4. Üzembe helyezés → Webalkalmazás, Hozzáférés: <strong>Bárki</strong><br>
+          5. Másold ki az URL-t és illeszd be fentebb
         </div>
       </details>
     </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="clearSheetsUrl()">Kapcsolat törlése</button>
-      <button class="btn btn-primary" onclick="saveSheetsUrl()">Mentés és teszt</button>
+    <div class="mf"><button class="btn bg" onclick="clearSh()">Kapcsolat törlése</button><button class="btn bp" onclick="saveSh()">Mentés és teszt</button></div>
+  </div>
+</div>
+
+<!-- Backup modal -->
+<div class="ov" id="mBak">
+  <div class="modal" style="max-width:480px">
+    <div class="mh"><span class="mt">💾 Backup</span><button class="mx" onclick="closeM('mBak')">✕</button></div>
+    <div class="mb">
+      <div id="bakList" style="display:flex;flex-direction:column;gap:7px"></div>
+      <div class="fhint" style="margin-top:10px;padding:9px;background:var(--cream);border-radius:8px">ℹ️ Az utolsó 5 változtatás. Visszaállításkor az aktuális adatok felülíródnak.</div>
     </div>
   </div>
 </div>
 
-<!-- BACKUP MODAL — javítva: overlay osztály -->
-<div class="overlay" id="backupModal">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-header">
-      <span class="modal-title">💾 Backup visszaállítás</span>
-      <button class="modal-close" onclick="closeModal('backupModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="backupList" style="display:flex;flex-direction:column;gap:8px"></div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-top:12px;padding:10px;background:var(--cream);border-radius:8px">
-        ℹ️ Automatikus mentések az utolsó 5 változtatásról. Visszaállításkor a jelenlegi adatok felülíródnak.
+<!-- Image upload modal -->
+<div class="ov" id="mImg">
+  <div class="modal" style="max-width:380px">
+    <div class="mh"><span class="mt">📷 Kép hozzáadása</span><button class="mx" onclick="closeM('mImg')">✕</button></div>
+    <div class="mb">
+      <div style="text-align:center;margin-bottom:10px">
+        <label for="qImg" style="display:inline-block;padding:11px 18px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-weight:600">📤 Kép kiválasztása</label>
+        <input type="file" id="qImg" accept="image/*" style="display:none" onchange="handleQImg(event)">
+      </div>
+      <div id="qPrvA" style="display:none;text-align:center">
+        <img id="qPrv" style="max-width:100%;max-height:190px;border-radius:8px;margin-bottom:7px">
+        <div class="fhint">Kattints a mentés gombra</div>
       </div>
     </div>
+    <div class="mf"><button class="btn bg" onclick="closeM('mImg')">Mégse</button><button class="btn bp" id="qSave" onclick="saveQImg()" disabled>Mentés</button></div>
   </div>
 </div>
 
-<!-- IMAGE UPLOAD MODAL — javítva: overlay osztály -->
-<div class="overlay" id="imageUploadModal">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-header">
-      <span class="modal-title">📷 Kép hozzáadása</span>
-      <button class="modal-close" onclick="closeModal('imageUploadModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="text-align:center;margin-bottom:12px">
-        <label for="quickImgInput" style="display:inline-block;padding:12px 20px;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-weight:600">
-          📤 Kép kiválasztása
-        </label>
-        <input type="file" id="quickImgInput" accept="image/*" style="display:none" onchange="handleQuickImageUpload(event)">
-      </div>
-      <div id="quickImgPreviewArea" style="display:none;text-align:center">
-        <img id="quickImgPreview" style="max-width:100%;max-height:200px;border-radius:8px;margin-bottom:8px">
-        <div style="font-size:0.78rem;color:var(--muted)">Kattints a mentés gombra a kép hozzáadásához</div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('imageUploadModal')">Mégse</button>
-      <button class="btn btn-primary" id="btnSaveQuickImage" onclick="saveQuickImage()" disabled>Mentés</button>
-    </div>
-  </div>
+<div class="lb" id="lb" onclick="closeLB()">
+  <button class="lb-x" onclick="closeLB()">✕</button>
+  <img id="lbImg" src="" alt="" onclick="event.stopPropagation()">
 </div>
-
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()">
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-const ADMIN_PASSWORD = 'Billa789';
-// ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
+// ── STATE ──
+const ADMIN_PW='Billa789';
+const SH_DEF='https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
+let shUrl=localStorage.getItem('sheetsApiUrl')||SH_DEF;
+let isAdmin=sessionStorage.getItem('isAdmin')==='true';
+let prods=[],cats=['Csokoládé','Keksz','Édességek','Italok','Szeszes italok','Fűszerek','Kozmetikum','Egyéb'];
+let currs=[{code:'EUR',name:'Euró'},{code:'HUF',name:'Forint'},{code:'USD',name:'Dollár'}];
+let shpOrd=[],editId=null,rat=0,ratR=0,prId=null,imgPend=null,qImgPid=null,qImgB64=null,revPid=null;
+let fCnts=[],fShps=[],gIdx={};
 
-const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
-let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
+// ── ENTER HELPERS ──
+function eS(e,fn){if(e.key==='Enter'){e.preventDefault();fn();}}
+function esSTA(e,fn){if(e.key==='Enter'&&(e.ctrlKey||e.shiftKey)){e.preventDefault();fn();}}
+function pEnter(e){if(e.key==='Enter'){e.preventDefault();const n=_('fN').value.trim();if(n)saveProd();}}
+function pEnterTA(e){if(e.key==='Enter'&&(e.ctrlKey||e.shiftKey)){e.preventDefault();const n=_('fN').value.trim();if(n)saveProd();}}
 
-let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-let products = [];
-let categories = ['Csokoládé','Keksz','Édességek','Italok','Szeszes italok','Fűszerek','Kozmetikum','Egyéb'];
-let currencies = [{code:'EUR',name:'Euró'},{code:'HUF',name:'Forint'},{code:'USD',name:'Dollár'}];
-let shopOrder = [];
-let editingId = null;
-let currentRating = 0;
-let currentReviewRating = 0;
-let priceUpdateId = null;
-let pendingImgBase64 = null;
-let quickImageProductId = null;
-let quickImageBase64 = null;
-let reviewProductId = null;
-let fCountries = [];
-let fShops = [];
-let currentLightboxSrc = null;
-let lastGalleryIndex = {}; // termék szerint tároljuk az indexet
+// ── SHEETS ──
+async function shGet(act,key){if(!shUrl)return null;const r=await fetch(`${shUrl}?action=${act}${key?'&key='+key:''}`);return r.json();}
+async function shWrite(body){try{await fetch(shUrl,{method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});}catch(e){}}
+async function delImgSh(id){if(shUrl)await shWrite({action:'set',key:'img_'+id,value:''});}
 
-// ══════════════════════════════════════════════
-// GOOGLE SHEETS API
-// ══════════════════════════════════════════════
-async function sheetsGet(action, key) {
-  if (!SHEETS_API_URL) return null;
-  const url = `${SHEETS_API_URL}?action=${action}${key ? '&key='+key : ''}`;
-  const res = await fetch(url, {redirect: 'follow'});
-  return await res.json();
-}
+// ── STORAGE ──
+function _(id){return document.getElementById(id);}
+function setLd(on,msg){_(  'lb2').style.display=on?'flex':'none';if(msg)_('lbMsg').textContent=msg;}
+function saveLoc(){localStorage.setItem('products',JSON.stringify(prods));localStorage.setItem('categories',JSON.stringify(cats));localStorage.setItem('currencies',JSON.stringify(currs));localStorage.setItem('shopOrder',JSON.stringify(shpOrd));}
 
-async function sheetsWrite(url, body) {
-  try {
-    await fetch(url, { method: 'POST', body: JSON.stringify(body), headers: {'Content-Type': 'text/plain'} });
-  } catch(e) {}
-}
-
-async function deleteImageFromSheets(id) {
-  if (!SHEETS_API_URL) return;
-  await sheetsWrite(SHEETS_API_URL, {action: 'set', key: 'img_' + id, value: ''});
-}
-
-// ══════════════════════════════════════════════
-// STORAGE
-// ══════════════════════════════════════════════
-function setLoading(on, msg) {
-  const el = document.getElementById('loadingBar');
-  if (!el) return;
-  el.style.display = on ? 'flex' : 'none';
-  if (msg) document.getElementById('loadingMsg').textContent = msg;
-}
-
-async function loadData() {
-  try { const v = localStorage.getItem('products');   if (v) products   = JSON.parse(v); } catch(e){}
-  try { const v = localStorage.getItem('categories'); if (v) categories = JSON.parse(v); } catch(e){}
-  try { const v = localStorage.getItem('currencies'); if (v) currencies = JSON.parse(v); } catch(e){}
-  try { const v = localStorage.getItem('shopOrder');  if (v) shopOrder  = JSON.parse(v); } catch(e){}
-
-  if (!SHEETS_API_URL) return;
-  setLoading(true, 'Adatok betöltése...');
-  try {
-    const data = await sheetsGet('getAll');
-    if (data && data.ok) {
-      if (data.products) {
-        try {
-          const sheetsProds = JSON.parse(data.products);
-              const localMap = new Map();
-          try {
-            const lp = JSON.parse(localStorage.getItem('products') || '[]');
-            lp.forEach(p => {
-                    if (p.image && p.image !== '__img__') localMap.set(p.id + '_img', p.image);
-                  if (p.images && p.images.length) localMap.set(p.id + '_images', p.images);
-            });
-          } catch(e){}
-
-          products = sheetsProds.map(p => {
-            const localImgs = localMap.get(p.id + '_images');
-            // Ha localStorage-ban megvan a teljes tömb, azt használjuk
-            const validLocalImgs = localImgs ? localImgs.filter(img => img && img !== '__img__') : [];
-            const expectedCount = p._imgCount || (p.images ? p.images.length : 0);
-            // Ha a local tömb tartalmazza az összes képet, OK; különben Sheets-ből kell pótolni
-            const images = validLocalImgs.length === expectedCount && validLocalImgs.length > 0
-              ? validLocalImgs
-              : []; // Sheets async betöltés fogja pótolni
-            return {
-              ...p,
-              image: null,
-              images
-            };
-          });
-
-          // Hiányzó képek betöltése Sheetsből — minden indexelt cella lekérése
-          products.forEach(async (p, i) => {
-            const hasImgs = p.images && p.images.length > 0;
-            if (hasImgs) return; // localStorage-ból már visszaállt, nincs szükség Sheets lekérésre
-            try {
-              // Próbáljuk az indexelt img_<id>_0, img_<id>_1, ... cellákat
-              const recovered = [];
-              for (let idx = 0; idx < 20; idx++) {
-                const imgData = await sheetsGet('get', `img_${p.id}_${idx}`);
-                if (imgData && imgData.value) recovered.push(imgData.value);
-                else break; // Ha üres a cella, megálljunk
-              }
-              if (!recovered.length) {
-                // Visszafallback: régi egyes img_ cella
-                const imgData = await sheetsGet('get', 'img_' + p.id);
-                if (imgData && imgData.value) recovered.push(imgData.value);
-              }
-              if (recovered.length) {
-                products[i] = {...products[i], images: recovered, image: null};
-                saveToLocalStorage();
-                renderAll();
-              }
-            } catch(e){}
-          });
-        } catch(e){}
+async function loadData(){
+  ['products','categories','currencies','shopOrder'].forEach((k,i)=>{
+    try{const v=localStorage.getItem(k);if(v){[prods,cats,currs,shpOrd][i]=JSON.parse(v);}}catch(e){}
+  });
+  if(!shUrl)return;
+  setLd(true,'Betöltés...');
+  try{
+    const d=await shGet('getAll');
+    if(d?.ok){
+      if(d.products){
+        const sp=JSON.parse(d.products),lm=new Map();
+        try{JSON.parse(localStorage.getItem('products')||'[]').forEach(p=>{if(p.images?.length)lm.set(p.id,p.images);});}catch(e){}
+        prods=sp.map(p=>{
+          const li=lm.get(p.id)?.filter(i=>i&&i!=='__img__')||[];
+          const ec=p._imgCount||(p.images?.length||0);
+          return{...p,image:null,images:li.length===ec&&li.length>0?li:[]};
+        });
+        prods.forEach(async(p,i)=>{
+          if(p.images?.length)return;
+          try{
+            const rec=[];
+            for(let x=0;x<20;x++){const r=await shGet('get',`img_${p.id}_${x}`);if(r?.value)rec.push(r.value);else break;}
+            if(!rec.length){const r=await shGet('get','img_'+p.id);if(r?.value)rec.push(r.value);}
+            if(rec.length){prods[i]={...prods[i],images:rec,image:null};saveLoc();renderAll();}
+          }catch(e){}
+        });
       }
-      if (data.categories) try { categories = JSON.parse(data.categories); } catch(e){}
-      if (data.currencies) try { currencies = JSON.parse(data.currencies); } catch(e){}
-      if (data.shopOrder)  try { shopOrder  = JSON.parse(data.shopOrder);  } catch(e){}
+      if(d.categories)try{cats=JSON.parse(d.categories);}catch(e){}
+      if(d.currencies)try{currs=JSON.parse(d.currencies);}catch(e){}
+      if(d.shopOrder)try{shpOrd=JSON.parse(d.shopOrder);}catch(e){}
     }
-  } catch(e) {
-    showToast('Betöltési hiba – lokális adatok betöltve', 'error');
-  }
-  setLoading(false);
+  }catch(e){toast('Betöltési hiba – lokális adatok betöltve','err');}
+  setLd(false);
 }
 
-// Külön helper: csak localStorage mentés (képekkel együtt)
-function saveToLocalStorage() {
-  localStorage.setItem('products',   JSON.stringify(products));
-  localStorage.setItem('categories', JSON.stringify(categories));
-  localStorage.setItem('currencies', JSON.stringify(currencies));
-  localStorage.setItem('shopOrder',  JSON.stringify(shopOrder));
-}
-
-async function saveData(lightweight = false) {
-  createBackup();
-  saveToLocalStorage();
-
-  if (!SHEETS_API_URL) return;
-  setLoading(true, 'Mentés...');
-  try {
-    if (lightweight) {
-      await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'categories', value: JSON.stringify(categories) });
-      await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'currencies',  value: JSON.stringify(currencies) });
-      await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'shopOrder',   value: JSON.stringify(shopOrder) });
-      setLoading(false);
-      return;
+async function save(lite=false){
+  mkBak();saveLoc();
+  if(!shUrl)return;
+  setLd(true,'Mentés...');
+  try{
+    if(lite){
+      await shWrite({action:'set',key:'categories',value:JSON.stringify(cats)});
+      await shWrite({action:'set',key:'currencies',value:JSON.stringify(currs)});
+      await shWrite({action:'set',key:'shopOrder',value:JSON.stringify(shpOrd)});
+      setLd(false);return;
     }
-
-      const productsWithNewImgs = products.filter(p => {
-      const hasNewImg = p.image && p.image !== '__img__' && p.image.startsWith('data:');
-      const hasNewImgInArr = p.images && p.images.some(img => img && img !== '__img__' && img.startsWith('data:'));
-      return hasNewImg || hasNewImgInArr;
+    const news=prods.filter(p=>{
+      const ni=p.image&&p.image!=='__img__'&&p.image.startsWith('data:');
+      const na=p.images?.some(i=>i&&i!=='__img__'&&i.startsWith('data:'));
+      return ni||na;
     });
-
-    const productsForSheets = products.map(p => {
-      const imgs = getImages(p);
-      return {
-        ...p,
-        image: '__img__',
-        images: imgs.map(() => '__img__'), // placeholder per kép, count megmarad
-        _imgCount: imgs.length            // segít visszatöltésnél
-      };
-    });
-
-    await sheetsWrite(SHEETS_API_URL, {
-      action: 'setAll',
-      products:   JSON.stringify(productsForSheets),
-      categories: JSON.stringify(categories),
-      currencies: JSON.stringify(currencies),
-      shopOrder:  JSON.stringify(shopOrder)
-    });
-
-    for (const p of productsWithNewImgs) {
-      const allImgs = getImages(p); // teljes tömb, base64 és régi is
-      for (let i = 0; i < allImgs.length; i++) {
-        if (allImgs[i] && allImgs[i].startsWith('data:')) {
-          await sheetsWrite(SHEETS_API_URL, { action: 'set', key: `img_${p.id}_${i}`, value: allImgs[i] });
-        }
-      }
-      // Régi egyes img_ kulcs kompatibilitáshoz (utolsó kép)
-      const lastImg = allImgs[allImgs.length - 1];
-      if (lastImg && lastImg.startsWith('data:')) {
-        await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'img_' + p.id, value: lastImg });
-      }
+    const psh=prods.map(p=>{const im=imgs(p);return{...p,image:'__img__',images:im.map(()=>'__img__'),_imgCount:im.length};});
+    await shWrite({action:'setAll',products:JSON.stringify(psh),categories:JSON.stringify(cats),currencies:JSON.stringify(currs),shopOrder:JSON.stringify(shpOrd)});
+    for(const p of news){
+      const ai=imgs(p);
+      for(let i=0;i<ai.length;i++)if(ai[i]?.startsWith('data:'))await shWrite({action:'set',key:`img_${p.id}_${i}`,value:ai[i]});
+      const la=ai[ai.length-1];if(la?.startsWith('data:'))await shWrite({action:'set',key:'img_'+p.id,value:la});
     }
-
-  } catch(e) {
-    showToast('Mentési hiba – az adat lokálisan mentve', 'error');
-  }
-  setLoading(false);
+  }catch(e){toast('Mentési hiba – lokálisan mentve','err');}
+  setLd(false);
 }
 
-// ══════════════════════════════════════════════
-// BACKUP & RESTORE
-// ══════════════════════════════════════════════
-function createBackup() {
-  try {
-    // Képek nélkül mentünk backupot (spórol helyet)
-    const productsNoImg = products.map(p => ({...p, image: null, images: []}));
-    localStorage.setItem('backup_' + Date.now(), JSON.stringify({ products: productsNoImg, categories, currencies, shopOrder, timestamp: new Date().toISOString() }));
-    cleanupOldBackups();
-  } catch(e) {}
+async function saveMeta(){
+  saveLoc();mkBak();
+  if(!shUrl)return;
+  const psh=prods.map(p=>{const im=imgs(p);return{...p,image:'__img__',images:im.map(()=>'__img__'),_imgCount:im.length};});
+  shWrite({action:'setAll',products:JSON.stringify(psh),categories:JSON.stringify(cats),currencies:JSON.stringify(currs),shopOrder:JSON.stringify(shpOrd)});
 }
 
-function cleanupOldBackups() {
-  const keys = Object.keys(localStorage).filter(k => k.startsWith('backup_')).sort().reverse();
-  keys.slice(5).forEach(k => localStorage.removeItem(k));
-}
-
-function getBackups() {
-  return Object.keys(localStorage).filter(k => k.startsWith('backup_')).sort().reverse().map(k => {
-    try {
-      const d = JSON.parse(localStorage.getItem(k));
-      return { key: k, timestamp: d.timestamp || 'Ismeretlen', productCount: d.products?.length || 0 };
-    } catch(e) { return null; }
-  }).filter(Boolean);
-}
-
-function renderBackupList() {
-  const backups = getBackups();
-  const el = document.getElementById('backupList');
-  if (!backups.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup mentés</div>'; return; }
-  el.innerHTML = backups.map(b => {
-    const d = new Date(b.timestamp);
-    const ds = d.toLocaleDateString('hu-HU', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
-    return `<div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--cream);border-radius:8px">
-      <div style="flex:1"><div style="font-weight:600;font-size:0.85rem">${ds}</div><div style="font-size:0.75rem;color:var(--muted)">${b.productCount} termék</div></div>
-      <button class="btn btn-sm btn-primary" onclick="restoreBackup('${b.key}')">Visszaállít</button>
-    </div>`;
+// ── BACKUP ──
+function mkBak(){try{const pni=prods.map(p=>({...p,image:null,images:[]}));localStorage.setItem('bak_'+Date.now(),JSON.stringify({prods:pni,cats,currs,shpOrd,ts:new Date().toISOString()}));Object.keys(localStorage).filter(k=>k.startsWith('bak_')).sort().reverse().slice(5).forEach(k=>localStorage.removeItem(k));}catch(e){}}
+function getBaks(){return Object.keys(localStorage).filter(k=>k.startsWith('bak_')).sort().reverse().map(k=>{try{const d=JSON.parse(localStorage.getItem(k));return{key:k,ts:d.ts,n:d.prods?.length||0};}catch(e){return null;}}).filter(Boolean);}
+function renderBakList(){
+  const baks=getBaks(),el=_('bakList');
+  if(!baks.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup</div>';return;}
+  el.innerHTML=baks.map(b=>{const ds=new Date(b.ts).toLocaleDateString('hu-HU',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return`<div style="display:flex;align-items:center;gap:10px;padding:11px;background:var(--cream);border-radius:8px"><div style="flex:1"><div style="font-weight:600;font-size:.84rem">${ds}</div><div style="font-size:.74rem;color:var(--muted)">${b.n} termék</div></div><button class="btn bp bsm" onclick="restBak('${b.key}')">Visszaállít</button></div>`;
   }).join('');
 }
-
-async function restoreBackup(backupKey) {
-  if (!confirm('Biztosan visszaállítod ezt a mentést? A jelenlegi adatok elvesznek!')) return;
-  try {
-    const backup = JSON.parse(localStorage.getItem(backupKey));
-    products = backup.products || [];
-    categories = backup.categories || [];
-    currencies = backup.currencies || [];
-    shopOrder = backup.shopOrder || [];
-    await saveData();
-    renderAll();
-    showToast('Backup visszaállítva!', 'success');
-    closeModal('backupModal');
-  } catch(e) {
-    showToast('Visszaállítási hiba: ' + e.message, 'error');
-  }
+async function restBak(k){
+  if(!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!'))return;
+  try{const b=JSON.parse(localStorage.getItem(k));prods=b.prods||[];cats=b.cats||[];currs=b.currs||[];shpOrd=b.shpOrd||[];await save();renderAll();toast('Backup visszaállítva!');closeM('mBak');}
+  catch(e){toast('Visszaállítási hiba','err');}
 }
 
-// ══════════════════════════════════════════════
-// TAG INPUT
-// ══════════════════════════════════════════════
-function renderTags(type) {
-  const arr = type === 'country' ? fCountries : fShops;
-  const id = type === 'country' ? 'countryTags' : 'shopTags';
-  document.getElementById(id).innerHTML = arr.map((v,i) => `<span class="tag-item">${esc(v)}<button onclick="removeTag('${type}',${i})">×</button></span>`).join('');
+// ── TAGS ──
+function renderTags(t){
+  const a=t==='c'?fCnts:fShps,id=t==='c'?'cntTags':'shpTags';
+  _(id).innerHTML=a.map((v,i)=>`<span class="ti">${esc(v)}<button onclick="rmTag('${t}',${i})">×</button></span>`).join('');
 }
-function removeTag(type, idx) {
-  if (type === 'country') fCountries.splice(idx, 1); else fShops.splice(idx, 1);
-  renderTags(type);
-}
-function addTag(type, value) {
-  const v = value.trim(); if (!v) return;
-  if (type === 'country' && !fCountries.includes(v)) { fCountries.push(v); renderTags('country'); }
-  if (type === 'shop'    && !fShops.includes(v))    { fShops.push(v);    renderTags('shop'); }
-}
-function handleTagKey(e, type) {
-  if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(type, e.target.value); e.target.value = ''; }
-}
-function clearTagInputs() {
-  fCountries = []; fShops = []; renderTags('country'); renderTags('shop');
-  document.getElementById('fCountryInput').value = '';
-  document.getElementById('fShopInput').value = '';
-}
-function setTagInputs(countries, shops) {
-  fCountries = Array.isArray(countries) ? [...countries] : (countries ? [countries] : []);
-  fShops = Array.isArray(shops) ? [...shops] : (shops ? [shops] : []);
-  renderTags('country'); renderTags('shop');
-  document.getElementById('fCountryInput').value = '';
-  document.getElementById('fShopInput').value = '';
-}
-function wireTagBlur() {
-  ['fCountryInput','fShopInput'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('blur', () => { addTag(id === 'fCountryInput' ? 'country' : 'shop', el.value); el.value = ''; });
+function rmTag(t,i){(t==='c'?fCnts:fShps).splice(i,1);renderTags(t);}
+function addTag(t,v){v=v.trim();if(!v)return;if(t==='c'&&!fCnts.includes(v)){fCnts.push(v);renderTags('c');}if(t==='s'&&!fShps.includes(v)){fShps.push(v);renderTags('s');}}
+function tagKey(e,t){if(e.key==='Enter'||e.key===','){e.preventDefault();addTag(t,e.target.value);e.target.value='';}}
+function clrTags(){fCnts=[];fShps=[];renderTags('c');renderTags('s');_('fCntI').value='';_('fShpI').value='';}
+function setTags(c,s){fCnts=Array.isArray(c)?[...c]:(c?[c]:[]);fShps=Array.isArray(s)?[...s]:(s?[s]:[]);renderTags('c');renderTags('s');_('fCntI').value='';_('fShpI').value='';}
+function wireBlur(){['fCntI','fShpI'].forEach(id=>{const el=_(id);if(el)el.addEventListener('blur',()=>{addTag(id==='fCntI'?'c':'s',el.value);el.value='';});});}
+
+// ── INIT ──
+async function init(){
+  await loadData();renderAll();updAdmin();
+  _('fDt').value=_('pDt').value=new Date().toISOString().split('T')[0];
+  updShSt();wireBlur();
+  _('btnAdd').onclick=openAddProd;
+  _('btnLogout').onclick=()=>{isAdmin=false;sessionStorage.removeItem('isAdmin');updAdmin();toast('Kilépve');};
+  _('btnCats').onclick=()=>{renderCatList();openM('mCats');};
+  _('btnCurrs').onclick=()=>{renderCurrList();openM('mCurrs');};
+  _('btnCnts').onclick=()=>{renderCntList();openM('mCnts');};
+  _('btnShps').onclick=()=>{renderShpList();openM('mShps');};
+  _('btnBak').onclick=()=>{renderBakList();openM('mBak');};
+  _('btnSheets').onclick=()=>{_('shUrl').value=shUrl||'';updShSt();openM('mSheets');};
+
+  // scroll to top button
+  window.addEventListener('scroll',()=>{
+    const btn=_('stt');if(!btn)return;
+    btn.classList.toggle('on',window.scrollY>300);
   });
 }
 
-async function init() {
-  await loadData();
-  renderAll();
-  updateAdminUI();
-  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('pNewDate').value = new Date().toISOString().split('T')[0];
-  updateSheetsStatus();
-  wireTagBlur();
-}
-
-// ══════════════════════════════════════════════
-// IMAGE GALLERY SWIPE
-// ══════════════════════════════════════════════
-function initGallerySwipe() {
-  document.querySelectorAll('.img-gallery').forEach(gallery => {
-    if (gallery._swipeInit) return; gallery._swipeInit = true;
-
-    const track = gallery.querySelector('.img-gallery-track');
-    const slides = gallery.querySelectorAll('.img-gallery-slide');
-    const dots = gallery.querySelectorAll('.img-dot');
-    if (slides.length <= 1) return;
-
-    const pid = gallery.getAttribute('data-id');
-    let currentIndex = lastGalleryIndex[pid] || 0; // MENTETT INDEX
-
-    const updateGallery = (index) => {
-      currentIndex = Math.max(0, Math.min(index, slides.length - 1));
-      lastGalleryIndex[pid] = currentIndex; // MENTÉS
-      track.style.transform = `translateX(-${currentIndex * 100}%)`;
-      track.style.transition = 'transform 0.3s ease';
-      dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
-    };
-    // Kitesszük a gallery elemre, hogy galleryNav is tudja hívni
-    gallery._update = updateGallery;
-    gallery._getIndex = () => currentIndex;
-
-    // INDULÁS A MENTETT INDEXNÉL
-    updateGallery(currentIndex);
-
-    const handleStart = (e) => {
-      isDragging = true;
-      startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
-      startTranslate = -currentIndex * 100;
-      track.style.transition = 'none';
-    };
-    const handleMove = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const cx = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
-      track.style.transform = `translateX(${startTranslate + ((cx - startX) / gallery.offsetWidth) * 100}%)`;
-    };
-    const handleEnd = (e) => {
-      if (!isDragging) return;
-      isDragging = false;
-      track.style.transition = 'transform 0.3s ease';
-      const cx = e.type.includes('mouse') ? e.pageX : e.changedTouches[0].pageX;
-      const diff = cx - startX;
-      if (diff > 50 && currentIndex > 0) updateGallery(currentIndex - 1);
-      else if (diff < -50 && currentIndex < slides.length - 1) updateGallery(currentIndex + 1);
-      else updateGallery(currentIndex);
-    };
-    gallery.addEventListener('touchstart', handleStart, {passive: true});
-    gallery.addEventListener('touchmove', handleMove, {passive: false});
-    gallery.addEventListener('touchend', handleEnd, {passive: true});
-    gallery.addEventListener('mousedown', handleStart);
-    gallery.addEventListener('mousemove', handleMove);
-    gallery.addEventListener('mouseup', handleEnd);
-    gallery.addEventListener('mouseleave', handleEnd);
+// ── GALLERY ──
+function initGallery(){
+  document.querySelectorAll('.gallery').forEach(g=>{
+    if(g._init)return;g._init=true;
+    const tr=g.querySelector('.g-track'),sl=g.querySelectorAll('.g-slide'),dots=g.querySelectorAll('.g-dot');
+    if(sl.length<=1)return;
+    const pid=g.getAttribute('data-id');
+    let ci=gIdx[pid]||0,drag=false,sx=0,st=0;
+    const go=n=>{ci=Math.max(0,Math.min(n,sl.length-1));gIdx[pid]=ci;tr.style.transform=`translateX(-${ci*100}%)`;tr.style.transition='transform .3s ease';dots.forEach((d,i)=>d.classList.toggle('on',i===ci));};
+    g._go=go;g._ci=()=>ci;go(ci);
+    g.addEventListener('touchstart',e=>{drag=true;sx=e.touches[0].pageX;st=-ci*100;tr.style.transition='none';},{passive:true});
+    g.addEventListener('touchmove',e=>{if(!drag)return;e.preventDefault();tr.style.transform=`translateX(${st+((e.touches[0].pageX-sx)/g.offsetWidth)*100}%)`;},{passive:false});
+    g.addEventListener('touchend',e=>{if(!drag)return;drag=false;const d=e.changedTouches[0].pageX-sx;if(d>50&&ci>0)go(ci-1);else if(d<-50&&ci<sl.length-1)go(ci+1);else go(ci);},{passive:true});
   });
 }
 
-function renderAll() {
-  populateCategorySelects();
-  populateCurrencySelects();
-  filterProducts(); // populateDataLists is called inside filterProducts
+// ── RENDER ──
+function renderAll(){popCatSel();popCurrSel();filter();}
+
+function popCatSel(){
+  const o=`<option value="">Válassz...</option>`+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  _('fCatS').innerHTML=o;
+  _('fCat').innerHTML=`<option value="">Minden kategória</option>`+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+function popCurrSel(){
+  const o=`<option value="">Pénznem</option>`+currs.map(c=>`<option value="${c.code}">${c.code} – ${c.name}</option>`).join('');
+  _('fCurS').innerHTML=o;_('pC').innerHTML=o;
+  const used=[...new Set(prods.flatMap(p=>(p.priceHistory?.length?p.priceHistory.map(h=>h.currency):[p.currency]).filter(Boolean)))].sort();
+  const kn=new Set(currs.map(c=>c.code));
+  _('fCur').innerHTML=`<option value="">Minden pénznem</option>`+used.map(c=>`<option value="${c}">${kn.has(c)?c:c+' *'}</option>`).join('');
 }
 
-// ══════════════════════════════════════════════
-// SELECTS
-// ══════════════════════════════════════════════
-function populateCategorySelects() {
-  const opts = ['<option value="">Válassz...</option>', ...categories.map(c=>`<option value="${c}">${c}</option>`)].join('');
-  document.getElementById('fCat').innerHTML = opts;
-  document.getElementById('filterCat').innerHTML = '<option value="">Minden kategória</option>' + categories.map(c=>`<option value="${c}">${c}</option>`).join('');
-}
-
-function populateCurrencySelects() {
-  const opts = ['<option value="">Pénznem</option>', ...currencies.map(c=>`<option value="${c.code}">${c.code} – ${c.name}</option>`)].join('');
-  document.getElementById('fCurr').innerHTML = opts;
-  document.getElementById('pNewCurr').innerHTML = opts;
-  const usedCodes = [...new Set(products.flatMap(p =>
-    (p.priceHistory && p.priceHistory.length) ? p.priceHistory.map(ph => ph.currency).filter(Boolean) : [p.currency].filter(Boolean)
-  ))].sort();
-  const knownCodes = new Set(currencies.map(c => c.code));
-  document.getElementById('filterCurr').innerHTML = '<option value="">Minden pénznem</option>' +
-    usedCodes.map(code => `<option value="${code}">${knownCodes.has(code) ? code : code+' *'}</option>`).join('');
-}
-
-// ══════════════════════════════════════════════
-// FILTER & RENDER
-// ══════════════════════════════════════════════
-function filterProducts() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const cat = document.getElementById('filterCat').value;
-  const country = document.getElementById('filterCountry').value;
-  const shop = document.getElementById('filterShop').value;
-  const curr = document.getElementById('filterCurr').value;
-
-  const filtered = products.filter(p => {
-    const pCountries = new Set([...(Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : [])), ...(p.priceHistory||[]).map(ph=>ph.country).filter(Boolean)]);
-    const pShops    = new Set([...(Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : [])), ...(p.priceHistory||[]).map(ph=>ph.shop).filter(Boolean)]);
-    const matchQ = !q || [p.name,p.desc,...pShops,...pCountries,p.note,(p.reviews||[]).map(r=>r.note).join(' ')].join(' ').toLowerCase().includes(q);
-    const matchCat = !cat || p.category === cat;
-    const matchCountry = !country || pCountries.has(country);
-    const matchShop = !shop || pShops.has(shop);
-    const matchCurr = !curr || (p.priceHistory||[{currency:p.currency}]).some(ph => ph.currency === curr);
-    return matchQ && matchCat && matchCountry && matchShop && matchCurr;
+function filter(){
+  const q=_('sInp').value.toLowerCase(),cat=_('fCat').value,cnt=_('fCnt').value,shp=_('fShp').value,cur=_('fCur').value;
+  const fl=prods.filter(p=>{
+    const pc=new Set([...(Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[])), ...(p.priceHistory||[]).map(h=>h.country).filter(Boolean)]);
+    const ps=new Set([...(Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[])), ...(p.priceHistory||[]).map(h=>h.shop).filter(Boolean)]);
+    return(!q||[p.name,p.desc,...ps,...pc,p.note,(p.reviews||[]).map(r=>r.note).join(' ')].join(' ').toLowerCase().includes(q))
+      &&(!cat||p.category===cat)&&(!cnt||pc.has(cnt))&&(!shp||ps.has(shp))
+      &&(!cur||(p.priceHistory||[{currency:p.currency}]).some(h=>h.currency===cur));
   });
-
-  document.getElementById('resultCount').textContent = `${filtered.length} termék / összesen ${products.length}`;
-  renderGrid(filtered);
-  updateFilterOptions();
-  updateClearBtn();
-  populateDataLists();
+  _('rCount').textContent=`${fl.length} termék / összesen ${prods.length}`;
+  renderGrid(fl);updFO();updCF();popDL();
 }
 
-function updateFilterOptions() {
-  const countries = getUniqueCountries();
-  const shops = getUniqueShops();
-  const curCountry = document.getElementById('filterCountry').value;
-  const curShop = document.getElementById('filterShop').value;
-  document.getElementById('filterCountry').innerHTML = `<option value="">Minden ország</option>${countries.map(c=>`<option value="${c}" ${c===curCountry?'selected':''}>${c}</option>`).join('')}`;
-  document.getElementById('filterShop').innerHTML    = `<option value="">Minden bolt</option>${shops.map(s=>`<option value="${s}" ${s===curShop?'selected':''}>${s}</option>`).join('')}`;
+function updFO(){
+  const cnts=uCnts(),shps=uShps(),cc=_('fCnt').value,cs=_('fShp').value;
+  _('fCnt').innerHTML=`<option value="">Minden ország</option>`+cnts.map(c=>`<option value="${c}"${c===cc?' selected':''}>${c}</option>`).join('');
+  _('fShp').innerHTML=`<option value="">Minden bolt</option>`+shps.map(s=>`<option value="${s}"${s===cs?' selected':''}>${s}</option>`).join('');
 }
 
-function renderGrid(list) {
-  const grid = document.getElementById('productGrid');
-  if (!list.length) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🧳</div><h3>Nincs találat</h3><p>Próbálj más keresési feltételt, vagy adj hozzá új terméket!</p></div>`;
-    return;
-  }
-  grid.innerHTML = list.map(p => productCard(p)).join('');
+function renderGrid(list){
+  const g=_('grid');
+  if(!list.length){g.innerHTML=`<div class="empty"><div class="empty-ico">🧳</div><h3 style="font-size:1.1rem;margin-bottom:5px">Nincs találat</h3><p style="font-size:.84rem">Próbálj más feltételt, vagy adj hozzá új terméket!</p></div>`;return;}
+  g.innerHTML=list.map(card).join('');
 }
 
-  document.getElementById('productGrid').addEventListener('click', e => {
-    const imgEl = e.target.closest('.card-img-clickable');
-    if (imgEl) {
-      e.stopPropagation();
-      const p = products.find(x => x.id === imgEl.dataset.pid);
-      if (!p) return;
-      const imgs = getImages(p);
-      const latest = imgs.length ? imgs[imgs.length - 1] : null;
-      if (latest) {
-        currentLightboxSrc = latest; // MENTJÜK
-        openLightbox(latest);
-      }
-      return;
+function imgs(p){
+  if(p.images?.length)return p.images.filter(i=>i&&i!=='__img__');
+  if(p.image&&p.image!=='__img__')return[p.image];
+  return[];
+}
+
+function card(p){
+  const lp=latPr(p),pch=prCh(p),im=imgs(p),li=im.length?im[im.length-1]:null,avg=avgR(p);
+  const pc=Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[]);
+  const ps=Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[]);
+  const aS=new Set(ps),aC=new Set(pc);
+  (p.priceHistory||[]).forEach(h=>{if(h.shop)aS.add(h.shop);if(h.country)aC.add(h.country);});
+  const pills=[...aS].map(s=>`<span class="pill">🏪 ${esc(s)}</span>`).join('')+[...aC].map(c=>`<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
+  const sh=[...(p.priceHistory||[])].sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
+  const hist=sh.length>1?`<details style="margin-top:4px" onclick="event.stopPropagation()">
+    <summary>📊 Ártörténet (${sh.length})</summary>
+    <div class="ph" style="margin-top:4px">
+      ${sh.slice(0,5).map(h=>{const x=[h.country?cs(h.country):'',h.shop?h.shop:'',h.note?h.note:''].filter(Boolean).join(' · ');return`<div class="ph-row"><span class="ph-d">${h.date?new Date(h.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}):'–'}</span><span class="ph-v">${h.amount} ${h.currency||p.currency}</span>${x?`<span class="ph-x">${esc(x)}</span>`:'<span class="ph-x"></span>'}</div>`;}).join('')}
+      ${sh.length>5?`<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length-5} bejegyzés</div>`:''}
+    </div></details>`:'';
+  const admin=isAdmin?`<div class="c-foot"><button class="bi bsm" onclick="openEdit('${p.id}')">✏️</button><button class="btn br bsm" onclick="delProd('${p.id}')">Törlés</button></div>`:'';
+  return`<div class="card" data-id="${p.id}">
+    <div class="c-img-wrap">
+      ${li?`<img class="c-img c-ic" src="${li}" alt="${esc(p.name)}" loading="lazy" data-pid="${p.id}">`:`<div class="c-ph" data-pid="${p.id}">🛍️</div>`}
+      ${p.category?`<span class="c-cat">${esc(p.category)}</span>`:''}
+      ${im.length>1?`<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.69rem;pointer-events:none">📷 ${im.length}</div>`:''}
+      ${avg>0?`<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.77rem;display:flex;align-items:center;gap:4px"><span style="color:var(--star)">${'★'.repeat(Math.round(avg))}</span> <span style="color:rgba(255,255,255,.8)">${avg.toFixed(1)}</span></div>`:''}
+    </div>
+    <div class="c-body" onclick="openView('${p.id}')">
+      <div class="c-name">${esc(p.name)}</div>
+      ${p.desc?`<div class="c-desc">${esc(p.desc)}</div>`:''}
+      <div class="c-meta">${pills}</div>
+      <div class="c-pr-row"><div class="c-pr">${lp.amount?lp.amount+' '+(lp.currency||''):'–'}</div>${pch}</div>
+      ${hist}
+    </div>${admin}</div>`;
+}
+
+function latPr(p){
+  if(p.priceHistory?.length){const s=[...p.priceHistory].filter(h=>h.amount).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);if(s.length)return s[0];}
+  return{amount:p.price,currency:p.currency,note:p.priceNote};
+}
+function prCh(p){
+  if(!p.priceHistory||p.priceHistory.length<2)return'';
+  const s=[...p.priceHistory].filter(h=>h.amount&&h.currency).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
+  if(s.length<2)return'';
+  const la=s[0],pr=s.slice(1).find(h=>h.currency===la.currency);if(!pr)return'';
+  const d=la.amount-pr.amount;if(Math.abs(d)<.001)return'';
+  const pct=((d/pr.amount)*100).toFixed(1);
+  return d>0?`<span class="pch pup">📈 +${pct}%</span>`:`<span class="pch pdn">📉 ${pct}%</span>`;
+}
+function avgR(p){const a=[...(p.reviews||[]).map(r=>r.rating).filter(r=>r>0)];if(p.rating>0)a.push(p.rating);if(!a.length)return 0;return a.reduce((a,b)=>a+b,0)/a.length;}
+
+// event delegation
+_('grid').addEventListener('click',e=>{
+  const ic=e.target.closest('.c-ic');
+  if(ic){e.stopPropagation();const p=prods.find(x=>x.id===ic.dataset.pid);if(!p)return;const im=imgs(p);const l=im.length?im[im.length-1]:null;if(l)openLB(l);return;}
+  const ph=e.target.closest('.c-ph');if(ph&&ph.dataset.pid)openView(ph.dataset.pid);
+});
+_('mViewB').addEventListener('click',e=>{const ic=e.target.closest('.g-ic');if(ic){e.stopPropagation();if(ic.src)openLB(ic.src);}});
+
+// ── ADMIN ──
+function adminClick(){if(isAdmin){isAdmin=false;sessionStorage.removeItem('isAdmin');updAdmin();return;}openM('mLogin');}
+function doLogin(){const pw=_('aPw').value;if(pw===ADMIN_PW){isAdmin=true;sessionStorage.setItem('isAdmin','true');closeM('mLogin');_('aPw').value='';_('aErr').style.display='none';updAdmin();toast('Admin mód aktív! ✓');}else _('aErr').style.display='block';}
+function updAdmin(){_('adminBar').style.display=isAdmin?'flex':'none';filter();}
+function updShSt(){
+  const el=_('shSt');if(!el)return;
+  if(shUrl){el.style.cssText='background:#e6f5ec;color:var(--green)';el.innerHTML='✓ Google Sheets összekötve';_('btnSheets').style.background='rgba(22,163,74,.3)';}
+  else{el.style.cssText='background:#fef3c7;color:#92400e';el.innerHTML='⚠ Nincs Sheets kapcsolat';_('btnSheets').style.background='rgba(255,255,255,.15)';}
+}
+async function saveSh(){
+  const u=_('shUrl').value.trim();
+  if(!u||!u.includes('script.google.com')){toast('Érvénytelen URL','err');return;}
+  setLd(true,'Kapcsolat tesztelése...');
+  try{
+    const d=await(await fetch(`${u}?action=getAll`)).json();
+    if(d.ok!==undefined){
+      shUrl=u;localStorage.setItem('sheetsApiUrl',u);
+      if(!d.products&&prods.length>0){await shWrite({action:'setAll',products:JSON.stringify(prods),categories:JSON.stringify(cats),currencies:JSON.stringify(currs),shopOrder:JSON.stringify(shpOrd)});toast('Kapcsolódva! Adatok feltöltve.');}
+      else{if(d.products)try{prods=JSON.parse(d.products);}catch(e){}if(d.categories)try{cats=JSON.parse(d.categories);}catch(e){}if(d.currencies)try{currs=JSON.parse(d.currencies);}catch(e){}if(d.shopOrder)try{shpOrd=JSON.parse(d.shopOrder);}catch(e){}renderAll();toast('Kapcsolódva! Sheets adatok betöltve.');}
+      updShSt();closeM('mSheets');
+    }else toast('Szerver hiba','err');
+  }catch(e){toast('Kapcsolódási hiba','err');}
+  setLd(false);
+}
+function clearSh(){shUrl='';localStorage.removeItem('sheetsApiUrl');_('shUrl').value='';updShSt();toast('Kapcsolat törölve');closeM('mSheets');}
+
+// ── PRODUCT ADD/EDIT ──
+function openAddProd(){
+  editId=null;imgPend=null;_('mProdT').textContent='Új termék';
+  ['fN','fD','fP','fPN','fNt','fUp'].forEach(id=>_(id).value='');
+  _('fCatS').value='';_('fCurS').value='';_('fDt').value=new Date().toISOString().split('T')[0];
+  setR(0);clrTags();_('iuPrev').style.display='none';_('iuIco').style.display='block';_('iuTxt').style.display='block';
+  openM('mProd');
+}
+function openEdit(id){
+  if(!isAdmin)return;
+  const p=prods.find(x=>x.id===id);if(!p)return;
+  editId=id;imgPend=null;_('mProdT').textContent='Termék szerkesztése';
+  _('fN').value=p.name||'';_('fD').value=p.desc||'';_('fCatS').value=p.category||'';
+  _('fDt').value=p.date||'';_('fNt').value=p.note||'';_('fUp').value=p.uploader||'';
+  const o=p.priceHistory?.length?p.priceHistory[0]:{};
+  _('fP').value=o.amount||p.price||'';_('fCurS').value=o.currency||p.currency||'';_('fPN').value=o.note||p.priceNote||'';
+  setR(p.rating||0);
+  const cts=new Set(Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[]));
+  const shs=new Set(Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[]));
+  (p.priceHistory||[]).forEach(h=>{if(h.country)cts.add(h.country);if(h.shop)shs.add(h.shop);});
+  setTags([...cts],[...shs]);
+  const im=imgs(p),li=im.length?im[im.length-1]:null;
+  if(li){_('iuPrev').src=li;_('iuPrev').style.display='block';_('iuIco').style.display='none';_('iuTxt').style.display='none';}
+  else{_('iuPrev').style.display='none';_('iuIco').style.display='block';_('iuTxt').style.display='block';}
+  openM('mProd');
+}
+
+function compress(file,mW,mH,q){
+  return new Promise(res=>{
+    const rd=new FileReader();
+    rd.onload=ev=>{const img=new Image();img.onload=()=>{
+      const cv=document.createElement('canvas');
+      let w=img.width,h=img.height;
+      if(w>mW||h>mH){const r=Math.min(mW/w,mH/h);w=Math.round(w*r);h=Math.round(h*r);}
+      cv.width=w;cv.height=h;const ctx=cv.getContext('2d');ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,w,h);
+      let r=cv.toDataURL('image/jpeg',q),a=0;
+      while(r.length>48000&&a<10){q=Math.max(.65,q-.04);w=Math.round(w*.94);h=Math.round(h*.94);cv.width=w;cv.height=h;ctx.drawImage(img,0,0,w,h);r=cv.toDataURL('image/jpeg',q);a++;}
+      res(r);
+    };img.src=ev.target.result;};
+    rd.readAsDataURL(file);
+  });
+}
+function handleImg(e){
+  const f=e.target.files[0];if(!f)return;_('iuTxt').textContent='Tömörítés...';
+  compress(f,1200,1200,.92).then(c=>{imgPend=c;_('iuPrev').src=c;_('iuPrev').style.display='block';_('iuIco').style.display='none';_('iuTxt').style.display='none';});
+}
+async function saveProd(){
+  const n=_('fN').value.trim();if(!n){toast('A termék neve kötelező!','err');return;}
+  if(!editId&&prods.some(p=>p.name.toLowerCase()===n.toLowerCase())){toast('Ilyen nevű termék már létezik!','err');return;}
+  const ci=_('fCntI').value.trim(),si=_('fShpI').value.trim();if(ci)addTag('c',ci);if(si)addTag('s',si);
+  const pr=parseFloat(_('fP').value)||0,cu=_('fCurS').value;
+  if(pr>0&&!cu){toast('Add meg a pénznemet!','err');return;}
+  const dt=_('fDt').value||new Date().toISOString().split('T')[0];
+  const pe=pr>0?{amount:pr,currency:cu,note:_('fPN').value.trim(),date:dt,shop:fShps[0]||'',country:fCnts[0]||''}:null;
+  const hasImg=!!imgPend;
+  if(editId){
+    const i=prods.findIndex(x=>x.id===editId);
+    if(i>-1){
+      const ex=prods[i];let ph=ex.priceHistory||[];
+      if(pe){if(!ph.length)ph=[pe];else ph[0]={...ph[0],amount:pr,currency:cu,note:_('fPN').value.trim()};}
+      const ni=imgPend?[...imgs(ex),imgPend]:imgs(ex);
+      prods[i]={...ex,name:n,desc:_('fD').value.trim(),category:_('fCatS').value,countries:[...fCnts],shops:[...fShps],country:fCnts[0]||'',shop:fShps[0]||'',date:dt,note:_('fNt').value.trim(),uploader:_('fUp').value.trim(),price:ph.length?ph[0].amount:0,currency:ph.length?ph[0].currency:cu,priceNote:ph.length?ph[0].note:_('fPN').value.trim(),priceHistory:ph,rating:rat,images:ni,image:null};
     }
-  const placeholder = e.target.closest('.card-img-placeholder');
-  if (placeholder && placeholder.dataset.pid) {
-    openViewProduct(placeholder.dataset.pid);
+    toast('Termék frissítve! ✓');
+  }else{
+    prods.unshift({id:'p'+Date.now(),name:n,desc:_('fD').value.trim(),category:_('fCatS').value,countries:[...fCnts],shops:[...fShps],country:fCnts[0]||'',shop:fShps[0]||'',date:dt,note:_('fNt').value.trim(),uploader:_('fUp').value.trim(),price:pr,currency:cu,priceNote:_('fPN').value.trim(),priceHistory:pe?[pe]:[],rating:rat,images:imgPend?[imgPend]:[],image:null,reviews:[],createdAt:new Date().toISOString()});
+    toast('Termék hozzáadva! ✓');
   }
+  await save(!hasImg);renderAll();closeM('mProd');
+}
+function delProd(id){if(!isAdmin||!confirm('Biztosan törlöd?'))return;prods=prods.filter(p=>p.id!==id);save();delImgSh(id);filter();popDL();toast('Termék törölve.');}
+
+async function delImg(pid,di,e){
+  e.stopPropagation();if(!isAdmin||!confirm('Biztosan törlöd a képet?'))return;
+  const p=prods.find(x=>x.id===pid);if(!p)return;
+  const disp=imgs(p).reverse(),rm=disp[parseInt(di)];if(!rm)return;
+  if(p.images)p.images=p.images.filter(i=>i!==rm);if(p.image===rm)p.image=null;
+  await save();filter();openView(pid);toast('Kép törölve!');
+}
+
+// ── PRICE ──
+function openPr(id){
+  prId=id;const p=prods.find(x=>x.id===id);if(!p)return;
+  const lp=latPr(p);_('pP').value='';_('pC').value=lp.currency||'';_('pNote').value='';_('pCnt').value='';_('pShp').value='';
+  _('pDt').value=new Date().toISOString().split('T')[0];openM('mPrice');
+}
+async function savePr(){
+  const p=prods.find(x=>x.id===prId);if(!p)return;
+  const a=parseFloat(_('pP').value);if(isNaN(a)||a<=0){toast('Add meg az új árat!','err');return;}
+  const cu=_('pC').value;if(!cu){toast('Válassz pénznemet!','err');return;}
+  if(!p.priceHistory)p.priceHistory=p.price>0?[{amount:p.price,currency:p.currency,note:p.priceNote,date:p.date}]:[];
+  p.priceHistory.push({amount:a,currency:cu,note:_('pNote').value.trim(),country:_('pCnt').value.trim(),shop:_('pShp').value.trim(),date:_('pDt').value});
+  p.price=a;p.currency=cu;
+  await saveMeta();closeM('mPrice');filter();toast('Ár frissítve! 💰');
+}
+
+// ── VIEW ──
+function openView(id){
+  const p=prods.find(x=>x.id===id);if(!p)return;
+  revPid=id;_('mViewT').textContent=p.name;
+  const avg=avgR(p),revs=[...(p.reviews||[])];
+  if(p.rating>0)revs.unshift({name:p.uploader||'Feltöltő',rating:p.rating,note:p.note,date:p.date});
+  const revHtml=revs.length?revs.map(r=>`<div style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="display:flex;justify-content:space-between;gap:8px"><span style="font-weight:600;font-size:.84rem">👤 ${esc(r.name||'Névtelen')}</span><span style="color:var(--star);font-size:.84rem">${'★'.repeat(r.rating||0)}${'☆'.repeat(5-(r.rating||0))}</span></div>${r.date?`<div style="font-size:.69rem;color:var(--muted);margin-top:2px">${new Date(r.date).toLocaleDateString('hu-HU')}</div>`:''} ${r.note?`<div style="font-size:.79rem;color:var(--muted);margin-top:3px;font-style:italic">"${esc(r.note)}"</div>`:''}</div>`).join('')
+    :'<div style="color:var(--muted);font-size:.81rem">Még nincs értékelés.</div>';
+  const lp=latPr(p);
+  const pc=Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[]);
+  const ps=Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[]);
+  const aS=new Set(ps),aC=new Set(pc);(p.priceHistory||[]).forEach(h=>{if(h.shop)aS.add(h.shop);if(h.country)aC.add(h.country);});
+  const pills=[...aS].map(s=>`<span class="pill">🏪 ${esc(s)}</span>`).join('')+[...aC].map(c=>`<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
+  const im=imgs(p).reverse();
+  const gal=im.length?`<div class="gallery" data-id="${p.id}" style="height:270px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
+    <div class="g-track">${im.map((img,i)=>`<div class="g-slide"><img src="${img}" style="width:100%;height:270px;object-fit:cover;cursor:zoom-in" class="g-ic" data-i="${i}" data-pid="${p.id}">${isAdmin?`<button class="btn br bsm" style="position:absolute;top:8px;right:8px;z-index:10" onclick="delImg('${p.id}','${i}',event)">🗑️</button>`:''}</div>`).join('')}</div>
+    ${im.length>1?`<div class="g-dots">${im.map((_,i)=>`<div class="g-dot${i===0?' on':''}"></div>`).join('')}</div><button onclick="gNav('${p.id}','p',event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button><button onclick="gNav('${p.id}','n',event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>`:''}
+  </div>`:'';
+  const sh=[...( p.priceHistory||[])].sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
+  _('mViewB').innerHTML=`${gal}
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${p.category?`<span class="pill">📂 ${esc(p.category)}</span>`:''}${pills}${p.date?`<span class="pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>`:''}</div>
+    ${p.desc?`<div style="font-size:.87rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>`:''}
+    <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${lp.amount?lp.amount+' '+(lp.currency||''):'–'} ${prCh(p)}</div>
+    ${sh.length>1?`<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h=>{const x=[h.country?cs(h.country):'',h.shop?h.shop:'',h.note?h.note:''].filter(Boolean).join(' · ');return`<div class="ph-det"><span class="ph-d">${h.date?new Date(h.date).toLocaleDateString('hu-HU'):'–'}</span><span class="ph-v">${h.amount} ${h.currency||''}</span><span class="ph-x">${esc(x)}</span></div>`;}).join('')}</div>`:''}
+    <div style="margin:10px 0 5px;font-weight:600;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Értékelések (${revs.length})</div>
+    ${avg>0?`<div style="font-size:.95rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))} ${avg.toFixed(1)}</div>`:''}
+    ${revHtml}`;
+  _('mViewF').innerHTML=`
+    <button class="btn bp bsm" onclick="closeM('mView');openQImg('${id}')">📷 Kép</button>
+    <button class="btn bp bsm" onclick="closeM('mView');openRevM('${id}')">✍ Értékelés</button>
+    <button class="btn bp bsm" onclick="closeM('mView');openPr('${id}')">💰 Ár</button>
+    <button class="btn bg bsm" onclick="closeM('mView')">Bezár</button>`;
+  openM('mView');setTimeout(initGallery,80);
+}
+
+function gNav(id,dir,e){
+  e.stopPropagation();const g=document.querySelector(`.gallery[data-id="${id}"]`);if(!g)return;
+  const sl=g.querySelectorAll('.g-slide'),ci=g._ci?g._ci():0;
+  const n=dir==='p'?(ci>0?ci-1:sl.length-1):(ci<sl.length-1?ci+1:0);
+  if(g._go)g._go(n);
+}
+
+// arrow keys in view modal
+document.addEventListener('keydown',e=>{
+  const m=_('mView');if(!m?.classList.contains('on'))return;
+  const g=m.querySelector('.gallery');if(!g)return;
+  const pid=g.getAttribute('data-id');if(!pid)return;
+  if(e.key==='ArrowLeft'){e.preventDefault();gNav(pid,'p',e);}
+  else if(e.key==='ArrowRight'){e.preventDefault();gNav(pid,'n',e);}
 });
 
-// Event delegation a view modal galériájában – egyszer regisztrálva, mindig él
-document.getElementById('viewModalBody').addEventListener('click', e => {
-  const imgEl = e.target.closest('.gallery-img-clickable');
-  if (imgEl) {
-    e.stopPropagation();
-    // Mindig a kattintott kép src-jét nyitjuk meg – nem index alapján
-    const src = imgEl.src;
-    if (src) openLightbox(src);
-  }
+// ── QUICK IMAGE ──
+function openQImg(pid){qImgPid=pid;qImgB64=null;_('qImg').value='';_('qPrvA').style.display='none';_('qSave').disabled=true;openM('mImg');}
+function handleQImg(e){const f=e.target.files[0];if(!f)return;compress(f,1200,1200,.92).then(c=>{qImgB64=c;_('qPrv').src=c;_('qPrvA').style.display='block';_('qSave').disabled=false;});}
+async function saveQImg(){
+  if(!qImgPid||!qImgB64)return;const p=prods.find(x=>x.id===qImgPid);if(!p)return;
+  if(!p.images)p.images=[];p.images.push(qImgB64);p.image=null;
+  await save();closeM('mImg');toast('Kép hozzáadva! ✓');filter();
+}
+
+// ── REVIEWS ──
+function openRevM(id){revPid=id;_('rN').value='';_('rNote').value='';setRR(0);openM('mRev');}
+async function saveRev(){
+  const n=_('rN').value.trim();if(!n){toast('Írd be a neved!','err');return;}
+  const p=prods.find(x=>x.id===revPid);if(!p)return;
+  if(!p.reviews)p.reviews=[];
+  p.reviews.push({name:n,note:_('rNote').value.trim(),rating:ratR,date:new Date().toISOString().split('T')[0],id:'r'+Date.now()});
+  await saveMeta();closeM('mRev');filter();toast('Értékelés hozzáadva! ✓');
+}
+
+// ── CATS ──
+let dragSrc=null;
+function makeDrag(cont,onR){
+  cont.querySelectorAll('.ci[draggable]').forEach(it=>{
+    it.addEventListener('dragstart',e=>{dragSrc=it;it.classList.add('drag');e.dataTransfer.effectAllowed='move';});
+    it.addEventListener('dragend',()=>{it.classList.remove('drag');cont.querySelectorAll('.ci').forEach(i=>i.classList.remove('do'));});
+    it.addEventListener('dragover',e=>{e.preventDefault();if(it!==dragSrc){cont.querySelectorAll('.ci').forEach(i=>i.classList.remove('do'));it.classList.add('do');}});
+    it.addEventListener('drop',e=>{e.preventDefault();if(!dragSrc||dragSrc===it)return;it.classList.remove('do');const its=[...cont.querySelectorAll('.ci[draggable]')];if(its.indexOf(dragSrc)<its.indexOf(it))it.after(dragSrc);else it.before(dragSrc);onR([...cont.querySelectorAll('.ci[draggable]')].map(el=>el.dataset.v));});
+  });
+}
+function renderCatList(){
+  const el=_('catList');
+  el.innerHTML=cats.map(c=>`<div class="ci" draggable="true" data-v="${esc(c)}"><span class="dh">⠿</span><span class="cn">📂 ${esc(c)}</span><button class="btn br bsm" onclick="rmCat('${esc(c)}')">✕</button></div>`).join('');
+  makeDrag(el,async o=>{cats=o;await save();popCatSel();});
+}
+async function addCat(){const v=_('newCat').value.trim();if(!v||cats.includes(v))return;cats.push(v);_('newCat').value='';await save(true);renderCatList();popCatSel();toast('Kategória hozzáadva!');}
+async function rmCat(c){cats=cats.filter(x=>x!==c);await save(true);renderCatList();popCatSel();}
+
+function renderCurrList(){
+  _('currList').innerHTML=currs.map(c=>`<div class="ci"><span class="cn">💱 <strong>${esc(c.code)}</strong> – ${esc(c.name)}</span><button class="btn br bsm" onclick="rmCurr('${esc(c.code)}')">✕</button></div>`).join('');
+}
+async function addCurr(){
+  const co=_('nCC').value.trim().toUpperCase(),n=_('nCN').value.trim();
+  if(!co||!n){toast('Add meg a kódot és nevet!','err');return;}
+  if(currs.some(c=>c.code===co)){toast('Már létezik!','err');return;}
+  currs.push({code:co,name:n});_('nCC').value='';_('nCN').value='';
+  await save(true);renderCurrList();popCurrSel();toast('Pénznem hozzáadva!');
+}
+async function rmCurr(co){currs=currs.filter(c=>c.code!==co);await save(true);renderCurrList();popCurrSel();}
+
+function uCnts(){return[...new Set(prods.flatMap(p=>{const f=Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[]);return[...f,...(p.priceHistory||[]).map(h=>h.country).filter(Boolean)];}))].sort();}
+function uShps(){const a=[...new Set(prods.flatMap(p=>{const f=Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[]);return[...f,...(p.priceHistory||[]).map(h=>h.shop).filter(Boolean)];}))];return[...shpOrd.filter(s=>a.includes(s)),...a.filter(s=>!shpOrd.includes(s)).sort()];}
+function popDL(){_('cntList').innerHTML=uCnts().map(c=>`<option value="${esc(c)}">`).join('');_('shpList').innerHTML=uShps().map(s=>`<option value="${esc(s)}">`).join('');}
+
+function renderCntList(){
+  const cnts=uCnts(),el=_('cntList2')||(_('mCnts').querySelector('.cl'));
+  if(!cnts.length){el.innerHTML='<div style="color:var(--muted);font-size:.84rem">Még nincs rögzített ország.</div>';return;}
+  el.innerHTML=cnts.map(c=>`<div class="ci"><span class="cn">🌍 ${esc(c)}</span><button class="bi bsm" onclick="editCnt('${esc(c)}')">✏️</button></div>`).join('');
+}
+function renderShpList(){
+  const shps=uShps(),el=_('shpList2');
+  if(!shps.length){el.innerHTML='<div style="color:var(--muted);font-size:.84rem">Még nincs rögzített bolt.</div>';return;}
+  el.innerHTML=shps.map(s=>`<div class="ci" draggable="true" data-v="${esc(s)}"><span class="dh">⠿</span><span class="cn">🏪 ${esc(s)}</span><button class="bi bsm" onclick="editShp('${esc(s)}')">✏️</button></div>`).join('');
+  makeDrag(el,async o=>{shpOrd=o;await save();popDL();updFO();});
+}
+function editCnt(o){const n=prompt('Átnevezés:',o);if(!n||n.trim()===o)return;const t=n.trim();prods.forEach(p=>{if(p.country===o)p.country=t;if(Array.isArray(p.countries))p.countries=p.countries.map(c=>c===o?t:c);(p.priceHistory||[]).forEach(h=>{if(h.country===o)h.country=t;});});save();renderCntList();filter();popDL();toast('Átnevezve: '+t);}
+function editShp(o){const n=prompt('Átnevezés:',o);if(!n||n.trim()===o)return;const t=n.trim();prods.forEach(p=>{if(p.shop===o)p.shop=t;if(Array.isArray(p.shops))p.shops=p.shops.map(s=>s===o?t:s);(p.priceHistory||[]).forEach(h=>{if(h.shop===o)h.shop=t;});});shpOrd=shpOrd.map(s=>s===o?t:s);save();renderShpList();filter();popDL();toast('Átnevezve: '+t);}
+
+// ── RATINGS ──
+const RL=['','Gyenge','Megfelelő','Jó','Nagyon jó','Kiváló'];
+function setR(n){rat=n;updStars('#sp',n);const l=_('rLbl');if(l)l.textContent=n>0?RL[n]+` (${n}/5)`:'Koppints egy csillagra';}
+function setRR(n){ratR=n;updStars('#sp2',n);const l=_('rLbl2');if(l)l.textContent=n>0?RL[n]+` (${n}/5)`:'Koppints egy csillagra';}
+function updStars(sel,n){const bs=document.querySelectorAll(sel+' .sb');bs.forEach((b,i)=>{b.classList.toggle('on',i<n);b.onmouseenter=()=>bs.forEach((bb,j)=>bb.style.color=j<=i?'var(--star)':'#d0d0d0');b.onmouseleave=()=>bs.forEach(bb=>bb.style.color='');});}
+
+// ── MODALS ──
+function openM(id){_(id).classList.add('on');document.body.style.overflow='hidden';}
+function closeM(id){_(id).classList.remove('on');document.body.style.overflow='';}
+function dirty(){return!!(  _('fN').value.trim()||_('fD').value.trim()||_('fP').value.trim()||fCnts.length||fShps.length||imgPend);}
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target!==o)return;if(o.id==='mProd'&&dirty()){if(!confirm('Biztosan ki akarsz lépni?'))return;}closeM(o.id);}));
+
+// search toggle
+function toggleSearch(){const s=_('searchBar');s.classList.toggle('open');if(s.classList.contains('open'))_('sInp').focus();}
+
+// clear filters
+function clearF(){['sInp','fCat','fCnt','fShp','fCur'].forEach(id=>_(id).value='');filter();}
+function updCF(){const h=!!(_('sInp').value||_('fCat').value||_('fCnt').value||_('fShp').value||_('fCur').value);_('btnCF').style.display=h?'inline-flex':'none';}
+
+// export
+function exportCSV(){
+  const hd=['Név','Leírás','Kategória','Ország','Bolt','Dátum','Ár','Pénznem','Értékelés','Megjegyzés'];
+  const rows=prods.map(p=>{const lp=latPr(p),pc=Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[]),ps=Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[]);return[p.name,p.desc||'',p.category||'',pc.join(', '),ps.join(', '),p.date||'',lp.amount||'',lp.currency||'',avgR(p).toFixed(1),p.note||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"');});
+  const csv=[hd.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));a.download='kulfoldi-vasarlasok.csv';a.click();toast('CSV exportálva! ✓');
+}
+
+// lightbox
+function openLB(src){_('lbImg').src=src;_('lb').classList.add('on');document.body.style.overflow='hidden';}
+function closeLB(){_('lb').classList.remove('on');_('lbImg').src='';if(!document.querySelector('.ov.on'))document.body.style.overflow='';}
+
+// toast
+let tT;
+function toast(msg,t='ok'){const el=_('toast');el.textContent=msg;el.className=`toast ${t} on`;clearTimeout(tT);tT=setTimeout(()=>el.classList.remove('on'),2800);}
+
+// country codes
+const CC={'Magyarország':'HU','Ausztria':'AT','Németország':'DE','Olaszország':'IT','Franciaország':'FR','Spanyolország':'ES','Csehország':'CZ','Szlovákia':'SK','Lengyelország':'PL','Horvátország':'HR','Szerbia':'RS','Románia':'RO','Bulgária':'BG','Görögország':'GR','Törökország':'TR','Egyesült Királyság':'GB','Hollandia':'NL','Belgium':'BE','Svájc':'CH','Svédország':'SE','Norvégia':'NO','Dánia':'DK','Finnország':'FI','Portugália':'PT','Egyesült Államok':'US','Japán':'JP','Kína':'CN','Thaiföld':'TH','Vietnam':'VN','India':'IN','Észtország':'EE','Lettország':'LV','Litvánia':'LT','Szlovénia':'SI','Albánia':'AL','Montenegró':'ME'};
+function cs(n){return CC[n]||n||'';}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ESC key
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(_('lb').classList.contains('on')){closeLB();return;}
+  const a=[...document.querySelectorAll('.ov.on')];if(!a.length)return;
+  const top=a[a.length-1];if(top.id==='mProd'&&dirty()){if(!confirm('Biztosan ki akarsz lépni?'))return;}
+  closeM(top.id);
 });
-
-function getImages(p) {
-  if (p.images && p.images.length > 0) {
-    return p.images.filter(img => img && img !== '__img__');
-  }
-  if (p.image && p.image !== '__img__') return [p.image];
-  return [];
-}
-
-function productCard(p) {
-  const latestPrice = getLatestPrice(p);
-  const priceChangeHtml = getPriceChangeHtml(p);
-  const images = getImages(p);
-  const latestImage = images.length > 0 ? images[images.length - 1] : null;
-
-  const imgHtml = latestImage
-    ? `<img class="card-img card-img-clickable" src="${latestImage}" alt="${esc(p.name)}" loading="lazy" data-pid="${p.id}">`
-    : `<div class="card-img-placeholder" data-pid="${p.id}">🛍️</div>`;
-
-  const imgCountBadge = images.length > 1
-    ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.7rem;pointer-events:none">📷 ${images.length}</div>`
-    : '';
-
-  const avgRating = getAvgRating(p);
-  const starsHtml = avgRating > 0 ? `<span class="stars">${'★'.repeat(Math.round(avgRating))}${'☆'.repeat(5-Math.round(avgRating))}</span> <span style="font-size:0.74rem;color:var(--muted)">${avgRating.toFixed(1)}</span>` : '';
-
-  const pCountries = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
-  const pShops    = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
-  const allShops = new Set(pShops); const allCountries = new Set(pCountries);
-  if (p.priceHistory) p.priceHistory.forEach(ph => { if (ph.shop) allShops.add(ph.shop); if (ph.country) allCountries.add(ph.country); });
-
-  const locationPillsHtml = [...allShops].map(s=>`<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') + [...allCountries].map(c=>`<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
-
-  const sortedHistory = p.priceHistory ? [...p.priceHistory].sort((a,b)=>(b.date||'')>(a.date||'')?1:-1) : [];
-  const cardHistory = sortedHistory.slice(0, 4);
-  const hasMore = sortedHistory.length > 4;
-
-  const priceHistHtml = sortedHistory.length > 1 ? `
-  <details style="margin-top:4px" onclick="event.stopPropagation()">
-    <summary>📊 Ártörténet (${sortedHistory.length} bejegyzés)</summary>
-    <div class="price-history mt-8">
-      ${cardHistory.map(ph => {
-    const hasExtra = ph.shop || ph.note;
-    return `<div class="ph-item">
-          <span class="ph-date">${ph.date ? new Date(ph.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '–'}</span>
-          <span class="ph-val">${ph.amount} ${ph.currency || p.currency}${hasExtra ? ' …' : ''}</span>
-          <span class="ph-extra">${[ph.country ? esc(countryShort(ph.country)) : '', ph.shop ? esc(ph.shop) : '', ph.note ? esc(ph.note) : ''].filter(Boolean).join(' · ')}</span>
-        </div>`;
-  }).join('')}
-      ${hasMore ? `<div style="text-align:center;padding:8px;color:var(--muted);font-size:0.75rem">+ még ${sortedHistory.length - 4} bejegyzés...</div>` : ''}
-    </div>
-  </details>` : '';
-
-  const adminBtns = isAdmin ? `<div class="card-footer">
-    <button class="btn btn-sm btn-icon" title="Szerkesztés" onclick="openEditProduct('${p.id}')">✏️</button>
-    <button class="btn btn-sm" style="background:var(--red);color:#fff;padding:5px 10px;font-size:0.76rem;border-radius:7px" onclick="deleteProduct('${p.id}')">Törlés</button>
-  </div>` : '';
-
-  return `<div class="card" data-id="${p.id}">
-    <div class="card-img-wrap">
-      ${imgHtml}
-      ${p.category ? `<span class="card-cat-badge">${esc(p.category)}</span>` : ''}
-      ${imgCountBadge}
-      ${starsHtml ? `<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.78rem;display:flex;align-items:center;gap:4px">${starsHtml.replace('color:var(--muted)','color:rgba(255,255,255,0.8)')}</div>` : ''}
-    </div>
-    <div class="card-body" onclick="openViewProduct('${p.id}')" style="cursor:pointer">
-      <div class="card-name">${esc(p.name)}</div>
-      ${p.desc ? `<div class="card-desc">${esc(p.desc)}</div>` : ''}
-      <div class="card-meta">${locationPillsHtml}</div>
-      <div class="card-price-row">
-        <div class="card-price">${latestPrice.amount ? latestPrice.amount + ' ' + (latestPrice.currency||'') : '–'}</div>
-        ${priceChangeHtml}
-      </div>
-      ${priceHistHtml}
-    </div>
-    ${adminBtns}
-  </div>`;
-}
-
-function getLatestPrice(p) {
-  if (p.priceHistory && p.priceHistory.length > 0) {
-    const sorted = [...p.priceHistory].filter(ph => ph.amount).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
-    if (sorted.length) return sorted[0];
-  }
-  return {amount: p.price, currency: p.currency, note: p.priceNote};
-}
-
-function getPriceChangeHtml(p) {
-  if (!p.priceHistory || p.priceHistory.length < 2) return '';
-  const sorted = [...p.priceHistory].filter(ph => ph.amount && ph.currency).sort((a,b)=>(b.date||'')>(a.date||'')?1:-1);
-  if (sorted.length < 2) return '';
-  const latest = sorted[0];
-  const prev = sorted.slice(1).find(ph => ph.currency === latest.currency);
-  if (!prev) return '';
-  const diff = latest.amount - prev.amount;
-  if (Math.abs(diff) < 0.001) return '';
-  const pct = ((diff / prev.amount) * 100).toFixed(1);
-  return diff > 0
-    ? `<span class="price-change price-up">📈 +${pct}%</span>`
-    : `<span class="price-change price-down">📉 ${pct}%</span>`;
-}
-
-function getAvgRating(p) {
-  const all = [...(p.reviews||[]).map(r=>r.rating).filter(r=>r>0)];
-  if (p.rating > 0) all.push(p.rating);
-  if (!all.length) return 0;
-  return all.reduce((a,b)=>a+b,0) / all.length;
-}
-
-// ══════════════════════════════════════════════
-// ADMIN
-// ══════════════════════════════════════════════
-document.getElementById('btnAdminToggle').onclick = () => {
-  if (isAdmin) { isAdmin = false; sessionStorage.removeItem('isAdmin'); updateAdminUI(); return; }
-  openModal('loginModal');
-};
-document.getElementById('btnAdminLogout').onclick = () => { isAdmin = false; sessionStorage.removeItem('isAdmin'); updateAdminUI(); showToast('Kilépve az admin módból'); };
-document.getElementById('btnExport').onclick = exportCSV;
-document.getElementById('btnApiSetup').onclick = () => { document.getElementById('sheetsUrlInput').value = SHEETS_API_URL || ''; updateSheetsStatus(); openModal('sheetsModal'); };
-
-function updateSheetsStatus() {
-  const el = document.getElementById('sheetsStatus');
-  if (!el) return;
-  if (SHEETS_API_URL) {
-    el.style.background = '#e6f5ec'; el.style.color = 'var(--green)';
-    el.innerHTML = '✓ Össze van kötve Google Sheets-szel';
-    document.getElementById('btnApiSetup').style.background = 'rgba(22,163,74,0.25)';
-  } else {
-    el.style.background = '#fef3c7'; el.style.color = '#92400e';
-    el.innerHTML = '⚠ Nincs Google Sheets kapcsolat – adatok csak ezen az eszközön elérhetők';
-    document.getElementById('btnApiSetup').style.background = 'rgba(255,255,255,0.15)';
-  }
-}
-
-async function saveSheetsUrl() {
-  const url = document.getElementById('sheetsUrlInput').value.trim();
-  if (!url) { showToast('Add meg az URL-t!', 'error'); return; }
-  if (!url.includes('script.google.com')) { showToast('Ez nem tűnik érvényes Apps Script URL-nek', 'error'); return; }
-  setLoading(true, 'Kapcsolat tesztelése...');
-  try {
-    const res = await fetch(`${url}?action=getAll`);
-    const data = await res.json();
-    if (data.ok !== undefined) {
-      SHEETS_API_URL = url; localStorage.setItem('sheetsApiUrl', url);
-      if (!data.products && products.length > 0) {
-        await sheetsWrite(SHEETS_API_URL, { action:'setAll', products:JSON.stringify(products), categories:JSON.stringify(categories), currencies:JSON.stringify(currencies), shopOrder:JSON.stringify(shopOrder) });
-        showToast('Kapcsolódva! Lokális adatok feltöltve.', 'success');
-      } else {
-        if (data.products)   try { products   = JSON.parse(data.products);   } catch(e){}
-        if (data.categories) try { categories = JSON.parse(data.categories); } catch(e){}
-        if (data.currencies) try { currencies = JSON.parse(data.currencies); } catch(e){}
-        if (data.shopOrder)  try { shopOrder  = JSON.parse(data.shopOrder);  } catch(e){}
-        renderAll(); showToast('Kapcsolódva! Sheets adatok betöltve.', 'success');
-      }
-      updateSheetsStatus(); closeModal('sheetsModal');
-    } else { showToast('A szerver válaszolt, de hibát jelzett', 'error'); }
-  } catch(e) { showToast('Nem sikerült kapcsolódni – ellenőrizd az URL-t', 'error'); }
-  setLoading(false);
-}
-
-function clearSheetsUrl() {
-  SHEETS_API_URL = ''; localStorage.removeItem('sheetsApiUrl');
-  document.getElementById('sheetsUrlInput').value = '';
-  updateSheetsStatus(); showToast('Google Sheets kapcsolat törölve', 'success'); closeModal('sheetsModal');
-}
-
-function checkAdminLogin() {
-  const pw = document.getElementById('adminPassword').value;
-  if (pw === ADMIN_PASSWORD) {
-    isAdmin = true; sessionStorage.setItem('isAdmin','true');
-    closeModal('loginModal'); document.getElementById('adminPassword').value = '';
-    document.getElementById('loginError').style.display = 'none';
-    updateAdminUI(); showToast('Admin mód aktív! ✓', 'success');
-  } else { document.getElementById('loginError').style.display = 'block'; }
-}
-
-function updateAdminUI() {
-  document.getElementById('adminBar').style.display = isAdmin ? 'flex' : 'none';
-  filterProducts();
-}
-
-// ══════════════════════════════════════════════
-// ADD / EDIT PRODUCT
-// ══════════════════════════════════════════════
-document.getElementById('btnAddProduct').onclick = () => {
-  editingId = null; pendingImgBase64 = null;
-  document.getElementById('productModalTitle').textContent = 'Új termék hozzáadása';
-  ['fName','fDesc','fPrice','fPriceNote','fNote','fUploader'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fCat').value = ''; document.getElementById('fCurr').value = '';
-  document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
-  setRating(0); clearTagInputs();
-  document.getElementById('imgPreview').style.display='none';
-  document.getElementById('imgPreview').src='';
-  document.querySelector('#imgUploadArea .upload-icon').style.display='block';
-  document.querySelector('#imgUploadArea .upload-text').style.display='block';
-  openModal('productModal');
-};
-
-function openEditProduct(id) {
-  if (!isAdmin) return;
-  const p = products.find(x=>x.id===id); if (!p) return;
-  editingId = id; pendingImgBase64 = null; // Szerkesztéskor nem töltjük előre a képet
-  document.getElementById('productModalTitle').textContent = 'Termék szerkesztése';
-  document.getElementById('fName').value = p.name || '';
-  document.getElementById('fDesc').value = p.desc || '';
-  document.getElementById('fCat').value = p.category || '';
-  document.getElementById('fDate').value = p.date || '';
-  document.getElementById('fNote').value = p.note || '';
-  document.getElementById('fUploader').value = p.uploader || '';
-  const orig = p.priceHistory && p.priceHistory.length ? p.priceHistory[0] : {};
-  document.getElementById('fPrice').value = orig.amount || p.price || '';
-  document.getElementById('fCurr').value = orig.currency || p.currency || '';
-  document.getElementById('fPriceNote').value = orig.note || p.priceNote || '';
-  setRating(p.rating || 0);
-  const countries = new Set(Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []));
-  const shops = new Set(Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []));
-  (p.priceHistory||[]).forEach(ph => { if (ph.country) countries.add(ph.country); if (ph.shop) shops.add(ph.shop); });
-  setTagInputs([...countries], [...shops]);
-  // Előnézet: utolsó kép mutatása
-  const imgs = getImages(p);
-  const lastImg = imgs.length ? imgs[imgs.length - 1] : null;
-  if (lastImg) {
-    document.getElementById('imgPreview').src = lastImg;
-    document.getElementById('imgPreview').style.display='block';
-    document.querySelector('#imgUploadArea .upload-icon').style.display='none';
-    document.querySelector('#imgUploadArea .upload-text').style.display='none';
-  } else {
-    document.getElementById('imgPreview').style.display='none';
-    document.querySelector('#imgUploadArea .upload-icon').style.display='block';
-    document.querySelector('#imgUploadArea .upload-text').style.display='block';
-  }
-  openModal('productModal');
-}
-
-function compressImage(file, maxWidth, maxHeight, quality) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = () => {
-        const compress = (w, h, q) => {
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, 0, 0, w, h);
-          return canvas.toDataURL('image/jpeg', q);
-        };
-        let w = img.width, h = img.height;
-        if (w > maxWidth || h > maxHeight) { const r = Math.min(maxWidth/w, maxHeight/h); w = Math.round(w*r); h = Math.round(h*r); }
-        let result = compress(w, h, quality), attempts = 0;
-        while (result.length > 48000 && attempts < 10) {
-          quality = Math.max(0.65, quality - 0.04); w = Math.round(w * 0.94); h = Math.round(h * 0.94);
-          result = compress(w, h, quality); attempts++;
-        }
-        resolve(result);
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function handleImgUpload(e) {
-  const file = e.target.files[0]; if (!file) return;
-  document.querySelector('#imgUploadArea .upload-text').textContent = 'Tömörítés...';
-  compressImage(file, 1200, 1200, 0.92).then(compressed => {
-    pendingImgBase64 = compressed;
-    document.getElementById('imgPreview').src = compressed;
-    document.getElementById('imgPreview').style.display = 'block';
-    document.querySelector('#imgUploadArea .upload-icon').style.display = 'none';
-    document.querySelector('#imgUploadArea .upload-text').style.display = 'none';
-  });
-}
-
-async function saveProduct() {
-  const name = document.getElementById('fName').value.trim();
-  if (!name) { showToast('A termék neve kötelező!', 'error'); return; }
-  if (!editingId && products.some(p => p.name.toLowerCase() === name.toLowerCase())) { showToast('Ilyen nevű termék már létezik!', 'error'); return; }
-  const desc = document.getElementById('fDesc').value.trim();
-  const note = document.getElementById('fNote').value.trim();
-  if (name.length > 10000 || desc.length > 10000 || note.length > 10000) { showToast('Egy mező túl hosszú! Max 10000 karakter.', 'error'); return; }
-
-  const ci = document.getElementById('fCountryInput').value.trim();
-  const si = document.getElementById('fShopInput').value.trim();
-  if (ci) addTag('country', ci); if (si) addTag('shop', si);
-
-  const price = parseFloat(document.getElementById('fPrice').value) || 0;
-  const curr = document.getElementById('fCurr').value;
-  if (price > 0 && !curr) { showToast('Add meg a pénznemet!', 'error'); document.getElementById('fCurr').focus(); return; }
-  const priceNote = document.getElementById('fPriceNote').value.trim();
-  const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
-  const priceEntry = price > 0 ? {
-    amount: price,
-    currency: curr,
-    note: priceNote,
-    date,
-    shop: fShops[0] || '',
-    country: fCountries[0] || ''
-  } : null;
-
-  // Ellenőrizzük van-e új kép
-  const hasNewImage = !!pendingImgBase64;
-
-  if (editingId) {
-    const idx = products.findIndex(x=>x.id===editingId);
-    if (idx > -1) {
-      const existing = products[idx];
-      let ph = existing.priceHistory || [];
-      if (priceEntry) { if (ph.length === 0) ph = [priceEntry]; else ph[0] = {...ph[0], amount: price, currency: curr, note: priceNote}; }
-
-          const existingImages = getImages(existing);
-      const newImages = pendingImgBase64
-        ? [...existingImages, pendingImgBase64]  : existingImages;
-
-      products[idx] = {
-        ...existing, name, desc, category: document.getElementById('fCat').value,
-        countries: [...fCountries], shops: [...fShops],
-        country: fCountries[0]||'', shop: fShops[0]||'',
-        date, note, uploader: document.getElementById('fUploader').value.trim(),
-        price: ph.length>0?ph[0].amount:0, currency: ph.length>0?ph[0].currency:curr,
-        priceNote: ph.length>0?ph[0].note:priceNote, priceHistory: ph,
-        rating: currentRating,
-        images: newImages,
-        image: null,
-      };
-    }
-    showToast('Termék frissítve! ✓', 'success');
-  } else {
-    products.unshift({
-      id: 'p'+Date.now(), name, desc, category: document.getElementById('fCat').value,
-      countries: [...fCountries], shops: [...fShops],
-      country: fCountries[0]||'', shop: fShops[0]||'',
-      date, note, uploader: document.getElementById('fUploader').value.trim(),
-      price, currency: curr, priceNote,
-      priceHistory: priceEntry ? [priceEntry] : [],
-      rating: currentRating,
-      images: pendingImgBase64 ? [pendingImgBase64] : [],
-      image: null, reviews: [], createdAt: new Date().toISOString()
-    });
-    showToast('Termék hozzáadva! ✓', 'success');
-  }
-  await saveData(!hasNewImage);
-  renderAll();
-  closeModal('productModal');
-}
-
-function deleteProduct(id) {
-  if (!isAdmin) return;
-  if (!confirm('Biztosan törlöd ezt a terméket?')) return;
-  products = products.filter(p=>p.id!==id);
-  saveData();
-  deleteImageFromSheets(id);
-  filterProducts(); populateDataLists();
-  showToast('Termék törölve.', 'success');
-}
-
-async function deleteImage(productId, displayIdx, event) {
-  event.stopPropagation();
-  if (!isAdmin) return;
-  if (!confirm('Biztosan törlöd ezt a képet?')) return;
-  const p = products.find(x=>x.id===productId);
-  if (!p) return;
-  // displayIdx a getImages(p).reverse() tömbből jön
-  const displayed = getImages(p).reverse();
-  const imgToRemove = displayed[parseInt(displayIdx)];
-  if (!imgToRemove) return;
-  // Töröljük az összes egyező képet p.images-ből (normál sorrend)
-  if (p.images) p.images = p.images.filter(img => img !== imgToRemove);
-  if (p.image === imgToRemove) p.image = null;
-  await saveData();
-  filterProducts();
-  openViewProduct(productId);
-  showToast('Kép törölve!', 'success');
-}
-
-document.addEventListener('keydown', (e) => {
-  const modal = document.getElementById('viewModal');
-  if (!modal || !modal.classList.contains('active')) return;
-  const gallery = modal.querySelector('.img-gallery');
-  if (!gallery) return;
-  const productId = gallery.getAttribute('data-id');
-  if (!productId) return;
-  if (e.key === 'ArrowLeft') { e.preventDefault(); galleryPrev(productId, e); }
-  else if (e.key === 'ArrowRight') { e.preventDefault(); galleryNext(productId, e); }
-});
-
-function galleryNav(productId, dir, event) {
-  event.stopPropagation();
-  const gallery = document.querySelector(`.img-gallery[data-id="${productId}"]`);
-  if (!gallery) return;
-  const slides = gallery.querySelectorAll('.img-gallery-slide');
-  const cur = gallery._getIndex ? gallery._getIndex() : [...gallery.querySelectorAll('.img-dot')].findIndex(d => d.classList.contains('active'));
-  const n = dir === 'prev'
-    ? (cur > 0 ? cur - 1 : slides.length - 1)
-    : (cur < slides.length - 1 ? cur + 1 : 0);
-  if (gallery._update) {
-    gallery._update(n); // swipe handler currentIndex is also updated
-  } else {
-    const track = gallery.querySelector('.img-gallery-track');
-    track.style.transform = `translateX(-${n * 100}%)`;
-    gallery.querySelectorAll('.img-dot').forEach((dot, i) => dot.classList.toggle('active', i === n));
-  }
-}
-function galleryPrev(id, e) { galleryNav(id, 'prev', e); }
-function galleryNext(id, e) { galleryNav(id, 'next', e); }
-
-// ══════════════════════════════════════════════
-// COUNTRY CODE MAP
-// ══════════════════════════════════════════════
-const COUNTRY_CODES = {
-  'Magyarország':'HU','Ausztria':'AT','Németország':'DE','Olaszország':'IT','Franciaország':'FR',
-  'Spanyolország':'ES','Csehország':'CZ','Szlovákia':'SK','Lengyelország':'PL','Horvátország':'HR',
-  'Szerbia':'RS','Románia':'RO','Bulgária':'BG','Görögország':'GR','Törökország':'TR',
-  'Egyesült Királyság':'GB','Hollandia':'NL','Belgium':'BE','Svájc':'CH','Svédország':'SE',
-  'Norvégia':'NO','Dánia':'DK','Finnország':'FI','Portugália':'PT','Egyesült Államok':'US',
-  'Japán':'JP','Kína':'CN','Thaiföld':'TH','Vietnam':'VN','India':'IN','Észtország':'EE',
-  'Lettország':'LV','Litvánia':'LT','Szlovénia':'SI','Albánia':'AL','Montenegró':'ME',
-};
-function countryShort(name) { return COUNTRY_CODES[name] || name || ''; }
-
-// ══════════════════════════════════════════════
-// PRICE UPDATE
-// ══════════════════════════════════════════════
-function openPriceUpdate(id) {
-  priceUpdateId = id;
-  const p = products.find(x=>x.id===id); if (!p) return;
-  const latest = getLatestPrice(p);
-  document.getElementById('pNewPrice').value = '';
-  document.getElementById('pNewCurr').value = latest.currency || '';
-  document.getElementById('pPriceNote').value = '';
-  document.getElementById('pNewCountry').value = '';
-  document.getElementById('pNewShop').value = '';
-  document.getElementById('pNewDate').value = new Date().toISOString().split('T')[0];
-  openModal('priceModal');
-}
-
-async function savePriceUpdate() {
-  const p = products.find(x=>x.id===priceUpdateId); if (!p) return;
-  const amount = parseFloat(document.getElementById('pNewPrice').value);
-  if (isNaN(amount) || amount <= 0) { showToast('Add meg az új árat!', 'error'); return; }
-  const currency = document.getElementById('pNewCurr').value;
-  if (!currency) { showToast('Válassz pénznemet!', 'error'); document.getElementById('pNewCurr').focus(); return; }
-  const note = document.getElementById('pPriceNote').value.trim();
-  if (note.length > 10000) { showToast('A megjegyzés túl hosszú!', 'error'); return; }
-  const country = document.getElementById('pNewCountry').value.trim();
-  const shop = document.getElementById('pNewShop').value.trim();
-  const date = document.getElementById('pNewDate').value;
-  if (!p.priceHistory) p.priceHistory = (p.price && p.price > 0) ? [{amount:p.price,currency:p.currency,note:p.priceNote,date:p.date}] : [];
-  p.priceHistory.push({amount, currency, note, country, shop, date});
-  p.price = amount; p.currency = currency;
-  await saveData(); closeModal('priceModal'); filterProducts();
-  showToast('Ár frissítve! 💰', 'success');
-}
-
-// ══════════════════════════════════════════════
-// VIEW PRODUCT MODAL
-// ══════════════════════════════════════════════
-function openViewProduct(id) {
-  const p = products.find(x=>x.id===id); if (!p) return;
-  reviewProductId = id;
-  document.getElementById('viewModalTitle').textContent = p.name;
-  const avgRating = getAvgRating(p);
-  const reviews = [...(p.reviews||[])];
-  if (p.rating > 0) reviews.unshift({name: p.uploader||'Feltöltő', rating:p.rating, note:p.note, date:p.date});
-
-  const reviewsHtml = reviews.length ? reviews.map(r => `
-  <div style="padding:8px 0;border-bottom:1px solid var(--border)">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <span style="font-weight:600;font-size:0.85rem">👤 ${esc(r.name || 'Névtelen')}</span>
-      <span style="color:var(--star);font-size:0.85rem">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span>
-    </div>
-    ${r.date ? `<div style="font-size:0.7rem;color:var(--muted);margin-top:2px">${new Date(r.date).toLocaleDateString('hu-HU')}</div>` : ''}
-    ${r.note ? `<div style="font-size:0.8rem;color:var(--muted);margin-top:3px;font-style:italic">"${esc(r.note)}"</div>` : ''}
-  </div>`).join('')
-    : '<div style="color:var(--muted);font-size:0.82rem">Még nincs értékelés.</div>';
-
-  const latestPrice = getLatestPrice(p);
-  const pCountries = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
-  const pShops = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
-  const allShops = new Set(pShops); const allCountries = new Set(pCountries);
-  if (p.priceHistory) p.priceHistory.forEach(ph => { if (ph.shop) allShops.add(ph.shop); if (ph.country) allCountries.add(ph.country); });
-  const locationPillsHtml = [...allShops].map(s=>`<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') + [...allCountries].map(c=>`<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
-
-  const images = getImages(p).reverse();
-
-  const galleryHtml = images.length > 0 ? `
-    <div class="img-gallery" data-id="${p.id}" style="height:280px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
-      <div class="img-gallery-track">
-        ${images.map((img, idx) => `
-          <div class="img-gallery-slide">
-            <img src="${img}" style="width:100%;height:280px;object-fit:cover;cursor:zoom-in" class="gallery-img-clickable" data-idx="${idx}" data-pid="${p.id}">
-            ${isAdmin ? `<button class="btn btn-sm btn-danger" style="position:absolute;top:8px;right:8px;z-index:10;pointer-events:all" onclick="deleteImage('${p.id}','${idx}',event)">🗑️</button>` : ''}
-          </div>`).join('')}
-      </div>
-      ${images.length > 1 ? `
-        <div class="img-dots">${images.map((_,i)=>`<div class="img-dot ${i===0?'active':''}"></div>`).join('')}</div>
-        <button onclick="galleryPrev('${p.id}',event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button>
-        <button onclick="galleryNext('${p.id}',event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>
-      ` : ''}
-    </div>` : '';
-
-  document.getElementById('viewModalBody').innerHTML = `
-    ${galleryHtml}
-    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
-      ${p.category ? `<span class="meta-pill">📂 ${esc(p.category)}</span>` : ''}
-      ${locationPillsHtml}
-      ${p.date ? `<span class="meta-pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}
-    </div>
-    ${p.desc ? `<div style="font-size:0.88rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
-    <div style="font-family:var(--font-primary);font-size:1.3rem;font-weight:800;margin-bottom:4px">
-      ${latestPrice.amount ? latestPrice.amount+' '+(latestPrice.currency||'') : '–'} ${getPriceChangeHtml(p)}
-    </div>
-    ${p.priceHistory && p.priceHistory.length > 1 ? `<div class="price-history" style="margin-bottom:8px">
-      <div class="price-history-title">Ártörténet</div>
-      ${[...p.priceHistory].sort((a,b)=>(b.date||'')>(a.date||'')?1:-1).map(ph=>`<div class="ph-item">
-        <span class="ph-date">${ph.date?new Date(ph.date).toLocaleDateString('hu-HU'):'–'}</span>
-        <span class="ph-val">${ph.amount} ${ph.currency||''}</span>
-        <span class="ph-loc">${[ph.country?esc(countryShort(ph.country)):'',ph.shop?esc(ph.shop):''].filter(Boolean).join(' · ')}</span>
-        <span class="ph-note">${ph.note?esc(ph.note):''}</span>
-      </div>`).join('')}
-    </div>` : ''}
-    <div style="margin:10px 0 5px;font-weight:600;font-size:0.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px">Értékelések (${reviews.length})</div>
-    ${avgRating > 0 ? `<div style="font-size:1rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avgRating))}${'☆'.repeat(5-Math.round(avgRating))} ${avgRating.toFixed(1)}</div>` : ''}
-    ${reviewsHtml}
-  `;
-  document.getElementById('viewModalFooter').innerHTML = `
-    <button class="btn btn-primary" onclick="closeModal('viewModal');openImageUploadModal('${id}')">📷 Kép hozzáadása</button>
-    <button class="btn btn-primary" onclick="closeModal('viewModal');openReviewModal('${id}')">✍ Értékelés</button>
-    <button class="btn btn-primary" onclick="closeModal('viewModal');openPriceUpdate('${id}')">💰 Ár frissítése</button>
-    <button class="btn" style="background:var(--cream);color:var(--ink)" onclick="closeModal('viewModal')">Bezár</button>
-  `;
-  openModal('viewModal');
-  setTimeout(initGallerySwipe, 100);
-}
-
-// ══════════════════════════════════════════════
-// QUICK IMAGE UPLOAD
-// ══════════════════════════════════════════════
-function openImageUploadModal(productId) {
-  quickImageProductId = productId;
-  quickImageBase64 = null;
-  document.getElementById('quickImgInput').value = '';
-  document.getElementById('quickImgPreviewArea').style.display = 'none';
-  document.getElementById('btnSaveQuickImage').disabled = true;
-  openModal('imageUploadModal');
-}
-
-function handleQuickImageUpload(e) {
-  const file = e.target.files[0]; if (!file) return;
-  compressImage(file, 1200, 1200, 0.92).then(compressed => {
-    quickImageBase64 = compressed;
-    document.getElementById('quickImgPreview').src = compressed;
-    document.getElementById('quickImgPreviewArea').style.display = 'block';
-    document.getElementById('btnSaveQuickImage').disabled = false;
-  });
-}
-
-async function saveQuickImage() {
-  if (!quickImageProductId || !quickImageBase64) return;
-  const p = products.find(x=>x.id===quickImageProductId); if (!p) return;
-  if (!p.images) p.images = [];
-  p.images.push(quickImageBase64);
-  p.image = null;
-  await saveData();
-  closeModal('imageUploadModal');
-  showToast('Kép hozzáadva! ✓', 'success');
-  filterProducts();
-}
-
-// ══════════════════════════════════════════════
-// REVIEWS
-// ══════════════════════════════════════════════
-function openReviewModal(id) {
-  reviewProductId = id;
-  document.getElementById('rName').value = '';
-  document.getElementById('rNote').value = '';
-  setReviewRating(0);
-  openModal('reviewModal');
-}
-
-async function saveReview() {
-  const name = document.getElementById('rName').value.trim();
-  if (!name) { showToast('Írd be a neved!', 'error'); return; }
-  const p = products.find(x=>x.id===reviewProductId); if (!p) return;
-  if (!p.reviews) p.reviews = [];
-  p.reviews.push({name, note: document.getElementById('rNote').value.trim(), rating: currentReviewRating, date: new Date().toISOString().split('T')[0], id:'r'+Date.now()});
-  await saveData(); closeModal('reviewModal'); filterProducts();
-  showToast('Értékelés hozzáadva! ✓', 'success');
-}
-
-// ══════════════════════════════════════════════
-// CATEGORIES & CURRENCIES ADMIN
-// ══════════════════════════════════════════════
-document.getElementById('btnManageCats').onclick       = () => { renderCatList();       openModal('catModal'); };
-document.getElementById('btnManageCurrencies').onclick  = () => { renderCurrList();       openModal('currModal'); };
-document.getElementById('btnManageCountries').onclick   = () => { renderCountriesList();  openModal('countriesModal'); };
-document.getElementById('btnManageShops').onclick       = () => { renderShopsList();      openModal('shopsModal'); };
-document.getElementById('btnBackupRestore').onclick     = () => { renderBackupList();     openModal('backupModal'); };
-
-let dragSrc = null;
-function makeDraggable(container, onReorder) {
-  container.querySelectorAll('.cat-item[draggable]').forEach(item => {
-    item.addEventListener('dragstart', e => { dragSrc = item; item.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
-    item.addEventListener('dragend', () => { item.classList.remove('dragging'); container.querySelectorAll('.cat-item').forEach(i=>i.classList.remove('drag-over')); });
-    item.addEventListener('dragover', e => { e.preventDefault(); if (item !== dragSrc) { container.querySelectorAll('.cat-item').forEach(i=>i.classList.remove('drag-over')); item.classList.add('drag-over'); } });
-    item.addEventListener('drop', e => {
-      e.preventDefault(); if (!dragSrc || dragSrc===item) return;
-      item.classList.remove('drag-over');
-      const items = [...container.querySelectorAll('.cat-item[draggable]')];
-      if (items.indexOf(dragSrc) < items.indexOf(item)) item.after(dragSrc); else item.before(dragSrc);
-      onReorder([...container.querySelectorAll('.cat-item[draggable]')].map(el=>el.dataset.value));
-    });
-  });
-}
-
-function renderCatList() {
-  const el = document.getElementById('catList');
-  el.innerHTML = categories.map(c=>`<div class="cat-item" draggable="true" data-value="${esc(c)}">
-    <span class="drag-handle">⠿</span><span class="cat-item-name">📂 ${esc(c)}</span>
-    <button class="btn btn-sm btn-danger" onclick="removeCategory('${esc(c)}')">✕</button>
-  </div>`).join('');
-  makeDraggable(el, async newOrder => { categories = newOrder; await saveData(); populateCategorySelects(); });
-}
-
-function renderShopsList() {
-  const shops = getUniqueShops(); const el = document.getElementById('shopsList');
-  if (!shops.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Még nincs rögzített bolt.</div>'; return; }
-  el.innerHTML = shops.map(s=>`<div class="cat-item" draggable="true" data-value="${esc(s)}">
-    <span class="drag-handle">⠿</span><span class="cat-item-name">🏪 ${esc(s)}</span>
-    <button class="btn btn-sm btn-icon" onclick="startEditShop('${esc(s)}')">✏️</button>
-  </div>`).join('');
-  makeDraggable(el, async newOrder => { shopOrder = newOrder; await saveData(); populateDataLists(); updateFilterOptions(); });
-}
-
-async function addCategory() {
-  const v = document.getElementById('newCatInput').value.trim();
-  if (!v || categories.includes(v)) return;
-  categories.push(v); document.getElementById('newCatInput').value = '';
-  await saveData(true); renderCatList(); populateCategorySelects(); showToast('Kategória hozzáadva!', 'success');
-}
-async function removeCategory(c) {
-  categories = categories.filter(x=>x!==c);
-  await saveData(true); renderCatList(); populateCategorySelects();
-}
-
-function renderCurrList() {
-  document.getElementById('currList').innerHTML = currencies.map(c=>`<div class="cat-item">
-    <span class="cat-item-name">💱 <strong>${esc(c.code)}</strong> – ${esc(c.name)}</span>
-    <button class="btn btn-sm btn-danger" onclick="removeCurrency('${esc(c.code)}')">✕</button>
-  </div>`).join('');
-}
-async function addCurrency() {
-  const code = document.getElementById('newCurrCode').value.trim().toUpperCase();
-  const name = document.getElementById('newCurrName').value.trim();
-  if (!code || !name) { showToast('Add meg a kódot és a nevet!', 'error'); return; }
-  if (currencies.some(c=>c.code===code)) { showToast('Ez a pénznem már létezik!', 'error'); return; }
-  currencies.push({code, name}); document.getElementById('newCurrCode').value=''; document.getElementById('newCurrName').value='';
-  await saveData(true); renderCurrList(); populateCurrencySelects(); showToast('Pénznem hozzáadva!', 'success');
-}
-async function removeCurrency(code) {
-  currencies = currencies.filter(c=>c.code!==code);
-  await saveData(true); renderCurrList(); populateCurrencySelects();
-}
-
-function getUniqueCountries() {
-  return [...new Set(products.flatMap(p => {
-    const f = Array.isArray(p.countries) ? p.countries : (p.country?[p.country]:[]);
-    return [...f, ...(p.priceHistory||[]).map(ph=>ph.country).filter(Boolean)];
-  }))].sort();
-}
-function getUniqueShops() {
-  const all = [...new Set(products.flatMap(p => {
-    const f = Array.isArray(p.shops) ? p.shops : (p.shop?[p.shop]:[]);
-    return [...f, ...(p.priceHistory||[]).map(ph=>ph.shop).filter(Boolean)];
-  }))];
-  return [...shopOrder.filter(s=>all.includes(s)), ...all.filter(s=>!shopOrder.includes(s)).sort()];
-}
-function populateDataLists() {
-  document.getElementById('countryList').innerHTML = getUniqueCountries().map(c=>`<option value="${esc(c)}">`).join('');
-  document.getElementById('shopList').innerHTML    = getUniqueShops().map(s=>`<option value="${esc(s)}">`).join('');
-}
-
-function renderCountriesList() {
-  const countries = getUniqueCountries(); const el = document.getElementById('countriesList');
-  if (!countries.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Még nincs rögzített ország.</div>'; return; }
-  el.innerHTML = countries.map(c=>`<div class="cat-item">
-    <span class="cat-item-name">🌍 ${esc(c)}</span>
-    <button class="btn btn-sm btn-icon" onclick="startEditCountry('${esc(c)}')">✏️</button>
-  </div>`).join('');
-}
-function startEditCountry(oldVal) {
-  const newVal = prompt('Ország átnevezése:', oldVal);
-  if (!newVal || newVal.trim()===oldVal) return;
-  const t = newVal.trim();
-  products.forEach(p => {
-    if (p.country===oldVal) p.country=t;
-    if (Array.isArray(p.countries)) p.countries=p.countries.map(c=>c===oldVal?t:c);
-    (p.priceHistory||[]).forEach(ph=>{if(ph.country===oldVal)ph.country=t;});
-  });
-  saveData(); renderCountriesList(); filterProducts(); populateDataLists();
-  showToast('Ország átnevezve: '+t, 'success');
-}
-function startEditShop(oldVal) {
-  const newVal = prompt('Bolt átnevezése:', oldVal);
-  if (!newVal || newVal.trim()===oldVal) return;
-  const t = newVal.trim();
-  products.forEach(p => {
-    if (p.shop===oldVal) p.shop=t;
-    if (Array.isArray(p.shops)) p.shops=p.shops.map(s=>s===oldVal?t:s);
-    (p.priceHistory||[]).forEach(ph=>{if(ph.shop===oldVal)ph.shop=t;});
-  });
-  shopOrder = shopOrder.map(s=>s===oldVal?t:s);
-  saveData(); renderShopsList(); filterProducts(); populateDataLists();
-  showToast('Bolt átnevezve: '+t, 'success');
-}
-
-// ══════════════════════════════════════════════
-// STAR RATING
-// ══════════════════════════════════════════════
-const ratingLabels = ['','Gyenge','Megfelelő','Jó','Nagyon jó','Kiváló'];
-function setRating(n) { currentRating=n; updateStarDisplay('#starPicker',n); const l=document.getElementById('ratingLabel'); if(l)l.textContent=n>0?ratingLabels[n]+' ('+n+'/5)':'Koppints egy csillagra'; }
-function setReviewRating(n) { currentReviewRating=n; updateStarDisplay('#reviewStarPicker',n); const l=document.getElementById('reviewRatingLabel'); if(l)l.textContent=n>0?ratingLabels[n]+' ('+n+'/5)':'Koppints egy csillagra'; }
-function updateStarDisplay(sel, n) {
-  const btns = document.querySelectorAll(sel+' .star-btn');
-  btns.forEach((b,i) => { b.classList.toggle('active',i<n); b.onmouseenter=()=>btns.forEach((bb,j)=>bb.style.color=j<=i?'var(--star)':'#d0d0d0'); b.onmouseleave=()=>btns.forEach(bb=>bb.style.color=''); });
-}
-
-// ══════════════════════════════════════════════
-// MODALS
-// ══════════════════════════════════════════════
-function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow='hidden'; }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow=''; }
-function isFormDirty() { return !!(document.getElementById('fName').value.trim()||document.getElementById('fDesc').value.trim()||document.getElementById('fPrice').value.trim()||document.getElementById('fNote').value.trim()||fCountries.length||fShops.length||pendingImgBase64); }
-
-document.querySelectorAll('.overlay').forEach(o=>{
-  o.addEventListener('click', e=>{
-    if (e.target!==o) return;
-    if (o.id==='productModal' && isFormDirty()) { if (!confirm('Biztosan ki akarsz lépni? A kitöltött adatok elvesznek.')) return; }
-    closeModal(o.id);
-  });
-});
-
-function clearFilters() {
-  ['searchInput','filterCat','filterCountry','filterShop','filterCurr'].forEach(id=>document.getElementById(id).value='');
-  filterProducts();
-}
-function updateClearBtn() {
-  const has = !!(document.getElementById('searchInput').value||document.getElementById('filterCat').value||document.getElementById('filterCountry').value||document.getElementById('filterShop').value||document.getElementById('filterCurr').value);
-  document.getElementById('btnClearFilters').style.display = has?'inline-flex':'none';
-}
-
-function exportCSV() {
-  const headers = ['Név','Leírás','Kategória','Ország','Bolt','Dátum','Ár','Pénznem','Értékelés','Megjegyzés','Feltöltő'];
-  const rows = products.map(p => {
-    const latest = getLatestPrice(p);
-    const pCountries = Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[]);
-    const pShops    = Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[]);
-    return [p.name,p.desc||'',p.category||'',pCountries.join(', '),pShops.join(', '),p.date||'',latest.amount||'',latest.currency||'',getAvgRating(p).toFixed(1),p.note||'',p.uploader||'']
-      .map(v=>'"'+String(v).replace(/"/g,'""')+'"');
-  });
-  const csv = [headers.map(h=>'"'+h+'"').join(','),...rows.map(r=>r.join(','))].join('\n');
-  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='kulfoldi-vasarlasok.csv'; a.click();
-  URL.revokeObjectURL(url); showToast('CSV exportálva! ✓', 'success');
-}
-
-let toastTimer;
-function showToast(msg, type='success') {
-  const t = document.getElementById('toast');
-  t.textContent=msg; t.className=`toast ${type} show`;
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
-}
-
-function esc(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function openLightbox(src, e) { if(e && e.stopPropagation) e.stopPropagation(); document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').classList.add('active'); document.body.style.overflow='hidden'; }
-function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); document.getElementById('lightboxImg').src=''; if(!document.querySelector('.overlay.active'))document.body.style.overflow=''; }
-
-document.addEventListener('keydown', e => {
-  if (e.key!=='Escape') return;
-  if (document.getElementById('lightbox').classList.contains('active')) { closeLightbox(); return; }
-  const active = [...document.querySelectorAll('.overlay.active')];
-  if (!active.length) return;
-  const top = active[active.length-1];
-  if (top.id==='productModal' && isFormDirty()) { if(!confirm('Biztosan ki akarsz lépni? A kitöltött adatok elvesznek.'))return; }
-  closeModal(top.id);
-});
-
-  function handleFormEnter(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const name = document.getElementById('fName').value.trim();
-      if (name) saveProduct();
-    }
-  };
 
 init();
 </script>
