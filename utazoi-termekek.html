@@ -137,7 +137,7 @@
 
   .form-group { display: flex; flex-direction: column; gap: 4px; }
   .form-label { font-size: 0.74rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
-  .form-input, .form-select, .form-textarea { padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px; background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--ink); outline: none; transition: border-color .15s; }
+  .form-input, .form-select, .form-textarea { padding: 8px 11px; border: 1.5px solid var(--border); border-radius: 7px; background: #fff; font-family: var(--font-primary); font-size: var(--text-base); color: var(--ink); outline: none; transition: border-color .15s; }
   .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
   .form-textarea { resize: vertical; min-height: 58px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -163,7 +163,7 @@
   .tag-item { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-light); color: var(--accent); border: 1px solid #bfdbfe; border-radius: 20px; font-size: 0.78rem; font-weight: 600; padding: 2px 8px 2px 10px; }
   .tag-item button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 0.9rem; line-height: 1; padding: 0; opacity: 0.7; }
   .tag-item button:hover { opacity: 1; }
-  .tag-input { border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; background: transparent; min-width: 120px; flex: 1; }
+  .tag-input { border: none; outline: none; font-family: var(--font-primary); font-size: var(--text-base); background: transparent; min-width: 120px; flex: 1; }
 
   .toast { position: fixed; bottom: 20px; right: 20px; z-index: 999; background: var(--ink); color: var(--paper); padding: 12px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 6px 20px rgba(0,0,0,0.3); transform: translateY(80px); opacity: 0; transition: all .25s; max-width: 280px; }
   .toast.show { transform: translateY(0); opacity: 1; }
@@ -185,7 +185,7 @@
   .drag-handle:hover { color: var(--muted); }
   .cat-item-name { font-size: 0.88rem; font-weight: 500; flex: 1; }
 
-  .tab-btn { flex: 1; padding: 10px; text-align: center; background: var(--cream); border: 1.5px solid var(--border); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all .15s; color: var(--muted); }
+  .tab-btn { flex: 1; padding: 10px; text-align: center; background: var(--cream); border: 1.5px solid var(--border); font-family: var(--font-primary); font-size: var(--text-base); font-weight: 600; cursor: pointer; transition: all .15s; color: var(--muted); }
   .tab-btn:first-child { border-radius: 8px 0 0 8px; }
   .tab-btn:last-child { border-radius: 0 8px 8px 0; border-left: none; }
   .tab-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -207,6 +207,7 @@
   .mt-8 { margin-top: 8px; }
   details summary { cursor: pointer; font-size: 0.78rem; color: var(--muted); font-weight: 600; user-select: none; }
   details summary:hover { color: var(--ink); }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -215,7 +216,6 @@
   <span style="display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></span>
   <span id="loadingMsg">Mentés...</span>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <header>
   <h1>Külföldi <span>vásárlás</span></h1>
@@ -264,7 +264,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Fotó (opcionális)</label>
-        <label class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('imgFileInput').click()">
+        <label class="img-upload-area" id="imgUploadArea" for="imgFileInput">
           <div class="upload-icon">📷</div>
           <div class="upload-text">Koppints a kép kiválasztásához</div>
           <img class="img-preview" id="imgPreview" style="display:none">
@@ -601,8 +601,11 @@
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-const ADMIN_PASSWORD = 'admin123';
-const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
+  const ADMIN_PASSWORD = 'Billa789';
+
+  // ★ IDE ILLESZD BE AZ APPS SCRIPT URL-T — egyszer kell, utána mindenki látja ★
+  const SHEETS_API_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbym9Upo6FtNar27q8Y23Fs0lBpeAVbqj11YEZjd5ZDRGUKVWX4CiJ6SYdNb1oBHEtHi/exec';
+  
 let SHEETS_API_URL = localStorage.getItem('sheetsApiUrl') || SHEETS_API_URL_DEFAULT;
 
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
@@ -666,15 +669,12 @@ async function loadData() {
       if (data.products) {
         try {
           const sheetsProds = JSON.parse(data.products);
-          // Képek visszaállítása localStorageból
-          const localMap = new Map();
+              const localMap = new Map();
           try {
             const lp = JSON.parse(localStorage.getItem('products') || '[]');
             lp.forEach(p => {
-              // Régi image mező
-              if (p.image && p.image !== '__img__') localMap.set(p.id + '_img', p.image);
-              // Új images tömb
-              if (p.images && p.images.length) localMap.set(p.id + '_images', p.images);
+                    if (p.image && p.image !== '__img__') localMap.set(p.id + '_img', p.image);
+                  if (p.images && p.images.length) localMap.set(p.id + '_images', p.images);
             });
           } catch(e){}
 
@@ -684,8 +684,7 @@ async function loadData() {
             images: (localMap.get(p.id + '_images') || p.images || []).filter(img => img && img !== '__img__')
           }));
 
-          // Hiányzó képek betöltése Sheetsből háttérben
-          products.forEach(async (p, i) => {
+                  products.forEach(async (p, i) => {
             if (p.image === '__img__' && (!p.images || !p.images.length)) {
               try {
                 const imgData = await sheetsGet('get', 'img_' + p.id);
@@ -732,14 +731,12 @@ async function saveData(lightweight = false) {
       return;
     }
 
-    // ── FIX: Gyűjts MINDEN terméket aminek van new base64 kép (image VAGY images tömbben) ──
-    const productsWithNewImgs = products.filter(p => {
+      const productsWithNewImgs = products.filter(p => {
       const hasNewImg = p.image && p.image !== '__img__' && p.image.startsWith('data:');
       const hasNewImgInArr = p.images && p.images.some(img => img && img !== '__img__' && img.startsWith('data:'));
       return hasNewImg || hasNewImgInArr;
     });
 
-    // Sheets-re küldött payload: képek NÉLKÜL (placeholder)
     const productsForSheets = products.map(p => ({
       ...p,
       image: (p.image && p.image !== '__img__') ? '__img__' : p.image,
@@ -755,10 +752,8 @@ async function saveData(lightweight = false) {
       shopOrder:  JSON.stringify(shopOrder)
     });
 
-    // Képek feltöltése egyenként Sheets-re (legutolsó kép per termék)
     for (const p of productsWithNewImgs) {
-      // Az utolsó base64 képet töltjük fel (a kártya is azt mutatja)
-      const newImgs = (p.images || []).filter(img => img && img.startsWith('data:'));
+        const newImgs = (p.images || []).filter(img => img && img.startsWith('data:'));
       const imgToUpload = newImgs.length ? newImgs[newImgs.length - 1] : (p.image && p.image.startsWith('data:') ? p.image : null);
       if (imgToUpload) {
         await sheetsWrite(SHEETS_API_URL, { action: 'set', key: 'img_' + p.id, value: imgToUpload });
@@ -776,7 +771,9 @@ async function saveData(lightweight = false) {
 // ══════════════════════════════════════════════
 function createBackup() {
   try {
-    localStorage.setItem('backup_' + Date.now(), JSON.stringify({ products, categories, currencies, shopOrder, timestamp: new Date().toISOString() }));
+    // Képek nélkül mentünk backupot (spórol helyet)
+    const productsNoImg = products.map(p => ({...p, image: null, images: []}));
+    localStorage.setItem('backup_' + Date.now(), JSON.stringify({ products: productsNoImg, categories, currencies, shopOrder, timestamp: new Date().toISOString() }));
     cleanupOldBackups();
   } catch(e) {}
 }
@@ -880,8 +877,7 @@ async function init() {
 // ══════════════════════════════════════════════
 function initGallerySwipe() {
   document.querySelectorAll('.img-gallery').forEach(gallery => {
-    if (gallery._swipeInit) return; // Ne init-elj kétszer
-    gallery._swipeInit = true;
+    if (gallery._swipeInit) return; gallery._swipeInit = true;
 
     const track = gallery.querySelector('.img-gallery-track');
     const slides = gallery.querySelectorAll('.img-gallery-slide');
@@ -930,9 +926,7 @@ function initGallerySwipe() {
 function renderAll() {
   populateCategorySelects();
   populateCurrencySelects();
-  filterProducts();
-  populateDataLists();
-  setTimeout(initGallerySwipe, 100);
+  filterProducts(); // populateDataLists is called inside filterProducts
 }
 
 // ══════════════════════════════════════════════
@@ -981,7 +975,7 @@ function filterProducts() {
   renderGrid(filtered);
   updateFilterOptions();
   updateClearBtn();
-  populateCurrencySelects();
+  populateDataLists();
 }
 
 function updateFilterOptions() {
@@ -1002,12 +996,40 @@ function renderGrid(list) {
   grid.innerHTML = list.map(p => productCard(p)).join('');
 }
 
+document.getElementById('productGrid').addEventListener('click', e => {
+  const imgEl = e.target.closest('.card-img-clickable');
+  if (imgEl) {
+    e.stopPropagation();
+    const p = products.find(x => x.id === imgEl.dataset.pid);
+    if (!p) return;
+    const imgs = getImages(p);
+    const latest = imgs.length ? imgs[imgs.length - 1] : null;
+    if (latest) openLightbox(latest);
+    return;
+  }
+  const placeholder = e.target.closest('.card-img-placeholder');
+  if (placeholder && placeholder.dataset.pid) {
+    openViewProduct(placeholder.dataset.pid);
+  }
+});
+
+// Event delegation a view modal galériájában – egyszer regisztrálva, mindig él
+document.getElementById('viewModalBody').addEventListener('click', e => {
+  const imgEl = e.target.closest('.gallery-img-clickable');
+  if (imgEl) {
+    e.stopPropagation();
+    const p = products.find(x => x.id === imgEl.dataset.pid);
+    if (!p) return;
+    const imgs = getImages(p).reverse();
+    const idx = parseInt(imgEl.dataset.idx);
+    if (imgs[idx]) openLightbox(imgs[idx]);
+  }
+});
+
 function getImages(p) {
-  // images tömb elsőbbséget élvez, ha van és nem üres
   if (p.images && p.images.length > 0) {
     return p.images.filter(img => img && img !== '__img__');
   }
-  // visszafelé kompatibilis: régi image mező
   if (p.image && p.image !== '__img__') return [p.image];
   return [];
 }
@@ -1019,8 +1041,8 @@ function productCard(p) {
   const latestImage = images.length > 0 ? images[images.length - 1] : null;
 
   const imgHtml = latestImage
-    ? `<img class="card-img" src="${latestImage}" alt="${esc(p.name)}" loading="lazy" onclick="event.stopPropagation();openLightbox('${latestImage}', event)">`
-    : `<div class="card-img-placeholder" onclick="openViewProduct('${p.id}')">🛍️</div>`;
+    ? `<img class="card-img card-img-clickable" src="${latestImage}" alt="${esc(p.name)}" loading="lazy" data-pid="${p.id}">`
+    : `<div class="card-img-placeholder" data-pid="${p.id}">🛍️</div>`;
 
   const imgCountBadge = images.length > 1
     ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:0.7rem;pointer-events:none">📷 ${images.length}</div>`
@@ -1299,11 +1321,9 @@ async function saveProduct() {
       let ph = existing.priceHistory || [];
       if (priceEntry) { if (ph.length === 0) ph = [priceEntry]; else ph[0] = {...ph[0], amount: price, currency: curr, note: priceNote}; }
 
-      // ── FIX: Képek kezelése szerkesztéskor ──
-      const existingImages = getImages(existing);
+          const existingImages = getImages(existing);
       const newImages = pendingImgBase64
-        ? [...existingImages, pendingImgBase64]  // Hozzáad az előző képekhez
-        : existingImages;
+        ? [...existingImages, pendingImgBase64]  : existingImages;
 
       products[idx] = {
         ...existing, name, desc, category: document.getElementById('fCat').value,
@@ -1347,18 +1367,23 @@ function deleteProduct(id) {
   showToast('Termék törölve.', 'success');
 }
 
-async function deleteImageReversed(productId, reversedIndex, event) {
+async function deleteImage(productId, displayIdx, event) {
   event.stopPropagation();
   if (!isAdmin) return;
   if (!confirm('Biztosan törlöd ezt a képet?')) return;
   const p = products.find(x=>x.id===productId);
-  if (!p || !p.images) return;
-  const originalIndex = p.images.length - 1 - reversedIndex;
-  p.images.splice(originalIndex, 1);
+  if (!p) return;
+  // displayIdx a getImages(p).reverse() tömbből jön
+  const displayed = getImages(p).reverse();
+  const imgToRemove = displayed[parseInt(displayIdx)];
+  if (!imgToRemove) return;
+  // Töröljük az összes egyező képet p.images-ből (normál sorrend)
+  if (p.images) p.images = p.images.filter(img => img !== imgToRemove);
+  if (p.image === imgToRemove) p.image = null;
   await saveData();
-  closeModal('viewModal');
-  showToast('Kép törölve!', 'success');
   filterProducts();
+  openViewProduct(productId);
+  showToast('Kép törölve!', 'success');
 }
 
 document.addEventListener('keydown', (e) => {
@@ -1466,7 +1491,6 @@ function openViewProduct(id) {
   if (p.priceHistory) p.priceHistory.forEach(ph => { if (ph.shop) allShops.add(ph.shop); if (ph.country) allCountries.add(ph.country); });
   const locationPillsHtml = [...allShops].map(s=>`<span class="meta-pill">🏪 ${esc(s)}</span>`).join('') + [...allCountries].map(c=>`<span class="meta-pill">🌍 ${esc(countryShort(c))}</span>`).join('');
 
-  // Képek megfordítva (legújabb elöl)
   const images = getImages(p).reverse();
 
   const galleryHtml = images.length > 0 ? `
@@ -1474,8 +1498,8 @@ function openViewProduct(id) {
       <div class="img-gallery-track">
         ${images.map((img, idx) => `
           <div class="img-gallery-slide">
-            <img src="${img}" style="width:100%;height:280px;object-fit:cover;cursor:zoom-in" onclick="openLightbox('${img}', event)">
-            ${isAdmin ? `<button class="btn btn-sm btn-danger" style="position:absolute;top:8px;right:8px;z-index:10;pointer-events:all" onclick="deleteImageReversed('${p.id}',${idx},event)">🗑️</button>` : ''}
+            <img src="${img}" style="width:100%;height:280px;object-fit:cover;cursor:zoom-in" class="gallery-img-clickable" data-idx="${idx}" data-pid="${p.id}">
+            ${isAdmin ? `<button class="btn btn-sm btn-danger" style="position:absolute;top:8px;right:8px;z-index:10;pointer-events:all" onclick="deleteImage('${p.id}','${idx}',event)">🗑️</button>` : ''}
           </div>`).join('')}
       </div>
       ${images.length > 1 ? `
@@ -1546,12 +1570,11 @@ async function saveQuickImage() {
   const p = products.find(x=>x.id===quickImageProductId); if (!p) return;
   if (!p.images) p.images = [];
   p.images.push(quickImageBase64);
-  // image mező nullázása (deprecated)
   p.image = null;
   await saveData();
   closeModal('imageUploadModal');
   showToast('Kép hozzáadva! ✓', 'success');
-  filterProducts(); // ← Kártyák frissülnek az új képpel
+  filterProducts();
 }
 
 // ══════════════════════════════════════════════
@@ -1761,7 +1784,7 @@ function showToast(msg, type='success') {
 
 function esc(s) { if(!s)return''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function openLightbox(src, e) { if(e)e.stopPropagation(); document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').classList.add('active'); document.body.style.overflow='hidden'; }
+function openLightbox(src, e) { if(e && e.stopPropagation) e.stopPropagation(); document.getElementById('lightboxImg').src=src; document.getElementById('lightbox').classList.add('active'); document.body.style.overflow='hidden'; }
 function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); document.getElementById('lightboxImg').src=''; if(!document.querySelector('.overlay.active'))document.body.style.overflow=''; }
 
 document.addEventListener('keydown', e => {
