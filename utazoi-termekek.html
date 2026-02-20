@@ -116,12 +116,34 @@
 
   .price-history { margin-top: 6px; background: var(--cream); border-radius: 8px; padding: 8px 10px; border: 1px solid var(--border); }
   .price-history-title { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .ph-item { display: grid; grid-template-columns: 70px 76px 1fr 1fr; align-items: baseline; gap: 15px; font-size: 0.78rem; padding: 3px 0; border-bottom: 1px dashed var(--border); }
+  .ph-item { 
+  display: grid; 
+  grid-template-columns: 70px 1fr; /* Mobil: csak 2 oszlop */
+  align-items: baseline; 
+  gap: 8px; 
+  font-size: 0.78rem; 
+  padding: 3px 0; 
+  border-bottom: 1px dashed var(--border); 
+}
   .ph-item:last-child { border-bottom: none; }
   .ph-date { color: var(--muted); white-space: nowrap; }
   .ph-val { font-weight: 600; white-space: nowrap; }
   .ph-loc { color: var(--muted); font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ph-note { color: var(--muted); font-size: 0.72rem; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ph-extra { 
+  font-size: 0.7rem; 
+  color: var(--muted); 
+  display: none; /* Alapból rejtve */
+}
+@media (min-width: 400px) {
+  .ph-item { 
+    grid-template-columns: 70px 76px 1fr; 
+    gap: 15px; 
+  }
+  .ph-extra { 
+    display: block; /* Nagyobb képernyőn mutatjuk */
+  }
+}
 
   /* ── MODAL (egységes overlay osztály mindenhol) ── */
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; overflow: hidden; }
@@ -273,11 +295,11 @@
       </div>
       <div class="form-group">
         <label class="form-label">Termék neve *</label>
-        <input class="form-input" id="fName" placeholder="pl. Nutella 400g">
+        <input class="form-input" id="fName" placeholder="pl. Nutella 400g" onkeydown="handleFormEnter(event)">
       </div>
       <div class="form-group">
         <label class="form-label">Rövid leírás</label>
-        <input class="form-input" id="fDesc" placeholder="pl. Mogyorós csokoládékrém, extra krémes">
+        <input class="form-input" id="fDesc" placeholder="pl. Mogyorós csokoládékrém, extra krémes" onkeydown="handleFormEnter(event)">
       </div>
       <div class="form-group">
         <label class="form-label">Kategória</label>
@@ -306,10 +328,10 @@
       <div class="form-group">
         <label class="form-label">Ár és pénznem</label>
         <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px">
-          <input class="form-input" id="fPrice" type="number" placeholder="Összeg" min="0" step="any">
+          <input class="form-input" id="fPrice" type="number" placeholder="Összeg" min="0" step="any" onkeydown="handleFormEnter(event)">
           <select class="form-select" id="fCurr"><option value="">Pénznem</option></select>
         </div>
-        <input class="form-input" id="fPriceNote" placeholder='Megjegyzés az árhoz (pl. "akció")' style="margin-top:6px">
+        <input class="form-input" id="fPriceNote" placeholder='Megjegyzés az árhoz (pl. "akció")' style="margin-top:6px" onkeydown="handleFormEnter(event)">
         <div class="form-hint" style="margin-top:4px">Az eredeti ár rögzítésre kerül. Később frissíteni is lehet.</div>
       </div>
       <div class="form-group" style="background:#f0f4ff;border:2px solid var(--accent);border-radius:10px;padding:12px 14px">
@@ -622,6 +644,8 @@ let quickImageBase64 = null;
 let reviewProductId = null;
 let fCountries = [];
 let fShops = [];
+let currentLightboxSrc = null;
+let lastGalleryIndex = {}; // termék szerint tároljuk az indexet
 
 // ══════════════════════════════════════════════
 // GOOGLE SHEETS API
@@ -914,10 +938,12 @@ function initGallerySwipe() {
     const dots = gallery.querySelectorAll('.img-dot');
     if (slides.length <= 1) return;
 
-    let currentIndex = 0, startX = 0, isDragging = false, startTranslate = 0;
+    const pid = gallery.getAttribute('data-id');
+    let currentIndex = lastGalleryIndex[pid] || 0; // MENTETT INDEX
 
     const updateGallery = (index) => {
       currentIndex = Math.max(0, Math.min(index, slides.length - 1));
+      lastGalleryIndex[pid] = currentIndex; // MENTÉS
       track.style.transform = `translateX(-${currentIndex * 100}%)`;
       track.style.transition = 'transform 0.3s ease';
       dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
@@ -925,6 +951,10 @@ function initGallerySwipe() {
     // Kitesszük a gallery elemre, hogy galleryNav is tudja hívni
     gallery._update = updateGallery;
     gallery._getIndex = () => currentIndex;
+
+    // INDULÁS A MENTETT INDEXNÉL
+    updateGallery(currentIndex);
+
     const handleStart = (e) => {
       isDragging = true;
       startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
@@ -1030,17 +1060,20 @@ function renderGrid(list) {
   grid.innerHTML = list.map(p => productCard(p)).join('');
 }
 
-document.getElementById('productGrid').addEventListener('click', e => {
-  const imgEl = e.target.closest('.card-img-clickable');
-  if (imgEl) {
-    e.stopPropagation();
-    const p = products.find(x => x.id === imgEl.dataset.pid);
-    if (!p) return;
-    const imgs = getImages(p);
-    const latest = imgs.length ? imgs[imgs.length - 1] : null;
-    if (latest) openLightbox(latest);
-    return;
-  }
+  document.getElementById('productGrid').addEventListener('click', e => {
+    const imgEl = e.target.closest('.card-img-clickable');
+    if (imgEl) {
+      e.stopPropagation();
+      const p = products.find(x => x.id === imgEl.dataset.pid);
+      if (!p) return;
+      const imgs = getImages(p);
+      const latest = imgs.length ? imgs[imgs.length - 1] : null;
+      if (latest) {
+        currentLightboxSrc = latest; // MENTJÜK
+        openLightbox(latest);
+      }
+      return;
+    }
   const placeholder = e.target.closest('.card-img-placeholder');
   if (placeholder && placeholder.dataset.pid) {
     openViewProduct(placeholder.dataset.pid);
@@ -1095,18 +1128,20 @@ function productCard(p) {
   const hasMore = sortedHistory.length > 4;
 
   const priceHistHtml = sortedHistory.length > 1 ? `
-    <details style="margin-top:4px" onclick="event.stopPropagation()">
-      <summary>📊 Ártörténet (${sortedHistory.length} bejegyzés)</summary>
-      <div class="price-history mt-8">
-        ${cardHistory.map(ph=>`<div class="ph-item">
-          <span class="ph-date">${ph.date ? new Date(ph.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}) : '–'}</span>
-          <span class="ph-val">${ph.amount} ${ph.currency||p.currency}</span>
-          <span class="ph-loc">${[ph.country?esc(countryShort(ph.country)):'',ph.shop?esc(ph.shop):''].filter(Boolean).join(' · ')}</span>
-          <span class="ph-note">${ph.note?esc(ph.note):''}</span>
-        </div>`).join('')}
-        ${hasMore ? `<div style="text-align:center;padding:8px;color:var(--muted);font-size:0.75rem">+ még ${sortedHistory.length-4} bejegyzés...</div>` : ''}
-      </div>
-    </details>` : '';
+  <details style="margin-top:4px" onclick="event.stopPropagation()">
+    <summary>📊 Ártörténet (${sortedHistory.length} bejegyzés)</summary>
+    <div class="price-history mt-8">
+      ${cardHistory.map(ph => {
+    const hasExtra = ph.shop || ph.note;
+    return `<div class="ph-item">
+          <span class="ph-date">${ph.date ? new Date(ph.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '–'}</span>
+          <span class="ph-val">${ph.amount} ${ph.currency || p.currency}${hasExtra ? ' …' : ''}</span>
+          <span class="ph-extra">${[ph.country ? esc(countryShort(ph.country)) : '', ph.shop ? esc(ph.shop) : '', ph.note ? esc(ph.note) : ''].filter(Boolean).join(' · ')}</span>
+        </div>`;
+  }).join('')}
+      ${hasMore ? `<div style="text-align:center;padding:8px;color:var(--muted);font-size:0.75rem">+ még ${sortedHistory.length - 4} bejegyzés...</div>` : ''}
+    </div>
+  </details>` : '';
 
   const adminBtns = isAdmin ? `<div class="card-footer">
     <button class="btn btn-sm btn-icon" title="Szerkesztés" onclick="openEditProduct('${p.id}')">✏️</button>
@@ -1347,7 +1382,17 @@ async function saveProduct() {
   if (price > 0 && !curr) { showToast('Add meg a pénznemet!', 'error'); document.getElementById('fCurr').focus(); return; }
   const priceNote = document.getElementById('fPriceNote').value.trim();
   const date = document.getElementById('fDate').value || new Date().toISOString().split('T')[0];
-  const priceEntry = price > 0 ? {amount: price, currency: curr, note: priceNote, date} : null;
+  const priceEntry = price > 0 ? {
+    amount: price,
+    currency: curr,
+    note: priceNote,
+    date,
+    shop: fShops[0] || '',
+    country: fCountries[0] || ''
+  } : null;
+
+  // Ellenőrizzük van-e új kép
+  const hasNewImage = !!pendingImgBase64;
 
   if (editingId) {
     const idx = products.findIndex(x=>x.id===editingId);
@@ -1387,7 +1432,7 @@ async function saveProduct() {
     });
     showToast('Termék hozzáadva! ✓', 'success');
   }
-  await saveData();
+  await saveData(!hasNewImage);
   renderAll();
   closeModal('productModal');
 }
@@ -1511,16 +1556,16 @@ function openViewProduct(id) {
   const reviews = [...(p.reviews||[])];
   if (p.rating > 0) reviews.unshift({name: p.uploader||'Feltöltő', rating:p.rating, note:p.note, date:p.date});
 
-  const reviewsHtml = reviews.length ? reviews.map(r=>`
-    <div style="padding:8px 0;border-bottom:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-weight:600;font-size:0.85rem">👤 ${esc(r.name||'Névtelen')}</span>
-        <span style="color:var(--star);font-size:0.85rem">${'★'.repeat(r.rating||0)}${'☆'.repeat(5-(r.rating||0))}</span>
-      </div>
-      ${r.note ? `<div style="font-size:0.8rem;color:var(--muted);margin-top:3px;font-style:italic">"${esc(r.note)}"</div>` : ''}
-      ${r.date ? `<div style="font-size:0.7rem;color:var(--border);margin-top:2px">${new Date(r.date).toLocaleDateString('hu-HU')}</div>` : ''}
-    </div>`).join('')
-  : '<div style="color:var(--muted);font-size:0.82rem">Még nincs értékelés.</div>';
+  const reviewsHtml = reviews.length ? reviews.map(r => `
+  <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <span style="font-weight:600;font-size:0.85rem">👤 ${esc(r.name || 'Névtelen')}</span>
+      <span style="color:var(--star);font-size:0.85rem">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span>
+    </div>
+    ${r.date ? `<div style="font-size:0.7rem;color:var(--muted);margin-top:2px">${new Date(r.date).toLocaleDateString('hu-HU')}</div>` : ''}
+    ${r.note ? `<div style="font-size:0.8rem;color:var(--muted);margin-top:3px;font-style:italic">"${esc(r.note)}"</div>` : ''}
+  </div>`).join('')
+    : '<div style="color:var(--muted);font-size:0.82rem">Még nincs értékelés.</div>';
 
   const latestPrice = getLatestPrice(p);
   const pCountries = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
@@ -1532,7 +1577,7 @@ function openViewProduct(id) {
   const images = getImages(p).reverse();
 
   const galleryHtml = images.length > 0 ? `
-    <div class="img-gallery" data-id="${p.id}" style="height:280px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative">
+    <div class="img-gallery" data-id="${p.id}" style="height:280px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
       <div class="img-gallery-track">
         ${images.map((img, idx) => `
           <div class="img-gallery-slide">
@@ -1834,6 +1879,14 @@ document.addEventListener('keydown', e => {
   if (top.id==='productModal' && isFormDirty()) { if(!confirm('Biztosan ki akarsz lépni? A kitöltött adatok elvesznek.'))return; }
   closeModal(top.id);
 });
+
+  function handleFormEnter(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const name = document.getElementById('fName').value.trim();
+      if (name) saveProduct();
+    }
+  };
 
 init();
 </script>
