@@ -1433,7 +1433,14 @@ function pEnter(e){if(e.key==='Enter'){e.preventDefault();const n=_('fN').value.
 function pEnterTA(e){if(e.key==='Enter'&&(e.ctrlKey||e.shiftKey)){e.preventDefault();const n=_('fN').value.trim();if(n)saveProd();}}
 
 // ── SHEETS ──
-async function shGet(act,key){if(!shUrl)return null;const r=await fetch(`${shUrl}?action=${act}${key?'&key='+key:''}`);return r.json();}
+  async function shGet(act, key) {
+    if (!shUrl) return null;
+    const url = key
+      ? `${shUrl}?action=${act}&${act === 'getImages' ? 'ids' : 'key'}=${key}`
+      : `${shUrl}?action=${act}`;
+    const r = await fetch(url);
+    return r.json();
+  }
 async function shWrite(body){try{await fetch(shUrl,{method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'text/plain'}});}catch(e){}}
 async function delImgSh(id){if(shUrl)await shWrite({action:'set',key:'img_'+id,value:''});}
 
@@ -1459,15 +1466,18 @@ async function loadData(){
           const ec=p._imgCount||(p.images?.length||0);
           return{...p,image:null,images:li.length===ec&&li.length>0?li:[]};
         });
-        prods.forEach(async(p,i)=>{
-          if(p.images?.length)return;
-          try{
-            const rec=[];
-            for(let x=0;x<20;x++){const r=await shGet('get',`img_${p.id}_${x}`);if(r?.value)rec.push(r.value);else break;}
-            if(!rec.length){const r=await shGet('get','img_'+p.id);if(r?.value)rec.push(r.value);}
-            if(rec.length){prods[i]={...prods[i],images:rec,image:null};saveLoc();renderAll();}
-          }catch(e){}
-        });
+        const noImg = prods.filter(p => !p.images?.length);
+        if (noImg.length) {
+          const ids = noImg.map(p => p.id).join(',');
+          const res = await shGet('getImages', ids);  // ← shGet-et itt kell módosítani!
+          if (res?.images) {
+            prods = prods.map(p => {
+              const img = res.images[p.id];
+              return img ? { ...p, images: [img] } : p;
+            });
+            saveLoc(); renderAll();
+          }
+        }
       }
       if(d.categories)try{cats=JSON.parse(d.categories);}catch(e){}
       if(d.currencies)try{currs=JSON.parse(d.currencies);}catch(e){}
