@@ -876,13 +876,13 @@ async function saveProd(){
 }
 function delProd(id){if(!isAdmin||!confirm('Biztosan törlöd?'))return;prods=prods.filter(p=>p.id!==id);save();delImgSh(id);filter();popDL();toast('Termék törölve.');}
 
-async function delImg(pid,di,e){
-  e.stopPropagation();if(!isAdmin||!confirm('Biztosan törlöd a képet?'))return;
-  const p=prods.find(x=>x.id===pid);if(!p)return;
-  const disp=imgs(p).reverse(),rm=disp[parseInt(di)];if(!rm)return;
-  if(p.images)p.images=p.images.filter(i=>i!==rm);if(p.image===rm)p.image=null;
-  await save();filter();openView(pid);toast('Kép törölve!');
-}
+  async function delImg(pid, di, e) {
+    e.stopPropagation(); if (!isAdmin || !confirm('Biztosan törlöd a képet?')) return;
+    const p = prods.find(x => x.id === pid); if (!p) return;
+    const arr = imgs(p), rm = arr[arr.length - 1 - parseInt(di)]; if (!rm) return;
+    if (p.images) p.images = p.images.filter(i => i !== rm); if (p.image === rm) p.image = null;
+    await save(); filter(); openView(pid); toast('Kép törölve!');
+  }
 
 // ── PRICE ──
 function openPr(id){
@@ -1045,20 +1045,25 @@ function exportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));a.download='kulfoldi-vasarlasok.csv';a.click();toast('CSV exportálva! ✓');
 }
 
-// lightbox
+  // lightbox
+  let scrollY = 0;
   function openLB(src) {
+    scrollY = window.scrollY;
     _('lbImg').src = src;
     _('lb').classList.add('on');
     document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';  // ← ÚJ
-    document.body.style.width = '100%';      // ← ÚJ
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
   }
   function closeLB() {
     _('lb').classList.remove('on');
     _('lbImg').src = '';
-    document.body.style.position = '';       // ← ÚJ
-    document.body.style.width = '';          // ← ÚJ
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
     if (!document.querySelector('.ov.on')) document.body.style.overflow = '';
+    window.scrollTo(0, scrollY);
   }
 
 // toast
