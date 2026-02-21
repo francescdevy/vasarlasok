@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Külföldi vásárlás</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
@@ -34,7 +34,18 @@ header h1 span{color:#93c5fd}
 #rCount{font-size:.7rem;color:var(--muted);margin-top:5px;font-weight:500}
 
 /* admin bar */
-#adminBar{display:none;background:#111;color:var(--paper);padding:6px 12px;align-items:center;gap:5px;flex-wrap:wrap;font-size:.78rem}
+#adminBar{
+  display:none;
+  background:#111;
+  color:var(--paper);
+  padding:8px 12px;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  font-size:.78rem;
+  border-bottom:1px solid #333;
+}
+#adminBar.on{display:flex}
 .ab{background:rgba(255,255,255,.15);color:#fff;padding:4px 9px;border-radius:6px;border:none;font-family:var(--f);font-size:.76rem;font-weight:600;cursor:pointer}
 .ab-red{background:var(--red)}
 .ab-badge{background:var(--accent);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
@@ -158,7 +169,6 @@ header h1 span{color:#93c5fd}
 /* scroll to top (mobile) */
 #stt{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-family:var(--f);font-size:.8rem;font-weight:600;cursor:pointer;z-index:90;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:.2s;opacity:0}
 #stt.on{opacity:1}
-@media(min-width:501px){#stt{display:none!important}}
 @media(max-width:500px){#stt{display:block}}
 
 /* empty */
@@ -173,21 +183,46 @@ details summary:hover{color:var(--ink)}
   .grid{grid-template-columns:1fr;padding:8px;gap:8px}
   .frow{grid-template-columns:1fr}
   header h1{font-size:.95rem}
-  .modal{max-height:95vh}
-}
-@media(max-width:500px){
-  .grid{grid-template-columns:1fr;padding:8px;gap:8px}
-  .frow{grid-template-columns:1fr}
-  header h1{font-size:.95rem}
   .modal{max-height:100vh;height:100vh;border-radius:0}
   .ov{align-items:flex-start}
   #mView .modal{display:flex;flex-direction:column}
-  #mView .mb{flex:1;overflow-y:auto}
-  #mView .mf{position:sticky;bottom:0;background:var(--card);z-index:10;box-shadow:0 -2px 8px rgba(0,0,0,.1)}
+  /* STICKY HEADER - termék név mindig látható */
+  #mView .mh{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--card);
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+  }
+  #mView .mb{flex:1;overflow-y:auto;padding-bottom:20px}
+  #mView .mf{position:sticky;bottom:0;background:var(--card);z-index:20;box-shadow:0 -2px 8px rgba(0,0,0,.1);padding:10px 16px; padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  #stt{display:block}
 }
 @media(min-width:501px){
   .ov{align-items:center;padding:12px}
   .modal{border-radius:12px;max-height:90vh}
+  #stt{display:none!important}
+  /* Egyedi scrollbar */
+  .mb::-webkit-scrollbar{
+    width:8px;
+  }
+  .mb::-webkit-scrollbar-track{
+    background:var(--cream);
+    border-radius:4px;
+  }
+  .mb::-webkit-scrollbar-thumb{
+    background:var(--bd);
+    border-radius:4px;
+  }
+  .mb::-webkit-scrollbar-thumb:hover{
+    background:var(--muted);
+  }
+  
+  /* Firefox */
+  .mb{
+    scrollbar-width:thin;
+    scrollbar-color:var(--bd) var(--cream);
+  }
 }
 
 </style>
@@ -207,6 +242,18 @@ details summary:hover{color:var(--ink)}
     <button class="hbtn hbtn-pr" id="btnAdd">+ Termék</button>
     <button class="hbtn hbtn-gh" id="btnAdmin" title="Admin" onclick="adminClick()">⚙</button>
   </header>
+  <div id="adminBar">
+    <span class="ab-badge">Admin</span>
+    <button class="ab" id="btnCats">Kategóriák</button>
+    <button class="ab" id="btnCurrs">Pénznemek</button>
+    <button class="ab" id="btnCnts">Országok</button>
+    <button class="ab" id="btnShps">Boltok</button>
+    <button class="ab" id="btnSheets">🔗 Sheets</button>
+    <button class="ab" id="btnBak">💾 Backup</button>
+    <button class="ab" onclick="exportCSV()">📊 Export</button>
+    <button class="ab ab-red" id="btnLogout">Kilép</button>
+  </div>
+
   <div id="searchBar">
     <div class="s-row">
       <input class="s-inp" id="sInp" placeholder="Keresés név, megjegyzés, hely..." oninput="filter()">
@@ -221,17 +268,7 @@ details summary:hover{color:var(--ink)}
     </div>
     <div id="rCount"></div>
   </div>
-  <div id="adminBar">
-    <span class="ab-badge">Admin</span>
-    <button class="ab" id="btnCats">Kategóriák</button>
-    <button class="ab" id="btnCurrs">Pénznemek</button>
-    <button class="ab" id="btnCnts">Országok</button>
-    <button class="ab" id="btnShps">Boltok</button>
-    <button class="ab" id="btnSheets">🔗 Sheets</button>
-    <button class="ab" id="btnBak">💾 Backup</button>
-    <button class="ab" onclick="exportCSV()">📊 Export</button>
-    <button class="ab ab-red" id="btnLogout">Kilép</button>
-  </div>
+  
 </div>
 
 <div class="grid" id="grid"></div>
@@ -736,7 +773,15 @@ _('mViewB').addEventListener('click',e=>{const ic=e.target.closest('.g-ic');if(i
 // ── ADMIN ──
 function adminClick(){if(isAdmin){isAdmin=false;sessionStorage.removeItem('isAdmin');updAdmin();return;}openM('mLogin');}
 function doLogin(){const pw=_('aPw').value;if(pw===ADMIN_PW){isAdmin=true;sessionStorage.setItem('isAdmin','true');closeM('mLogin');_('aPw').value='';_('aErr').style.display='none';updAdmin();toast('Admin mód aktív! ✓');}else _('aErr').style.display='block';}
-function updAdmin(){_('adminBar').style.display=isAdmin?'flex':'none';filter();}
+  function updAdmin() {
+    const bar = _('adminBar');
+    if (isAdmin) {
+      bar.classList.add('on');
+    } else {
+      bar.classList.remove('on');
+    }
+    filter();
+  }
 function updShSt(){
   const el=_('shSt');if(!el)return;
   if(shUrl){el.style.cssText='background:#e6f5ec;color:var(--green)';el.innerHTML='✓ Google Sheets összekötve';_('btnSheets').style.background='rgba(22,163,74,.3)';}
