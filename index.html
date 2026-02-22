@@ -349,18 +349,15 @@ function saveLoc(){localStorage.setItem('products',JSON.stringify(prods));localS
             const res = await shGet('getImages', ids);
             if (res?.images) {
               prods = prods.map(p => {
-                const lm_cached = p.images || [];
                 const ec = p._imgCount || 0;
-                if (lm_cached.length >= ec) return p;
-                // Gyűjtsd össze: cache + Sheets-ből hiányzók
-                const fromSheets = [];
+                if ((p.images?.length || 0) >= ec) return p;
+                const fetched = [];
                 for (let i = 0; i < ec; i++) {
-                  const key = `img_${p.id}_${i}`;
-                  if (res.images[key]) fromSheets.push(res.images[key]);
+                  const v = res.images[`${p.id}_${i}`];
+                  if (v) fetched.push(v);
                 }
-                // fallback: alap img_pid kulcs
-                if (!fromSheets.length && res.images[p.id]) fromSheets.push(res.images[p.id]);
-                return fromSheets.length ? { ...p, images: fromSheets } : p;
+                if (!fetched.length && res.images[p.id]) fetched.push(res.images[p.id]);
+                return fetched.length ? { ...p, images: fetched } : p;
               });
             }
           }
