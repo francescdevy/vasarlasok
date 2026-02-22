@@ -560,7 +560,11 @@ function card(p){
       ${sh.slice(0,4).map(h=>{const x=[h.country?cs(h.country):'',h.shop?h.shop:'',h.note?h.note:''].filter(Boolean).join(' · ');return`<div class="ph-row"><span class="ph-d">${h.date?new Date(h.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}):'–'}</span><span class="ph-v">${h.amount} ${h.currency||p.currency}</span>${x?`<span class="ph-x">${esc(x)}</span>`:'<span class="ph-x"></span>'}</div>`;}).join('')}
       ${sh.length>4?`<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length-4} bejegyzés</div>`:''}
     </div></details>`:'';
-  const admin=isAdmin?`<div class="c-foot"><button class="bi bsm" onclick="openEdit('${p.id}')">✏️</button><button class="bi bsm" onclick="dupProd('${p.id}')">📋</button><button class="btn br bsm" onclick="delProd('${p.id}')">Törlés</button></div>`:'';
+  const admin = isAdmin ? `<div class="c-foot">
+  <button class="bi bsm" onclick="event.stopPropagation();openEdit('${p.id}')">✏️</button>
+  <button class="bi bsm" onclick="event.stopPropagation();dupProd('${p.id}')">📋</button>
+  <button class="btn br bsm" onclick="event.stopPropagation();delProd('${p.id}')">Törlés</button>
+</div>`: '';
   return`<div class="card" data-id="${p.id}">
     <div class="c-img-wrap">
       ${li?`<img class="c-img c-ic" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-src="${li}" alt="${esc(p.name)}" loading="lazy" data-pid="${p.id}">`:`<div class="c-ph" data-pid="${p.id}">🛍️</div>`}
@@ -700,7 +704,7 @@ async function saveProd(){
   }
   await save(!hasImg);renderAll();closeM('mProd');
 }
-function delProd(id){if(!isAdmin||!confirm('Biztosan törlöd?'))return;prods=prods.filter(p=>p.id!==id);save();delImgSh(id);filter();popDL();toast('Termék törölve.');}
+  function delProd(id) { if (!isAdmin || !confirm('Biztosan törlöd?')) return; prods = prods.filter(p => p.id !== id); save(); delImgSh(id); filter(); popDL(); toast('Termék törölve.'); }
 
   function dupProd(id) {
     const p = prods.find(x => x.id === id); if (!p) return;
