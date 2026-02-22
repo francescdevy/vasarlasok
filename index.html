@@ -274,7 +274,7 @@
   </div>
 </div>
 
-<div class="lb" id="lb" onclick="closeLB()">
+<div class="lb" id="lb">
   <button class="lb-x" onclick="closeLB()">✕</button>
   <img id="lbImg" src="" alt="" onclick="event.stopPropagation()">
 </div>
@@ -485,31 +485,50 @@ function popCurrSel(){
   _('fCur').innerHTML=`<option value="">Minden pénznem</option>`+used.map(c=>`<option value="${c}">${kn.has(c)?c:c+' *'}</option>`).join('');
 }
 
-function filter(){
-  const q=_('sInp').value.toLowerCase(),cat=_('fCat').value,cnt=_('fCnt').value,shp=_('fShp').value,cur=_('fCur').value;
-  const fl=prods.filter(p=>{
-    const pc=new Set([...(Array.isArray(p.countries)?p.countries:(p.country?[p.country]:[])), ...(p.priceHistory||[]).map(h=>h.country).filter(Boolean)]);
-    const ps=new Set([...(Array.isArray(p.shops)?p.shops:(p.shop?[p.shop]:[])), ...(p.priceHistory||[]).map(h=>h.shop).filter(Boolean)]);
-    return(!q||[p.name,p.desc,...ps,...pc,p.note,(p.reviews||[]).map(r=>r.note).join(' ')].join(' ').toLowerCase().includes(q))
-      &&(!cat||p.category===cat)&&(!cnt||pc.has(cnt))&&(!shp||ps.has(shp))
-      &&(!cur||(p.priceHistory||[{currency:p.currency}]).some(h=>h.currency===cur));
-  });
-  _('rCount').textContent=`${fl.length} termék / összesen ${prods.length}`;
-  renderGrid(fl);updFO();updCF();popDL();
-}
+  let lastFilterIds = '';
+  function filter() {
+    const q = _('sInp').value.toLowerCase(), cat = _('fCat').value, cnt = _('fCnt').value, shp = _('fShp').value, cur = _('fCur').value;
+    const fl = prods.filter(p => {
+      const pc = new Set([...(Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : [])), ...(p.priceHistory || []).map(h => h.country).filter(Boolean)]);
+      const ps = new Set([...(Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : [])), ...(p.priceHistory || []).map(h => h.shop).filter(Boolean)]);
+      return (!q || [p.name, p.desc, ...ps, ...pc, p.note, (p.reviews || []).map(r => r.note).join(' ')].join(' ').toLowerCase().includes(q))
+        && (!cat || p.category === cat) && (!cnt || pc.has(cnt)) && (!shp || ps.has(shp))
+        && (!cur || (p.priceHistory || [{ currency: p.currency }]).some(h => h.currency === cur));
+    });
+    _('rCount').textContent = `${fl.length} termék / összesen ${prods.length}`;
 
-function updFO(){
-  const cnts=uCnts(),shps=uShps(),cc=_('fCnt').value,cs2=_('fShp').value;
-  _('fCnt').innerHTML=`<option value="">Minden ország</option>`+cnts.map(c=>`<option value="${c}"${c===cc?' selected':''}>${c}</option>`).join('');
-  _('fShp').innerHTML=`<option value="">Minden bolt</option>`+shps.map(s=>`<option value="${s}"${s===cs2?' selected':''}>${s}</option>`).join('');
-}
+    const newIds = fl.map(p => p.id).join(',');
+    if (newIds !== lastFilterIds) {
+      lastFilterIds = newIds;
+      renderGrid(fl);
+    }
 
-function renderGrid(list){
-  const g=_('grid');
-  if(!list.length){g.innerHTML=`<div class="empty"><div class="empty-ico">🧳</div><h3 style="font-size:1.1rem;margin-bottom:5px">Nincs találat</h3><p style="font-size:.84rem">Próbálj más feltételt, vagy adj hozzá új terméket!</p></div>`;return;}
-  g.innerHTML=list.map(card).join('');
-  initLazy();
-}
+    if (q) {
+      document.querySelectorAll('.c-name,.c-desc').forEach(el => {
+        const orig = el.dataset.orig || (el.dataset.orig = el.textContent);
+        el.innerHTML = highlight(orig, q);
+      });
+    } else {
+      document.querySelectorAll('.c-name,.c-desc').forEach(el => {
+        if (el.dataset.orig) el.innerHTML = esc(el.dataset.orig);
+      });
+    }
+
+    updFO(); updCF(); popDL(); // ← itt a helye, nem az else-ben
+  }
+
+  function renderGrid(list) {
+    const g = _('grid');
+    if (!list.length) {
+      g.innerHTML = `<div class="empty"><div class="empty-ico">🧳</div><h3 style="font-size:1.1rem;margin-bottom:5px">Nincs találat</h3><p style="font-size:.84rem">Próbálj más feltételt, vagy adj hozzá új terméket!</p></div>`;
+      return;
+    }
+    g.innerHTML = list.map(card).join('');
+    g.querySelectorAll('.card').forEach((c, i) => {
+      c.style.animationDelay = `${Math.min(i * 20, 200)}ms`;
+    });
+    initLazy();
+  }
 
 function imgs(p){
   if(p.images?.length)return p.images.filter(i=>i&&i!=='__img__');
@@ -540,8 +559,8 @@ function card(p){
       ${avg>0?`<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.77rem;display:flex;align-items:center;gap:4px"><span style="color:var(--star)">${'★'.repeat(Math.round(avg))}</span> <span style="color:rgba(255,255,255,.8)">${avg.toFixed(1)}</span></div>`:''}
     </div>
     <div class="c-body" onclick="openView('${p.id}')">
-      <div class="c-name">${highlight(p.name, _('sInp').value)}</div>
-      ${p.desc ? `<div class="c-desc">${highlight(p.desc, _('sInp').value)}</div>` : ''}
+      <div class="c-name">${esc(p.name)}</div>
+${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       <div class="c-meta">${pills}</div>
       <div class="c-pr-row"><div class="c-pr">${lp.amount?lp.amount+' '+(lp.currency||''):'–'}</div>${pch}</div>
       ${hist}
@@ -857,7 +876,11 @@ document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.
 function toggleSearch(){const s=_('searchBar');s.classList.toggle('open');if(s.classList.contains('open'))_('sInp').focus();}
 
 // clear filters
-function clearF(){['sInp','fCat','fCnt','fShp','fCur'].forEach(id=>_(id).value='');filter();}
+  function clearF() {
+    ['sInp', 'fCat', 'fCnt', 'fShp', 'fCur'].forEach(id => _(id).value = '');
+    lastFilterIds = ''; // ← ez kell
+    filter();
+  }
 function updCF(){const h=!!(_('sInp').value||_('fCat').value||_('fCnt').value||_('fShp').value||_('fCur').value);_('btnCF').style.display=h?'inline-flex':'none';}
 
 // export
@@ -880,6 +903,7 @@ function openLB(src){
   document.body.style.width='100%';
 }
 function closeLB(){
+  lbDragging = false;
   _('lb').classList.remove('on');
   _('lbImg').src='';
   lbReset();
@@ -914,6 +938,14 @@ function lbInitEvents(){
     if(lbScale===1){lbPosX=0;lbPosY=0;}
     lbTransform();
   },{passive:false});
+
+  // Háttérre kattintás csak ha nem volt drag
+  let lbDidDrag = false;
+  _('lb').addEventListener('mousedown', () => lbDidDrag = false);
+  _('lb').addEventListener('mousemove', e => { if (e.buttons) lbDidDrag = true; }); // csak ha gomb le van nyomva
+  _('lb').addEventListener('click', e => {
+    if (e.target === _('lb') && !lbDidDrag) closeLB();
+  });
 
   // Double tap to zoom (mobil)
   let lastTap=0;
