@@ -326,47 +326,44 @@ function _(id){return document.getElementById(id);}
 function setLd(on,msg){_('lb2').style.display=on?'flex':'none';if(msg)_('lbMsg').textContent=msg;}
 function saveLoc(){localStorage.setItem('products',JSON.stringify(prods));localStorage.setItem('categories',JSON.stringify(cats));localStorage.setItem('currencies',JSON.stringify(currs));localStorage.setItem('shopOrder',JSON.stringify(shpOrd));}
 
-async function loadData(){
-  ['products','categories','currencies','shopOrder'].forEach((k,i)=>{
-    try{const v=localStorage.getItem(k);if(v){[prods,cats,currs,shpOrd][i]=JSON.parse(v);}}catch(e){}
-  });
-  if(!shUrl)return;
-  setLd(true,'Betöltés...');
-  try{
-    const d=await shGet('getAll');
-    if(d?.ok){
-      if (d.products) {
-        const sp = JSON.parse(d.products), lm = new Map();
-        try { JSON.parse(localStorage.getItem('products') || '[]').forEach(p => { if (p.images?.length) lm.set(p.id, p.images); }); } catch (e) { }
-        prods = sp.map(p => {
-          const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
-          const ec = p._imgCount || 0;
-          const cached = li.slice(0, ec);
-          return { ...p, image: null, images: cached };
-        });
-        const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
-        if (noImg.length) {
-          const ids = noImg.map(p => p.id).join(',');
-          const res = await shGet('getImages', ids);
-          if (res?.images) {
-            prods = prods.map(p => {
-              if (p.images?.length) return p;
-              const img = res.images[p.id];
-              return img ? { ...p, images: [img] } : p;
-            });
+  async function loadData() {
+    ['products', 'categories', 'currencies', 'shopOrder'].forEach((k, i) => {
+      try { const v = localStorage.getItem(k); if (v) { [prods, cats, currs, shpOrd][i] = JSON.parse(v); } } catch (e) { }
+    });
+    if (!shUrl) return;
+    setLd(true, 'Betöltés...');
+    try {
+      const d = await shGet('getAll');
+      if (d?.ok) {
+        if (d.products) {
+          const sp = JSON.parse(d.products), lm = new Map();
+          try { JSON.parse(localStorage.getItem('products') || '[]').forEach(p => { if (p.images?.length) lm.set(p.id, p.images); }); } catch (e) { }
+          prods = sp.map(p => {
+            const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
+            const ec = p._imgCount || 0;
+            return { ...p, image: null, images: li.slice(0, ec) };
+          });
+          const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
+          if (noImg.length) {
+            const ids = noImg.map(p => p.id).join(',');
+            const res = await shGet('getImages', ids);
+            if (res?.images) {
+              prods = prods.map(p => {
+                if (p.images?.length) return p;
+                const img = res.images[p.id];
+                return img ? { ...p, images: [img] } : p;
+              });
+            }
           }
+          saveLoc(); renderAll();
         }
-        saveLoc(); renderAll(); // ← mindig fusson le, ne csak noImg esetén
+        if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
+        if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
+        if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
       }
-        }
-      }
-      if(d.categories)try{cats=JSON.parse(d.categories);}catch(e){}
-      if(d.currencies)try{currs=JSON.parse(d.currencies);}catch(e){}
-      if(d.shopOrder)try{shpOrd=JSON.parse(d.shopOrder);}catch(e){}
-    }
-  }catch(e){toast('Betöltési hiba – lokális adatok betöltve','err');}
-  setLd(false);
-}
+    } catch (e) { toast('Betöltési hiba – lokális adatok betöltve', 'err'); }
+    setLd(false);
+  }
 
 async function save(lite=false){
   mkBak();saveLoc();
@@ -552,7 +549,7 @@ function card(p){
     <summary>📊 Ártörténet (${sh.length})</summary>
     <div class="ph" style="margin-top:4px">
       ${sh.slice(0,4).map(h=>{const x=[h.country?cs(h.country):'',h.shop?h.shop:'',h.note?h.note:''].filter(Boolean).join(' · ');return`<div class="ph-row"><span class="ph-d">${h.date?new Date(h.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}):'–'}</span><span class="ph-v">${h.amount} ${h.currency||p.currency}</span>${x?`<span class="ph-x">${esc(x)}</span>`:'<span class="ph-x"></span>'}</div>`;}).join('')}
-      ${sh.length>4?`<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length-5} bejegyzés</div>`:''}
+      ${sh.length>4?`<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length-4} bejegyzés</div>`:''}
     </div></details>`:'';
   const admin=isAdmin?`<div class="c-foot"><button class="bi bsm" onclick="openEdit('${p.id}')">✏️</button><button class="bi bsm" onclick="dupProd('${p.id}')">📋</button><button class="btn br bsm" onclick="delProd('${p.id}')">Törlés</button></div>`:'';
   return`<div class="card" data-id="${p.id}">
