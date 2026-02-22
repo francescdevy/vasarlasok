@@ -338,10 +338,13 @@ async function loadData(){
       if(d.products){
         const sp=JSON.parse(d.products),lm=new Map();
         try{JSON.parse(localStorage.getItem('products')||'[]').forEach(p=>{if(p.images?.length)lm.set(p.id,p.images);});}catch(e){}
-        prods=sp.map(p=>{
-          const li=lm.get(p.id)?.filter(i=>i&&i!=='__img__')||[];
-          const ec=p._imgCount||(p.images?.length||0);
-          return{...p,image:null,images:li.length===ec&&li.length>0?li:[]};
+        prods = sp.map(p => {
+          const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
+          const ec = p._imgCount || (p.images?.length || 0);
+          // ha a lokális cache pontosan annyi képet tartalmaz amennyit a szerver jelez → használjuk
+          // ha több van (duplikáció) → csak annyit tartunk meg amennyit a szerver jelez
+          const cached = li.slice(0, ec);
+          return { ...p, image: null, images: cached.length > 0 ? cached : [] };
         });
         const noImg=prods.filter(p=>!p.images?.length);
         if(noImg.length){
@@ -882,7 +885,12 @@ function toggleSearch(){const s=_('searchBar');s.classList.toggle('open');if(s.c
     filter();
   }
 function updCF(){const h=!!(_('sInp').value||_('fCat').value||_('fCnt').value||_('fShp').value||_('fCur').value);_('btnCF').style.display=h?'inline-flex':'none';}
-
+  function updFO() {
+    const cnts = uCnts(), shps = uShps(), cc = _('fCnt').value, cs2 = _('fShp').value;
+    _('fCnt').innerHTML = `<option value="">Minden ország</option>` + cnts.map(c => `<option value="${c}"${c === cc ? ' selected' : ''}>${c}</option>`).join('');
+    _('fShp').innerHTML = `<option value="">Minden bolt</option>` + shps.map(s => `<option value="${s}"${s === cs2 ? ' selected' : ''}>${s}</option>`).join('');
+  }
+  
 // export
 function exportCSV(){
   const hd=['Név','Leírás','Kategória','Ország','Bolt','Dátum','Ár','Pénznem','Értékelés','Megjegyzés'];
@@ -1112,6 +1120,7 @@ function ptrInit(){
   },{passive:true});
 }
 ptrInit();
+
 init();
 </script>
 </body>
