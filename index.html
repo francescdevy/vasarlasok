@@ -343,24 +343,25 @@ function saveLoc(){localStorage.setItem('products',JSON.stringify(prods));localS
             const ec = p._imgCount || 0;
             return { ...p, image: null, images: li.slice(0, ec) };
           });
-          const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
+          const noImg = prods.filter(p => (p.images?.length || 0) < (p._imgCount || 0));
           if (noImg.length) {
-            for (const p of noImg) {
-              const ec = p._imgCount || 0;
-              const fetched = [];
-              for (let i = 0; i < ec; i++) {
-                const res = await shGet('get', `img_${p.id}_${i}`);
-                if (res?.value && res.value !== '__img__') fetched.push(res.value);
-              }
-              // fallback: ha nincs indexelt kép, próbálja az alap img_ kulcsot
-              if (!fetched.length) {
-                const res = await shGet('get', `img_${p.id}`);
-                if (res?.value && res.value !== '__img__') fetched.push(res.value);
-              }
-              if (fetched.length) {
-                const idx = prods.findIndex(x => x.id === p.id);
-                if (idx > -1) prods[idx] = { ...prods[idx], images: fetched };
-              }
+            const ids = noImg.map(p => p.id).join(',');
+            const res = await shGet('getImages', ids);
+            if (res?.images) {
+              prods = prods.map(p => {
+                const lm_cached = p.images || [];
+                const ec = p._imgCount || 0;
+                if (lm_cached.length >= ec) return p;
+                // Gyűjtsd össze: cache + Sheets-ből hiányzók
+                const fromSheets = [];
+                for (let i = 0; i < ec; i++) {
+                  const key = `img_${p.id}_${i}`;
+                  if (res.images[key]) fromSheets.push(res.images[key]);
+                }
+                // fallback: alap img_pid kulcs
+                if (!fromSheets.length && res.images[p.id]) fromSheets.push(res.images[p.id]);
+                return fromSheets.length ? { ...p, images: fromSheets } : p;
+              });
             }
           }
           saveLoc(); renderAll();
