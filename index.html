@@ -345,14 +345,22 @@ function saveLoc(){localStorage.setItem('products',JSON.stringify(prods));localS
           });
           const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
           if (noImg.length) {
-            const ids = noImg.map(p => p.id).join(',');
-            const res = await shGet('getImages', ids);
-            if (res?.images) {
-              prods = prods.map(p => {
-                if (p.images?.length) return p;
-                const img = res.images[p.id];
-                return img ? { ...p, images: [img] } : p;
-              });
+            for (const p of noImg) {
+              const ec = p._imgCount || 0;
+              const fetched = [];
+              for (let i = 0; i < ec; i++) {
+                const res = await shGet('get', `img_${p.id}_${i}`);
+                if (res?.value && res.value !== '__img__') fetched.push(res.value);
+              }
+              // fallback: ha nincs indexelt kép, próbálja az alap img_ kulcsot
+              if (!fetched.length) {
+                const res = await shGet('get', `img_${p.id}`);
+                if (res?.value && res.value !== '__img__') fetched.push(res.value);
+              }
+              if (fetched.length) {
+                const idx = prods.findIndex(x => x.id === p.id);
+                if (idx > -1) prods[idx] = { ...prods[idx], images: fetched };
+              }
             }
           }
           saveLoc(); renderAll();
