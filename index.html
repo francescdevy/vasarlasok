@@ -702,12 +702,12 @@ async function saveProd(){
   }
   await save(!hasImg);renderAll();closeM('mProd');
 }
-  function delProd(id) { 
-  if (!isAdmin || !confirm('Biztosan törlöd?')) return; 
-  prods = prods.filter(p => p.id !== id); 
-  lastFilterIds = ''; // ← ezt add hozzá
-  save(); delImgSh(id); filter(); popDL(); toast('Termék törölve.'); 
-}
+  function delProd(id) {
+      if (!isAdmin || !confirm('Biztosan törlöd?')) return;
+      prods = prods.filter(p => p.id !== id);
+      lastFilterIds = ''; // ← ezt add hozzá
+      save(); delImgSh(id); filter(); popDL(); toast('Termék törölve.');
+    }
 
   function dupProd(id) {
     const p = prods.find(x => x.id === id); if (!p) return;
