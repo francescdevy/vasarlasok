@@ -135,7 +135,7 @@
 
 <!-- Login modal -->
 <div class="ov" id="mLogin">
-  <div class="modal" style="max-width:340px">
+  <div class="modal" style="max-width:340px; height:auto; max-height:fit-content;">
     <div class="mh"><span class="mt">⚙ Admin belépés</span><button class="mx" onclick="closeM('mLogin')">✕</button></div>
     <div class="mb">
       <div class="fg"><label class="fl">Jelszó</label><input class="fi" type="password" id="aPw" placeholder="Admin jelszó" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -643,10 +643,10 @@ async function fileToWebP(file,{maxWidth=1200,maxHeight=1200,quality=0.8}={}){
   });
 }
 
-function handleImg(e){
-  const f=e.target.files[0];if(!f)return;_('iuTxt').textContent='Tömörítés...';
-  fileToWebP(f,{quality:0.85}).then(c=>{imgPend=c;_('iuPrev').src=c;_('iuPrev').style.display='block';_('iuIco').style.display='none';_('iuTxt').style.display='none';});
-}
+  function handleImg(e) {
+    const f = e.target.files[0]; if (!f) return; _('iuTxt').textContent = 'Tömörítés...';
+    fileToWebP(f, { maxWidth: 800, maxHeight: 800, quality: 0.82 }).then(c => { imgPend = c; _('iuPrev').src = c; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; });
+  }
 async function saveProd(){
   const n=_('fN').value.trim();if(!n){toast('A termék neve kötelező!','err');return;}
   if(!editId&&prods.some(p=>p.name.toLowerCase()===n.toLowerCase())){toast('Ilyen nevű termék már létezik!','err');return;}
@@ -773,7 +773,10 @@ document.addEventListener('keydown',e=>{
 
 // ── QUICK IMAGE ──
 function openQImg(pid){qImgPid=pid;qImgB64=null;_('qImg').value='';_('qPrvA').style.display='none';_('qSave').disabled=true;openM('mImg');}
-function handleQImg(e){const f=e.target.files[0];if(!f)return;fileToWebP(f,{quality:0.85}).then(c=>{qImgB64=c;_('qPrv').src=c;_('qPrvA').style.display='block';_('qSave').disabled=false;});}
+  function handleQImg(e) {
+    const f = e.target.files[0]; if (!f) return;
+    fileToWebP(f, { maxWidth: 800, maxHeight: 800, quality: 0.82 }).then(c => { qImgB64 = c; _('qPrv').src = c; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; });
+  }
 async function saveQImg(){
   if(!qImgPid||!qImgB64)return;const p=prods.find(x=>x.id===qImgPid);if(!p)return;
   if(!p.images)p.images=[];p.images.push(qImgB64);p.image=null;
