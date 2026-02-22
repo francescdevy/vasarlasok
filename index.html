@@ -335,28 +335,29 @@ async function loadData(){
   try{
     const d=await shGet('getAll');
     if(d?.ok){
-      if(d.products){
-        const sp=JSON.parse(d.products),lm=new Map();
-        try{JSON.parse(localStorage.getItem('products')||'[]').forEach(p=>{if(p.images?.length)lm.set(p.id,p.images);});}catch(e){}
+      if (d.products) {
+        const sp = JSON.parse(d.products), lm = new Map();
+        try { JSON.parse(localStorage.getItem('products') || '[]').forEach(p => { if (p.images?.length) lm.set(p.id, p.images); }); } catch (e) { }
         prods = sp.map(p => {
           const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
-          const ec = p._imgCount || (p.images?.length || 0);
-          // ha a lokális cache pontosan annyi képet tartalmaz amennyit a szerver jelez → használjuk
-          // ha több van (duplikáció) → csak annyit tartunk meg amennyit a szerver jelez
+          const ec = p._imgCount || 0;
           const cached = li.slice(0, ec);
-          return { ...p, image: null, images: cached.length > 0 ? cached : [] };
+          return { ...p, image: null, images: cached };
         });
-        const noImg=prods.filter(p=>!p.images?.length);
-        if(noImg.length){
-          const ids=noImg.map(p=>p.id).join(',');
-          const res=await shGet('getImages',ids);
-          if(res?.images){
-            prods=prods.map(p=>{
-              const img=res.images[p.id];
-              return img?{...p,images:[img]}:p;
+        const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
+        if (noImg.length) {
+          const ids = noImg.map(p => p.id).join(',');
+          const res = await shGet('getImages', ids);
+          if (res?.images) {
+            prods = prods.map(p => {
+              if (p.images?.length) return p;
+              const img = res.images[p.id];
+              return img ? { ...p, images: [img] } : p;
             });
-            saveLoc();renderAll();
           }
+        }
+        saveLoc(); renderAll(); // ← mindig fusson le, ne csak noImg esetén
+      }
         }
       }
       if(d.categories)try{cats=JSON.parse(d.categories);}catch(e){}
@@ -550,8 +551,8 @@ function card(p){
   const hist=sh.length>1?`<details style="margin-top:4px" onclick="event.stopPropagation()">
     <summary>📊 Ártörténet (${sh.length})</summary>
     <div class="ph" style="margin-top:4px">
-      ${sh.slice(0,5).map(h=>{const x=[h.country?cs(h.country):'',h.shop?h.shop:'',h.note?h.note:''].filter(Boolean).join(' · ');return`<div class="ph-row"><span class="ph-d">${h.date?new Date(h.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}):'–'}</span><span class="ph-v">${h.amount} ${h.currency||p.currency}</span>${x?`<span class="ph-x">${esc(x)}</span>`:'<span class="ph-x"></span>'}</div>`;}).join('')}
-      ${sh.length>5?`<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length-5} bejegyzés</div>`:''}
+      ${sh.slice(0,4).map(h=>{const x=[h.country?cs(h.country):'',h.shop?h.shop:'',h.note?h.note:''].filter(Boolean).join(' · ');return`<div class="ph-row"><span class="ph-d">${h.date?new Date(h.date).toLocaleDateString('hu-HU',{month:'short',day:'numeric'}):'–'}</span><span class="ph-v">${h.amount} ${h.currency||p.currency}</span>${x?`<span class="ph-x">${esc(x)}</span>`:'<span class="ph-x"></span>'}</div>`;}).join('')}
+      ${sh.length>4?`<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length-5} bejegyzés</div>`:''}
     </div></details>`:'';
   const admin=isAdmin?`<div class="c-foot"><button class="bi bsm" onclick="openEdit('${p.id}')">✏️</button><button class="bi bsm" onclick="dupProd('${p.id}')">📋</button><button class="btn br bsm" onclick="delProd('${p.id}')">Törlés</button></div>`:'';
   return`<div class="card" data-id="${p.id}">
@@ -890,7 +891,7 @@ function updCF(){const h=!!(_('sInp').value||_('fCat').value||_('fCnt').value||_
     _('fCnt').innerHTML = `<option value="">Minden ország</option>` + cnts.map(c => `<option value="${c}"${c === cc ? ' selected' : ''}>${c}</option>`).join('');
     _('fShp').innerHTML = `<option value="">Minden bolt</option>` + shps.map(s => `<option value="${s}"${s === cs2 ? ' selected' : ''}>${s}</option>`).join('');
   }
-  
+
 // export
 function exportCSV(){
   const hd=['Név','Leírás','Kategória','Ország','Bolt','Dátum','Ár','Pénznem','Értékelés','Megjegyzés'];
