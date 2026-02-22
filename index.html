@@ -343,14 +343,15 @@ function saveLoc(){localStorage.setItem('products',JSON.stringify(prods));localS
             const ec = p._imgCount || 0;
             return { ...p, image: null, images: li.slice(0, ec) };
           });
-          const noImg = prods.filter(p => (p.images?.length || 0) < (p._imgCount || 0));
+          const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
           if (noImg.length) {
             const ids = noImg.map(p => p.id).join(',');
             const res = await shGet('getImages', ids);
             if (res?.images) {
               prods = prods.map(p => {
+                if (p.images?.length) return p;
                 const ec = p._imgCount || 0;
-                if ((p.images?.length || 0) >= ec) return p;
+                if (!ec) return p;
                 const fetched = [];
                 for (let i = 0; i < ec; i++) {
                   const v = res.images[`${p.id}_${i}`];
