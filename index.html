@@ -369,15 +369,17 @@
     async function moveImg(pid, idx, dir, e) {
         e.stopPropagation();
         const p = prods.find(x => x.id === pid); if (!p) return;
-        const arr = imgs(p).reverse(); // view sorrend
-        const newIdx = idx + dir;
-        if (newIdx < 0 || newIdx >= arr.length) return;
-        [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-        p.images = arr.reverse(); // vissza eredeti sorrendre
-        // Sheets-ben is frissítjük a képek sorrendjét
-        const im = imgs(p);
-        for (let i = 0; i < im.length; i++) {
-          await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: im[i] });
+        const arr = imgs(p); // eredeti sorrend (NEM reverse)
+        const viewLen = arr.length;
+        // A view fordított sorrendben mutatja, tehát konvertálni kell
+        const realIdx = viewLen - 1 - idx;
+        const newRealIdx = realIdx - dir; // dir: -1=előre, +1=hátra a view-ban = fordítva az arr-ban
+        if (newRealIdx < 0 || newRealIdx >= viewLen) return;
+        [arr[realIdx], arr[newRealIdx]] = [arr[newRealIdx], arr[realIdx]];
+        p.images = arr;
+        // Sheets frissítés
+        for (let i = 0; i < arr.length; i++) {
+          await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: arr[i] });
         }
         const psh = prods.map(q => { const qm = imgs(q); return { ...q, image: null, images: qm.map(() => '__img__'), _imgCount: qm.length }; });
         await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
@@ -863,7 +865,7 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       const ps = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
       const aS = new Set(ps), aC = new Set(pc); (p.priceHistory || []).forEach(h => { if (h.shop) aS.add(h.shop); if (h.country) aC.add(h.country); });
       const pills = [...aS].map(s => `<span class="pill">🏪 ${esc(s)}</span>`).join('') + [...aC].map(c => `<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
-      const im = imgs(p).reverse();
+      const im = imgs(p);
       const gal = im.length ? `<div class="gallery" data-id="${p.id}" style="height:270px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
     <div class="g-track">${im.map((img, i) => `<div class="g-slide"><img src="${img}" style="width:100%;height:270px;object-fit:cover;cursor:zoom-in" class="g-ic" data-i="${i}" data-pid="${p.id}">${isAdmin ? `
   <div style="position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px">
