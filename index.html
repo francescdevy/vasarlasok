@@ -398,12 +398,10 @@
               const allImgs = d.images || {};
               prods = sp.map(p => {
                 const fetched = [];
-                const count = p._imgCount || 0;
-                for (let i = 0; i < count; i++) {
+                for (let i = 0; i < (p._imgCount || 0); i++) {
                   const v = allImgs[`${p.id}_${i}`];
                   if (v) fetched.push(v);
                 }
-                if (!fetched.length && allImgs[p.id]) fetched.push(allImgs[p.id]);
                 return { ...p, image: null, images: fetched };
               });
               saveLoc(); renderAll();
@@ -417,38 +415,42 @@
       }
 
     async function save(lite = false) {
-      mkBak(); saveLoc();
-      if (!shUrl) return;
-      setLd(true, 'Mentés...');
-      try {
-        if (lite) {
-          await shWrite({ action: 'set', key: 'categories', value: JSON.stringify(cats) });
-          await shWrite({ action: 'set', key: 'currencies', value: JSON.stringify(currs) });
-          await shWrite({ action: 'set', key: 'shopOrder', value: JSON.stringify(shpOrd) });
-          setLd(false); return;
-        }
-        const news = prods.filter(p => {
-          const ni = p.image && p.image !== '__img__' && p.image.startsWith('data:');
-          const na = p.images?.some(i => i && i !== '__img__' && i.startsWith('data:'));
-          return ni || na;
-        });
-        const psh = prods.map(p => { const im = imgs(p); return { ...p, image: '__img__', images: im.map(() => '__img__'), _imgCount: im.length }; });
-        await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-        for (const p of news) {
-          const ai = imgs(p);
-          for (let i = 0; i < ai.length; i++)if (ai[i]?.startsWith('data:')) await shWrite({ action: 'set', key: `img_${p.id}_${i}`, value: ai[i] });
-          const la = ai[ai.length - 1]; if (la?.startsWith('data:')) await shWrite({ action: 'set', key: 'img_' + p.id, value: la });
-        }
-      } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
-      setLd(false);
-    }
+        mkBak(); saveLoc();
+        if (!shUrl) return;
+        setLd(true, 'Mentés...');
+        try {
+          if (lite) {
+            await shWrite({ action: 'setAll', categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+            setLd(false); return;
+          }
+          // Új képek feltöltése egyenként
+          for (const p of prods) {
+            const im = imgs(p);
+            for (let i = 0; i < im.length; i++) {
+              if (im[i]?.startsWith('data:')) {
+                await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
+              }
+            }
+          }
+          // Termékek mentése (képek helyett __img__ placeholder)
+          const psh = prods.map(p => {
+            const im = imgs(p);
+            return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
+          });
+          await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+        } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
+        setLd(false);
+      }
 
     async function saveMeta() {
-      saveLoc(); mkBak();
-      if (!shUrl) return;
-      const psh = prods.map(p => { const im = imgs(p); return { ...p, image: '__img__', images: im.map(() => '__img__'), _imgCount: im.length }; });
-      shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-    }
+        saveLoc(); mkBak();
+        if (!shUrl) return;
+        const psh = prods.map(p => {
+          const im = imgs(p);
+          return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
+        });
+        shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+      }
 
     // ── BACKUP ──
     function mkBak() { try { const pni = prods.map(p => ({ ...p, image: null, images: [] })); localStorage.setItem('bak_' + Date.now(), JSON.stringify({ prods: pni, cats, currs, shpOrd, ts: new Date().toISOString() })); Object.keys(localStorage).filter(k => k.startsWith('bak_')).sort().reverse().slice(5).forEach(k => localStorage.removeItem(k)); } catch (e) { } }
