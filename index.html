@@ -396,22 +396,24 @@
           if (d.products) {
             const sp = JSON.parse(d.products), lm = new Map();
             try { JSON.parse(localStorage.getItem('products') || '[]').forEach(p => { if (p.images?.length) lm.set(p.id, p.images); }); } catch (e) { }
-            prods = sp.map(p => {
-              const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
-              const ec = p._imgCount || 0;
-              return { ...p, image: null, images: li.length === ec && ec > 0 ? li : [] };
-            });
-            const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
-            const noImg = prods.filter(p => !p.images?.length);
-            if (noImg.length) {
-              const ids = noImg.map(p => p.id).join(',');
+            prods = sp.map(p => ({ ...p, image: null, images: [] }));
+            const withImg = prods.filter(p => (p._imgCount || 0) > 0);
+            if (withImg.length) {
+              const ids = withImg.map(p => p.id).join(',');
               const res = await shGet('getImages', ids);
               if (res?.images) {
                 prods = prods.map(p => {
-                  const img = res.images[p.id];
-                  return img ? { ...p, images: [img] } : p;
+                  const fetched = [];
+                  for (let i = 0; i < (p._imgCount || 0); i++) {
+                    const v = res.images[`${p.id}_${i}`];
+                    if (v) fetched.push(v);
+                  }
+                  if (!fetched.length && res.images[p.id]) fetched.push(res.images[p.id]);
+                  return fetched.length ? { ...p, images: fetched } : p;
                 });
-                saveLoc(); renderAll();
+              }
+            }
+            saveLoc(); renderAll();
               }
             }
           }
