@@ -479,21 +479,22 @@
       }
 
       function renderBakList() {
-        const baks = getBaks(), el = _('bakList');
-        if (!baks.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup</div>'; return; }
-        el.innerHTML = baks.map((b, i) => {
-          const ds = new Date(b.ts).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-          const label = i === 0 ? '(legfrissebb)' : i === 1 ? '(előző)' : '';
-          const names = b.prodNames.length ? b.prodNames.slice(0, 3).join(', ') + (b.prodNames.length > 3 ? '...' : '') : '';
-          return `<div style="display:flex;align-items:center;gap:10px;padding:11px;background:var(--cream);border-radius:8px">
+          const baks = getBaks(), el = _('bakList');
+          if (!baks.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup</div>'; return; }
+          el.innerHTML = baks.map((b, i) => {
+            const ds = new Date(b.ts).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const label = i === 0 ? '(legfrissebb)' : i === 1 ? '(előző)' : '';
+            const names = b.prodNames?.length ? b.prodNames.slice(0, 4).join(', ') + (b.prodNames.length > 4 ? ` +${b.prodNames.length - 4}` : '') : `${b.n} termék`;
+            return `<div style="display:flex;align-items:center;gap:10px;padding:11px;background:var(--cream);border-radius:8px">
   <div style="flex:1">
     <div style="font-weight:600;font-size:.84rem">${ds} ${label}</div>
-    <div style="font-size:.74rem;color:var(--muted)">${b.n} termék${names ? ': ' + names : ''} • ${b.cats || 0} kategória</div>
+    <div style="font-size:.74rem;color:var(--muted)">${names} • ${b.cats || 0} kategória • ${b.currs || 0} pénznem</div>
   </div>
   <button class="btn bp bsm" onclick="restBak('${b.key}')">Visszaállít</button>
 </div>`;
-        }).join('');
-      }
+          }).join('');
+        }
+        
     async function restBak(k) {
         if (!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!')) return;
         try {
@@ -502,13 +503,15 @@
           if (shUrl) {
             const d = await shGet('getAll');
             if (d?.images) {
+              // _imgCount beállítása + setAll küldése helyes adattal
               prods = prods.map(p => {
-                const count = Object.keys(d.images).filter(imgKey => imgKey.startsWith(p.id + '_') && !isNaN(imgKey.replace(p.id + '_', ''))).length;
-                return { ...p, _imgCount: count || (d.images[p.id] ? 1 : 0) };
+                const count = Object.keys(d.images).filter(imgKey => imgKey.startsWith(p.id + '_') && !isNaN(imgKey.replace(p.id + '_', ''))).length || (d.images[p.id] ? 1 : 0);
+                return { ...p, _imgCount: count, image: null, images: Array(count).fill('__img__') };
               });
+              await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
             }
           }
-          await save();
+          saveLoc();
           localStorage.removeItem('products');
           await loadData();
           toast('Backup visszaállítva!');
