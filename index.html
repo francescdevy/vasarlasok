@@ -737,9 +737,28 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
     }
 
     function handleImg(e) {
-      const f = e.target.files[0]; if (!f) return; _('iuTxt').textContent = 'Tömörítés...';
-      fileToWebP(f, { maxWidth: 800, maxHeight: 800, quality: 0.82 }).then(c => { imgPend = c; _('iuPrev').src = c; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; });
-    }
+        const f = e.target.files[0]; if (!f) return;
+        _('iuTxt').textContent = 'Tömörítés...';
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        const MAX_DIM = isMobile ? 800 : 1200;
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = evt => { img.src = evt.target.result; };
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => {
+            const r2 = new FileReader();
+            r2.onload = () => { imgPend = r2.result; _('iuPrev').src = r2.result; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; };
+            r2.readAsDataURL(blob);
+          }, 'image/webp', 0.82);
+        };
+        reader.readAsDataURL(f);
+      }
+
     async function saveProd() {
       const n = _('fN').value.trim(); if (!n) { toast('A termék neve kötelező!', 'err'); return; }
       if (!editId && prods.some(p => p.name.toLowerCase() === n.toLowerCase())) { toast('Ilyen nevű termék már létezik!', 'err'); return; }
@@ -879,9 +898,26 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
     // ── QUICK IMAGE ──
     function openQImg(pid) { qImgPid = pid; qImgB64 = null; _('qImg').value = ''; _('qPrvA').style.display = 'none'; _('qSave').disabled = true; openM('mImg'); }
     function handleQImg(e) {
-      const f = e.target.files[0]; if (!f) return;
-      fileToWebP(f, { maxWidth: 800, maxHeight: 800, quality: 0.82 }).then(c => { qImgB64 = c; _('qPrv').src = c; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; });
-    }
+        const f = e.target.files[0]; if (!f) return;
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        const MAX_DIM = isMobile ? 800 : 1200;
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = evt => { img.src = evt.target.result; };
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => {
+            const r2 = new FileReader();
+            r2.onload = () => { qImgB64 = r2.result; _('qPrv').src = r2.result; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; };
+            r2.readAsDataURL(blob);
+          }, 'image/webp', 0.82);
+        };
+        reader.readAsDataURL(f);
+      }
     async function saveQImg() {
       if (!qImgPid || !qImgB64) return; const p = prods.find(x => x.id === qImgPid); if (!p) return;
       if (!p.images) p.images = []; p.images.push(qImgB64); p.image = null;
