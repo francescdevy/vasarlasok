@@ -493,6 +493,7 @@
             }
           }
           await save();
+          localStorage.removeItem('products'); // ← ez kell!
           await loadData();
           toast('Backup visszaállítva!');
           closeM('mBak');
