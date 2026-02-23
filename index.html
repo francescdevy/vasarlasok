@@ -487,7 +487,7 @@
             const d = await shGet('getAll');
             if (d?.images) {
               prods = prods.map(p => {
-                const count = Object.keys(d.images).filter(k => k.startsWith(p.id + '_') && !isNaN(k.replace(p.id + '_', ''))).length;
+                const count = Object.keys(d.images).filter(imgKey => imgKey.startsWith(p.id + '_') && !isNaN(imgKey.replace(p.id + '_', ''))).length;
                 return { ...p, _imgCount: count || (d.images[p.id] ? 1 : 0) };
               });
             }
