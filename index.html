@@ -476,10 +476,16 @@
       }).join('');
     }
     async function restBak(k) {
-      if (!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!')) return;
-      try { const b = JSON.parse(localStorage.getItem(k)); prods = b.prods || []; cats = b.cats || []; currs = b.currs || []; shpOrd = b.shpOrd || []; await save(); renderAll(); toast('Backup visszaállítva!'); closeM('mBak'); }
-      catch (e) { toast('Visszaállítási hiba', 'err'); }
-    }
+        if (!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!')) return;
+        try {
+          const b = JSON.parse(localStorage.getItem(k));
+          prods = b.prods || []; cats = b.cats || []; currs = b.currs || []; shpOrd = b.shpOrd || [];
+          await save();
+          await loadData();
+          toast('Backup visszaállítva!');
+          closeM('mBak');
+        } catch (e) { toast('Visszaállítási hiba', 'err'); }
+      }
 
     // ── TAGS ──
     function renderTags(t) {
