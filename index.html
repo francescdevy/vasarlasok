@@ -480,6 +480,16 @@
         try {
           const b = JSON.parse(localStorage.getItem(k));
           prods = b.prods || []; cats = b.cats || []; currs = b.currs || []; shpOrd = b.shpOrd || [];
+          // Sheets-ről lekérjük a képeket és beállítjuk _imgCount-ot
+          if (shUrl) {
+            const d = await shGet('getAll');
+            if (d?.images) {
+              prods = prods.map(p => {
+                const count = Object.keys(d.images).filter(k => k === p.id + '_0' || k.startsWith(p.id + '_')).length;
+                return { ...p, _imgCount: count };
+              });
+            }
+          }
           await save();
           await loadData();
           toast('Backup visszaállítva!');
