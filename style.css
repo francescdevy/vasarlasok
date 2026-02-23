@@ -4,6 +4,7 @@
   --ink: #1c1c1c;
   --paper: #f5f5f5;
   --cream: #ebebeb;
+  --white: #fff;
   --accent: #2563eb;
   --al: #dbeafe;
   --star: #f59e0b;
@@ -35,26 +36,26 @@ header h1 span { color: #93c5fd }
   font-family: var(--f); font-size: .82rem; font-weight: 600;
   cursor: pointer; transition: .15s
 }
-.hbtn-pr { background: var(--accent); color: #fff }
+.hbtn-pr { background: var(--accent); color: var(--white) }
 .hbtn-pr:hover { background: #1d4ed8 }
 .hbtn-gh { background: transparent; color: var(--paper); border: 1.5px solid rgba(255,255,255,.3) }
 .hbtn-gh:hover { background: rgba(255,255,255,.1) }
 
 /* ── ADMIN BAR ── */
 #adminBar {
-  display: none; background: #111; color: var(--paper);
+  display: none; background: var(--ink); color: var(--paper);
   padding: 8px 12px; align-items: center; gap: 6px;
   flex-wrap: wrap; font-size: .78rem; border-bottom: 1px solid #333
 }
 #adminBar.on { display: flex }
 .ab {
-  background: rgba(255,255,255,.15); color: #fff;
+  background: rgba(255,255,255,.15); color: var(--white);
   padding: 4px 9px; border-radius: var(--r2); border: none;
   font-family: var(--f); font-size: .76rem; font-weight: 600; cursor: pointer
 }
 .ab-red { background: var(--red) }
 .ab-badge {
-  background: var(--accent); color: #fff; font-size: .65rem;
+  background: var(--accent); color: var(--white); font-size: .65rem;
   font-weight: 700; padding: 2px 7px; border-radius: 20px;
   text-transform: uppercase; letter-spacing: .5px
 }
@@ -65,20 +66,20 @@ header h1 span { color: #93c5fd }
 .s-row { display: flex; gap: 6px; margin-bottom: 6px }
 .s-inp {
   flex: 1; padding: 7px 10px; border: 1.5px solid var(--bd);
-  border-radius: var(--r); background: #fff; font-family: var(--f);
+  border-radius: var(--r); background: var(--white); font-family: var(--f);
   font-size: .84rem; outline: none; transition: .15s
 }
 .s-inp:focus { border-color: var(--accent) }
 .f-row { display: flex; gap: 5px; flex-wrap: wrap; align-items: center }
 .fsel {
   padding: 5px 7px; border-radius: var(--r2); border: 1px solid var(--bd);
-  background: #fff; font-family: var(--f); font-size: .76rem;
+  background: var(--white); font-family: var(--f); font-size: .76rem;
   color: var(--ink); cursor: pointer; outline: none
 }
 .fsel:focus { border-color: var(--accent) }
 .fclear {
   padding: 5px 8px; border-radius: var(--r2); border: 1px solid var(--bd);
-  background: #fff; font-family: var(--f); font-size: .76rem;
+  background: var(--white); font-family: var(--f); font-size: .76rem;
   color: var(--muted); cursor: pointer; display: none; white-space: nowrap
 }
 .fclear:hover { background: var(--cream); color: var(--ink) }
@@ -105,7 +106,7 @@ header h1 span { color: #93c5fd }
 
 .c-cat {
   position: absolute; top: 8px; left: 8px;
-  background: var(--ink); color: #fff; font-size: .68rem;
+  background: var(--ink); color: var(--white); font-size: .68rem;
   font-weight: 600; padding: 2px 8px; border-radius: 20px;
   pointer-events: none; z-index: 2
 }
@@ -157,7 +158,7 @@ header h1 span { color: #93c5fd }
   animation: lbIn .18s ease; touch-action: none
 }
 @keyframes lbIn { from { transform: scale(.92); opacity: 0 } to { transform: scale(1); opacity: 1 } }
-.lb-x { position: fixed; top: 14px; right: 18px; color: #fff; font-size: 2rem; cursor: pointer; background: none; border: none; opacity: .7; z-index: 501 }
+.lb-x { position: fixed; top: 14px; right: 18px; color: var(--white); font-size: 2rem; cursor: pointer; background: none; border: none; opacity: .7; z-index: 501 }
 .lb-x:hover { opacity: 1 }
 
 /* ── MODALS ── */
@@ -192,7 +193,7 @@ header h1 span { color: #93c5fd }
 .fl { font-size: .73rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px }
 .fi, .fsel2, .fta {
   padding: 8px 11px; border: 1.5px solid var(--bd); border-radius: 7px;
-  background: #fff; font-family: var(--f); font-size: .84rem;
+  background: var(--white); font-family: var(--f); font-size: .84rem;
   color: var(--ink); outline: none; transition: .15s
 }
 .fi:focus, .fsel2:focus, .fta:focus { border-color: var(--accent) }
@@ -215,7 +216,7 @@ header h1 span { color: #93c5fd }
 .tw {
   display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
   padding: 6px 8px; border: 1.5px solid var(--bd); border-radius: 7px;
-  background: #fff; min-height: 38px; cursor: text; transition: .15s
+  background: var(--white); min-height: 38px; cursor: text; transition: .15s
 }
 .tw:focus-within { border-color: var(--accent) }
 .ti { display: inline-flex; align-items: center; gap: 4px; background: var(--al); color: var(--accent); border: 1px solid #bfdbfe; border-radius: 20px; font-size: .78rem; font-weight: 600; padding: 2px 8px 2px 10px }
@@ -236,11 +237,11 @@ header h1 span { color: #93c5fd }
 
 /* ── BUTTONS ── */
 .btn { display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: var(--r2); border: none; font-family: var(--f); font-size: .84rem; font-weight: 600; cursor: pointer; transition: .15s }
-.bp { background: var(--accent); color: #fff }
+.bp { background: var(--accent); color: var(--white) }
 .bp:hover { background: #1d4ed8 }
 .bg { background: var(--cream); color: var(--ink) }
 .bg:hover { background: #ddd }
-.br { background: var(--red); color: #fff }
+.br { background: var(--red); color: var(--white) }
 .br:hover { background: #b91c1c }
 .bi { padding: 5px; border-radius: var(--r2); background: var(--cream); border: 1px solid var(--bd); color: var(--ink); cursor: pointer; font-size: .84rem; transition: .15s }
 .bi:hover { background: #ddd }
@@ -259,14 +260,14 @@ header h1 span { color: #93c5fd }
 .toast.err { border-left: 4px solid var(--red) }
 
 /* ── LOADING BAR ── */
-#lb2 { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 300; background: var(--accent); color: #fff; padding: 5px 14px; font-size: .8rem; font-weight: 600; align-items: center; gap: 8px; z-index: 9999 }
-.spin { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: sp .7s linear infinite; flex-shrink: 0 }
+#lb2 { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 300; background: var(--accent); color: var(--white); padding: 5px 14px; font-size: .8rem; font-weight: 600; align-items: center; gap: 8px; z-index: 9999 }
+.spin { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,.4); border-top-color: var(--white); border-radius: 50%; animation: sp .7s linear infinite; flex-shrink: 0 }
 @keyframes sp { to { transform: rotate(360deg) } }
 
 /* ── SCROLL TO TOP ── */
 #stt {
   display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: #fff; border: none; border-radius: 20px;
+  background: var(--ink); color: var(--white); border: none; border-radius: 20px;
   padding: 8px 16px; font-family: var(--f); font-size: .8rem; font-weight: 600;
   cursor: pointer; z-index: 90; box-shadow: 0 4px 14px rgba(0,0,0,.25);
   transition: .2s; opacity: 0
