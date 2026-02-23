@@ -395,23 +395,17 @@
           if (d?.ok) {
             if (d.products) {
               const sp = JSON.parse(d.products);
-              prods = sp.map(p => ({ ...p, image: null, images: [] }));
-              const withImg = prods.filter(p => (p._imgCount || 0) > 0);
-              if (withImg.length) {
-                const ids = withImg.map(p => p.id).join(',');
-                const res = await shGet('getImages', ids);
-                if (res?.images) {
-                  prods = prods.map(p => {
-                    const fetched = [];
-                    for (let i = 0; i < (p._imgCount || 0); i++) {
-                      const v = res.images[`${p.id}_${i}`];
-                      if (v) fetched.push(v);
-                    }
-                    if (!fetched.length && res.images[p.id]) fetched.push(res.images[p.id]);
-                    return fetched.length ? { ...p, images: fetched } : p;
-                  });
+              const allImgs = d.images || {};
+              prods = sp.map(p => {
+                const fetched = [];
+                const count = p._imgCount || 0;
+                for (let i = 0; i < count; i++) {
+                  const v = allImgs[`${p.id}_${i}`];
+                  if (v) fetched.push(v);
                 }
-              }
+                if (!fetched.length && allImgs[p.id]) fetched.push(allImgs[p.id]);
+                return { ...p, image: null, images: fetched };
+              });
               saveLoc(); renderAll();
             }
             if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
