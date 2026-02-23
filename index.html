@@ -730,6 +730,9 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       fileToWebP(f, { maxWidth: 800, maxHeight: 800, quality: 0.82 }).then(c => { imgPend = c; _('iuPrev').src = c; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; });
     }
     async function saveProd() {
+        console.log('saveProd indult');
+      const n = _('fN').value.trim();
+      console.log('név:', n);
       const n = _('fN').value.trim(); if (!n) { toast('A termék neve kötelező!', 'err'); return; }
       if (!editId && prods.some(p => p.name.toLowerCase() === n.toLowerCase())) { toast('Ilyen nevű termék már létezik!', 'err'); return; }
       const ci = _('fCntI').value.trim(), si = _('fShpI').value.trim(); if (ci) addTag('c', ci); if (si) addTag('s', si);
