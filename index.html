@@ -385,45 +385,42 @@
     function saveLoc() { localStorage.setItem('products', JSON.stringify(prods)); localStorage.setItem('categories', JSON.stringify(cats)); localStorage.setItem('currencies', JSON.stringify(currs)); localStorage.setItem('shopOrder', JSON.stringify(shpOrd)); }
 
     async function loadData() {
-      ['products', 'categories', 'currencies', 'shopOrder'].forEach((k, i) => {
-        try { const v = localStorage.getItem(k); if (v) { [prods, cats, currs, shpOrd][i] = JSON.parse(v); } } catch (e) { }
-      });
-      if (!shUrl) return;
-      setLd(true, 'Betöltés...');
-      try {
-        const d = await shGet('getAll');
-        if (d?.ok) {
-          if (d.products) {
-            const sp = JSON.parse(d.products), lm = new Map();
-            try { JSON.parse(localStorage.getItem('products') || '[]').forEach(p => { if (p.images?.length) lm.set(p.id, p.images); }); } catch (e) { }
-            prods = sp.map(p => ({ ...p, image: null, images: [] }));
-            const withImg = prods.filter(p => (p._imgCount || 0) > 0);
-            if (withImg.length) {
-              const ids = withImg.map(p => p.id).join(',');
-              const res = await shGet('getImages', ids);
-              if (res?.images) {
-                prods = prods.map(p => {
-                  const fetched = [];
-                  for (let i = 0; i < (p._imgCount || 0); i++) {
-                    const v = res.images[`${p.id}_${i}`];
-                    if (v) fetched.push(v);
-                  }
-                  if (!fetched.length && res.images[p.id]) fetched.push(res.images[p.id]);
-                  return fetched.length ? { ...p, images: fetched } : p;
-                });
+        ['products', 'categories', 'currencies', 'shopOrder'].forEach((k, i) => {
+          try { const v = localStorage.getItem(k); if (v) { [prods, cats, currs, shpOrd][i] = JSON.parse(v); } } catch (e) { }
+        });
+        if (!shUrl) return;
+        setLd(true, 'Betöltés...');
+        try {
+          const d = await shGet('getAll');
+          if (d?.ok) {
+            if (d.products) {
+              const sp = JSON.parse(d.products);
+              prods = sp.map(p => ({ ...p, image: null, images: [] }));
+              const withImg = prods.filter(p => (p._imgCount || 0) > 0);
+              if (withImg.length) {
+                const ids = withImg.map(p => p.id).join(',');
+                const res = await shGet('getImages', ids);
+                if (res?.images) {
+                  prods = prods.map(p => {
+                    const fetched = [];
+                    for (let i = 0; i < (p._imgCount || 0); i++) {
+                      const v = res.images[`${p.id}_${i}`];
+                      if (v) fetched.push(v);
+                    }
+                    if (!fetched.length && res.images[p.id]) fetched.push(res.images[p.id]);
+                    return fetched.length ? { ...p, images: fetched } : p;
+                  });
+                }
               }
+              saveLoc(); renderAll();
             }
-            saveLoc(); renderAll();
-              }
-            }
+            if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
+            if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
+            if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
           }
-          if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
-          if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
-          if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
-        }
-      } catch (e) { toast('Betöltési hiba – lokális adatok betöltve', 'err'); }
-      setLd(false);
-    }
+        } catch (e) { toast('Betöltési hiba – lokális adatok betöltve', 'err'); }
+        setLd(false);
+      }
 
     async function save(lite = false) {
       mkBak(); saveLoc();
