@@ -655,7 +655,12 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
     // ── ADMIN ──
     function adminClick() { if (isAdmin) { isAdmin = false; sessionStorage.removeItem('isAdmin'); updAdmin(); return; } openM('mLogin'); }
     function doLogin() { const pw = _('aPw').value; if (pw === ADMIN_PW) { isAdmin = true; sessionStorage.setItem('isAdmin', 'true'); closeM('mLogin'); _('aPw').value = ''; _('aErr').style.display = 'none'; updAdmin(); toast('Admin mód aktív! ✓'); } else _('aErr').style.display = 'block'; }
-    function updAdmin() { const bar = _('adminBar'); if (isAdmin) { bar.classList.add('on'); } else { bar.classList.remove('on'); } filter(); }
+    function updAdmin() {
+        const bar = _('adminBar');
+        if (isAdmin) { bar.classList.add('on'); } else { bar.classList.remove('on'); }
+        lastFilterIds = '';
+        filter();
+      }
     function updShSt() {
       const el = _('shSt'); if (!el) return;
       if (shUrl) { el.style.cssText = 'background:#e6f5ec;color:var(--green)'; el.innerHTML = '✓ Google Sheets összekötve'; _('btnSheets').style.background = 'rgba(22,163,74,.3)'; }
