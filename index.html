@@ -399,24 +399,16 @@
             prods = sp.map(p => {
               const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
               const ec = p._imgCount || 0;
-              const cached = li.slice(0, ec);
-              return { ...p, image: null, images: cached.length === ec && ec > 0 ? cached : [] };
+              return { ...p, image: null, images: li.slice(0, ec) };
             });
-            const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
+            const noImg = prods.filter(p => !p.images?.length);
             if (noImg.length) {
               const ids = noImg.map(p => p.id).join(',');
               const res = await shGet('getImages', ids);
               if (res?.images) {
                 prods = prods.map(p => {
-                  if (p.images?.length) return p;
-                  const ec = p._imgCount || 0;
-                  const fetched = [];
-                  for (let i = 0; i < ec; i++) {
-                    const v = res.images[`${p.id}_${i}`];
-                    if (v) fetched.push(v);
-                  }
-                  if (!fetched.length && res.images[p.id]) fetched.push(res.images[p.id]);
-                  return fetched.length ? { ...p, images: fetched } : p;
+                  const img = res.images[p.id];
+                  return img ? { ...p, images: [img] } : p;
                 });
                 saveLoc(); renderAll();
               }
