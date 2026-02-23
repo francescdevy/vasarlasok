@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inventory-v2';
+const CACHE_NAME = 'inventory-v3';
 const ASSETS = ['./index.html', './style.css', './manifest.json'];
 
 self.addEventListener('install', e => {
