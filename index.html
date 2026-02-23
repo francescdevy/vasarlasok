@@ -399,8 +399,9 @@
             prods = sp.map(p => {
               const li = lm.get(p.id)?.filter(i => i && i !== '__img__') || [];
               const ec = p._imgCount || 0;
-              return { ...p, image: null, images: li.slice(0, ec) };
+              return { ...p, image: null, images: li.length === ec && ec > 0 ? li : [] };
             });
+            const noImg = prods.filter(p => !p.images?.length && (p._imgCount || 0) > 0);
             const noImg = prods.filter(p => !p.images?.length);
             if (noImg.length) {
               const ids = noImg.map(p => p.id).join(',');
