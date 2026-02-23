@@ -367,17 +367,22 @@
     async function shWrite(body) { try { await fetch(shUrl, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'text/plain' } }); } catch (e) { } }
     async function delImgSh(id) { if (shUrl) await shWrite({ action: 'set', key: 'img_' + id, value: '' }); }
     async function moveImg(pid, idx, dir, e) {
-      e.stopPropagation();
-      const p = prods.find(x => x.id === pid); if (!p) return;
-      const arr = imgs(p).reverse(); // view sorrendben
-      const newIdx = idx + dir;
-      if (newIdx < 0 || newIdx >= arr.length) return;
-      // csere
-      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-      // visszaírás eredeti sorrendre
-      p.images = arr.reverse();
-      await save(); filter(); openView(pid); toast('Sorrend frissítve!');
-    }
+        e.stopPropagation();
+        const p = prods.find(x => x.id === pid); if (!p) return;
+        const arr = imgs(p).reverse(); // view sorrend
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= arr.length) return;
+        [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+        p.images = arr.reverse(); // vissza eredeti sorrendre
+        // Sheets-ben is frissítjük a képek sorrendjét
+        const im = imgs(p);
+        for (let i = 0; i < im.length; i++) {
+          await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: im[i] });
+        }
+        const psh = prods.map(q => { const qm = imgs(q); return { ...q, image: null, images: qm.map(() => '__img__'), _imgCount: qm.length }; });
+        await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+        saveLoc(); filter(); openView(pid); toast('Sorrend frissítve!');
+      }
 
     // ── STORAGE ──
     function _(id) { return document.getElementById(id); }
@@ -754,11 +759,18 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       await save(!hasImg); renderAll(); closeM('mProd');
     }
     function delProd(id) {
-      if (!isAdmin || !confirm('Biztosan törlöd?')) return;
-      prods = prods.filter(p => p.id !== id);
-      lastFilterIds = ''; // ← ezt add hozzá
-      save(); delImgSh(id); filter(); popDL(); toast('Termék törölve.');
-    }
+        if (!isAdmin || !confirm('Biztosan törlöd?')) return;
+        const p = prods.find(x => x.id === id);
+        if (p) {
+          const count = p._imgCount || imgs(p).length;
+          for (let i = 0; i < count; i++) {
+            shWrite({ action: 'deleteImage', key: `${id}_${i}` });
+          }
+        }
+        prods = prods.filter(p => p.id !== id);
+        lastFilterIds = '';
+        save(); filter(); popDL(); toast('Termék törölve.');
+      }
 
     function dupProd(id) {
       const p = prods.find(x => x.id === id); if (!p) return;
