@@ -461,6 +461,8 @@
 
     // ── BACKUP ──
     function mkBak() {
+      function mkBak() {
+        console.log('mkBak fut, prods:', prods.length);
         try {
           const pni = prods.map(p => ({ ...p, image: null, images: [] }));
           const prodNames = prods.map(p => p.name);
@@ -818,16 +820,17 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
     async function delProd(id) {
         if (!isAdmin || !confirm('Biztosan törlöd?')) return;
         const p = prods.find(x => x.id === id);
+        prods = prods.filter(x => x.id !== id);
+        lastFilterIds = '';
+        filter(); popDL(); toast('Termék törölve.');
+        // Háttérben töröl és ment – nem várja meg
         if (p && shUrl) {
           const count = p._imgCount || imgs(p).length;
-          for (let i = 0; i < count; i++) {
-            await shWrite({ action: 'deleteImage', key: `${id}_${i}` });
-          }
+          const delPromises = [];
+          for (let i = 0; i < count; i++) delPromises.push(shWrite({ action: 'deleteImage', key: `${id}_${i}` }));
+          await Promise.all(delPromises);
         }
-        prods = prods.filter(p => p.id !== id);
-        lastFilterIds = '';
         await save();
-        filter(); popDL(); toast('Termék törölve.');
       }
 
     function dupProd(id) {
