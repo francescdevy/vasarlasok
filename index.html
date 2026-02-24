@@ -357,27 +357,20 @@
 
     // ── SHEETS ──
     async function shGet(act, key) {
-      if (!shUrl) return null;
-      const url = key
-        ? `${shUrl}?action=${act}&${act === 'getImages' ? 'ids' : 'key'}=${key}`
-        : `${shUrl}?action=${act}`;
-      const r = await fetch(url);
-      return r.json();
-    }
+        if (!shUrl) return null;
+        const url = key ? `${shUrl}?action=${act}&ids=${key}` : `${shUrl}?action=${act}`;
+        const r = await fetch(url);
+        return r.json();
+      }
     async function shWrite(body) { try { await fetch(shUrl, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'text/plain' } }); } catch (e) { } }
-    async function delImgSh(id) { if (shUrl) await shWrite({ action: 'set', key: 'img_' + id, value: '' }); }
     async function moveImg(pid, idx, dir, e) {
         e.stopPropagation();
         const p = prods.find(x => x.id === pid); if (!p) return;
-        const arr = imgs(p); // eredeti sorrend (NEM reverse)
-        const viewLen = arr.length;
-        // A view fordított sorrendben mutatja, tehát konvertálni kell
-        const realIdx = viewLen - 1 - idx;
-        const newRealIdx = realIdx - dir; // dir: -1=előre, +1=hátra a view-ban = fordítva az arr-ban
-        if (newRealIdx < 0 || newRealIdx >= viewLen) return;
-        [arr[realIdx], arr[newRealIdx]] = [arr[newRealIdx], arr[realIdx]];
+        const arr = imgs(p);
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= arr.length) return;
+        [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
         p.images = arr;
-        // Sheets frissítés
         for (let i = 0; i < arr.length; i++) {
           await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: arr[i] });
         }
@@ -460,8 +453,7 @@
       }
 
     // ── BACKUP ──
-      function mkBak() {
-        console.log('mkBak fut, prods:', prods.length);
+    function mkBak() {
         try {
           const pni = prods.map(p => ({ ...p, image: null, images: [] }));
           const prodNames = prods.map(p => p.name);
@@ -707,20 +699,39 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       else { el.style.cssText = 'background:#fef3c7;color:#92400e'; el.innerHTML = '⚠ Nincs Sheets kapcsolat'; _('btnSheets').style.background = 'rgba(255,255,255,.15)'; }
     }
     async function saveSh() {
-      const u = _('shUrl').value.trim();
-      if (!u || !u.includes('script.google.com')) { toast('Érvénytelen URL', 'err'); return; }
-      setLd(true, 'Kapcsolat tesztelése...');
-      try {
-        const d = await (await fetch(`${u}?action=getAll`)).json();
-        if (d.ok !== undefined) {
-          shUrl = u; localStorage.setItem('sheetsApiUrl', u);
-          if (!d.products && prods.length > 0) { await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) }); toast('Kapcsolódva! Adatok feltöltve.'); }
-          else { if (d.products) try { prods = JSON.parse(d.products); } catch (e) { } if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { } if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { } if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { } renderAll(); toast('Kapcsolódva! Sheets adatok betöltve.'); }
-          updShSt(); closeM('mSheets');
-        } else toast('Szerver hiba', 'err');
-      } catch (e) { toast('Kapcsolódási hiba', 'err'); }
-      setLd(false);
-    }
+        const u = _('shUrl').value.trim();
+        if (!u || !u.includes('script.google.com')) { toast('Érvénytelen URL', 'err'); return; }
+        setLd(true, 'Kapcsolat tesztelése...');
+        try {
+          const d = await (await fetch(`${u}?action=getAll`)).json();
+          if (d.ok !== undefined) {
+            shUrl = u; localStorage.setItem('sheetsApiUrl', u);
+            if (!d.products && prods.length > 0) {
+              await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+              toast('Kapcsolódva! Adatok feltöltve.');
+            } else {
+              if (d.products) {
+                const sp = JSON.parse(d.products);
+                const allImgs = d.images || {};
+                prods = sp.map(p => {
+                  const fetched = [];
+                  for (let i = 0; i < (p._imgCount || 0); i++) {
+                    const v = allImgs[`${p.id}_${i}`];
+                    if (v) fetched.push(v);
+                  }
+                  return { ...p, image: null, images: fetched };
+                });
+              }
+              if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
+              if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
+              if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
+              renderAll(); toast('Kapcsolódva! Sheets adatok betöltve.');
+            }
+            updShSt(); closeM('mSheets');
+          } else toast('Szerver hiba', 'err');
+        } catch (e) { toast('Kapcsolódási hiba', 'err'); }
+        setLd(false);
+      }
     function clearSh() { shUrl = ''; localStorage.removeItem('sheetsApiUrl'); _('shUrl').value = ''; updShSt(); toast('Kapcsolat törölve'); closeM('mSheets'); }
 
     // ── PRODUCT ADD/EDIT ──
@@ -833,30 +844,32 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       }
 
     function dupProd(id) {
-      const p = prods.find(x => x.id === id); if (!p) return;
-      const copy = {
-        ...p,
-        id: 'p' + Date.now(),
-        name: p.name + ' (másolat)',
-        createdAt: new Date().toISOString(),
-        reviews: [],
-        images: [...(p.images || [])],
-        priceHistory: [...(p.priceHistory || [])]
-      };
-      prods.unshift(copy);
-      save(); filter();
-      toast('Termék másolva! ✓');
-      // Rögtön megnyitja szerkesztésre hogy át lehessen nevezni
-      setTimeout(() => openEdit(copy.id), 300);
-    }
+        const p = prods.find(x => x.id === id); if (!p) return;
+        const copy = {
+          ...p,
+          id: 'p' + Date.now(),
+          name: p.name + ' (másolat)',
+          createdAt: new Date().toISOString(),
+          reviews: [],
+          images: [...imgs(p)],  // ← imgs() szűri a __img__-eket
+          image: null,
+          priceHistory: [...(p.priceHistory || [])]
+        };
+        prods.unshift(copy);
+        save(); filter();
+        toast('Termék másolva! ✓');
+        setTimeout(() => openEdit(copy.id), 300);
+      }
 
     async function delImg(pid, di, e) {
-      e.stopPropagation(); if (!isAdmin || !confirm('Biztosan törlöd a képet?')) return;
-      const p = prods.find(x => x.id === pid); if (!p) return;
-      const arr = imgs(p), rm = arr[arr.length - 1 - parseInt(di)]; if (!rm) return;
-      if (p.images) p.images = p.images.filter(i => i !== rm); if (p.image === rm) p.image = null;
-      await save(); filter(); openView(pid); toast('Kép törölve!');
-    }
+        e.stopPropagation(); if (!isAdmin || !confirm('Biztosan törlöd a képet?')) return;
+        const p = prods.find(x => x.id === pid); if (!p) return;
+        const arr = imgs(p), rm = arr[parseInt(di)]; if (!rm) return;
+        if (shUrl) await shWrite({ action: 'deleteImage', key: `${pid}_${parseInt(di)}` });
+        if (p.images) p.images = p.images.filter(i => i !== rm);
+        if (p.image === rm) p.image = null;
+        await save(); filter(); openView(pid); toast('Kép törölve!');
+      }
 
     // ── PRICE ──
     function openPr(id) {
