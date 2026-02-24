@@ -419,25 +419,29 @@
         if (!shUrl) return;
         setLd(true, 'Mentés...');
         try {
-          if (lite) {
-            await shWrite({ action: 'setAll', categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-            setLd(false); return;
-          }
           // Új képek feltöltése egyenként
-          for (const p of prods) {
-            const im = imgs(p);
-            for (let i = 0; i < im.length; i++) {
-              if (im[i]?.startsWith('data:')) {
-                await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
+          if (!lite) {
+            for (const p of prods) {
+              const im = imgs(p);
+              for (let i = 0; i < im.length; i++) {
+                if (im[i]?.startsWith('data:')) {
+                  await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
+                }
               }
             }
           }
-          // Termékek mentése (képek helyett __img__ placeholder)
+          // Termékek MINDIG mentődnek (lite módban is)
           const psh = prods.map(p => {
             const im = imgs(p);
             return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
           });
-          await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+          await shWrite({
+            action: 'setAll',
+            products: JSON.stringify(psh),
+            categories: JSON.stringify(cats),
+            currencies: JSON.stringify(currs),
+            shopOrder: JSON.stringify(shpOrd)
+          });
         } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
         setLd(false);
       }
