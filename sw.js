@@ -1,5 +1,5 @@
-const CACHE_NAME = 'inventory-v3';
-const ASSETS = ['./index.html', './style.css', './manifest.json'];
+const CACHE_NAME = 'inventory-v4';
+const ASSETS = ['./style.css', './manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -20,5 +20,15 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('script.google.com')) return;
   if (e.request.method !== 'GET') return;
+  
+  // index.html: mindig hálózatról, cache csak fallback
+  if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  
+  // Többi fájl: cache-first
   e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
 });
