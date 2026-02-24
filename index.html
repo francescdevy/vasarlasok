@@ -494,7 +494,7 @@
 </div>`;
           }).join('');
         }
-        
+
     async function restBak(k) {
         if (!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!')) return;
         try {
@@ -815,18 +815,19 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       }
       await save(!hasImg); renderAll(); closeM('mProd');
     }
-    function delProd(id) {
+    async function delProd(id) {
         if (!isAdmin || !confirm('Biztosan törlöd?')) return;
         const p = prods.find(x => x.id === id);
-        if (p) {
+        if (p && shUrl) {
           const count = p._imgCount || imgs(p).length;
           for (let i = 0; i < count; i++) {
-            shWrite({ action: 'deleteImage', key: `${id}_${i}` });
+            await shWrite({ action: 'deleteImage', key: `${id}_${i}` });
           }
         }
         prods = prods.filter(p => p.id !== id);
         lastFilterIds = '';
-        save(); filter(); popDL(); toast('Termék törölve.');
+        await save();
+        filter(); popDL(); toast('Termék törölve.');
       }
 
     function dupProd(id) {
