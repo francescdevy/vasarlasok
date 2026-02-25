@@ -432,19 +432,18 @@
         if (!shUrl) return;
         setLd(true, 'Mentés...');
         try {
-          // Képek feltöltése háttérben, nem várjuk meg
           if (!lite) {
             for (const p of prods) {
               const im = imgs(p);
               for (let i = 0; i < im.length; i++) {
                 if (im[i]?.startsWith('data:')) {
-                  shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] }); // ← nincs await!
+                  await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
+                  // ← azonnal cseréljük, hogy ne töltse fel újra
                   p.images[p.images.indexOf(im[i])] = '__img__';
                 }
               }
             }
           }
-          // setAll azonnal megy
           const psh = prods.map(p => {
             const im = imgs(p);
             return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
@@ -456,7 +455,7 @@
             currencies: JSON.stringify(currs),
             shopOrder: JSON.stringify(shpOrd)
           });
-          saveLoc();
+          saveLoc(); // ← frissített állapot mentése
         } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
         setLd(false);
       }
@@ -803,7 +802,8 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
         const f = e.target.files[0]; if (!f) return;
         _('iuTxt').textContent = 'Tömörítés...';
         const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-        const MAX_DIM = isMobile ? 800 : 1200;
+            const MAX_DIM = isMobile ? 600 : 1200; // 800 helyett 600
+            canvas.toBlob(blob => { ... }, 'image/webp', isMobile ? 0.6 : 0.82);
         const img = new Image();
         const reader = new FileReader();
         reader.onload = evt => { img.src = evt.target.result; };
