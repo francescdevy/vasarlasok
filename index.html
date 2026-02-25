@@ -808,9 +808,8 @@
     function handleImg(e) {
         const f = e.target.files[0]; if (!f) return;
         _('iuTxt').textContent = 'Tömörítés...';
-        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-        const MAX_DIM = isMobile ? 800 : 1200;
-        const quality = isMobile ? 0.75 : 0.82;
+        const MAX_DIM = 1200;
+        const quality = 0.85;
         const img = new Image();
         const reader = new FileReader();
         reader.onload = evt => { img.src = evt.target.result; };
@@ -973,9 +972,8 @@
     function openQImg(pid) { qImgPid = pid; qImgB64 = null; _('qImg').value = ''; _('qPrvA').style.display = 'none'; _('qSave').disabled = true; openM('mImg'); }
     function handleQImg(e) {
         const f = e.target.files[0]; if (!f) return;
-        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-        const MAX_DIM = isMobile ? 600 : 1200;
-        const quality = isMobile ? 0.6 : 0.82;
+        const MAX_DIM = 1200;
+        const quality = 0.85;
         const img = new Image();
         const reader = new FileReader();
         reader.onload = evt => { img.src = evt.target.result; };
