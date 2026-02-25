@@ -658,7 +658,13 @@
       const hist = sh.length > 1 ? `<details style="margin-top:4px" onclick="event.stopPropagation()">
       <summary>📊 Ártörténet (${sh.length})</summary>
       <div class="ph" style="margin-top:4px">
-        ${sh.slice(0, 4).map(h => { const x = [h.country ? cs(h.country) : '', h.shop ? h.shop : '', h.note ? h.note : ''].filter(Boolean).join(' · '); return `<div class="ph-row"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '–'}</span><span class="ph-v">${h.amount} ${h.currency || p.currency}</span>${x ? `<span class="ph-x">${esc(x)}</span>` : '<span class="ph-x"></span>'}</div>`; }).join('')}
+        ${sh.slice(0, 4).map(h => {const x = [h.shop || '', h.note || ''].filter(Boolean).join(' · ');
+          const cnt = h.country ? cs(h.country) : '';
+          return `<div class="ph-row">
+          <span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '–'}</span>
+          <span class="ph-v">${h.amount} ${h.currency || p.currency}</span>
+          <span class="ph-c">${cnt}</span>
+          <span class="ph-x">${esc(x)}</span> </div>`; }).join('')}
         ${sh.length > 4 ? `<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length - 4} bejegyzés</div>` : ''}
       </div></details>`: '';
       const admin = isAdmin ? `<div class="c-foot">
@@ -941,7 +947,14 @@
       <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${p.category ? `<span class="pill">📂 ${esc(p.category)}</span>` : ''}${pills}${p.date ? `<span class="pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}</div>
       ${p.desc ? `<div style="font-size:.87rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
       <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'} ${prCh(p)}</div>
-      ${sh.length > 1 ? `<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h => { const x = [h.country ? cs(h.country) : '', h.shop ? h.shop : '', h.note ? h.note : ''].filter(Boolean).join(' · '); return `<div class="ph-det"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU') : '–'}</span><span class="ph-v">${h.amount} ${h.currency || ''}</span><span class="ph-x">${esc(x)}</span></div>`; }).join('')}</div>` : ''}
+      ${sh.length > 1 ? `<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h => {         const x = [h.shop || '', h.note || ''].filter(Boolean).join(' · ');
+        const cnt = h.country ? cs(h.country) : '';
+        return `<div class="ph-det">
+        <span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU') : '–'}</span>
+        <span class="ph-v">${h.amount} ${h.currency || ''}</span>
+        <span class="ph-c">${cnt}</span>
+        <span class="ph-x">${esc(x)}</span>
+        </div>` : ''}
       <div style="margin:10px 0 5px;font-weight:600;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Értékelések (${revs.length})</div>
       ${avg > 0 ? `<div style="font-size:.95rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</div>` : ''}
       ${revHtml}`;
