@@ -357,40 +357,36 @@
 
     // ── SHEETS ──
     async function shGet(act, key) {
-        if (!shUrl) return null;
-        const url = key ? `${shUrl}?action=${act}&ids=${key}` : `${shUrl}?action=${act}`;
-        const r = await fetch(url);
-        return r.json();
-      }
+      if (!shUrl) return null;
+      const url = key ? `${shUrl}?action=${act}&ids=${key}` : `${shUrl}?action=${act}`;
+      const r = await fetch(url);
+      return r.json();
+    }
     async function shWrite(body) {
         try {
-          toast('Küldés: ' + body.action, 'ok');
           await fetch(shUrl, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'text/plain' },
             mode: 'no-cors'
           });
-          toast('Elküldve: ' + body.action, 'ok');
-        } catch (e) {
-          toast('HIBA: ' + e.message, 'err');
-        }
+        } catch (e) { }
       }
     async function moveImg(pid, idx, dir, e) {
-        e.stopPropagation();
-        const p = prods.find(x => x.id === pid); if (!p) return;
-        const arr = imgs(p);
-        const newIdx = idx + dir;
-        if (newIdx < 0 || newIdx >= arr.length) return;
-        [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-        p.images = arr;
-        for (let i = 0; i < arr.length; i++) {
-          await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: arr[i] });
-        }
-        const psh = prods.map(q => { const qm = imgs(q); return { ...q, image: null, images: qm.map(() => '__img__'), _imgCount: qm.length }; });
-        await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-        saveLoc(); filter(); openView(pid); toast('Sorrend frissítve!');
+      e.stopPropagation();
+      const p = prods.find(x => x.id === pid); if (!p) return;
+      const arr = imgs(p);
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= arr.length) return;
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      p.images = arr;
+      for (let i = 0; i < arr.length; i++) {
+        await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: arr[i] });
       }
+      const psh = prods.map(q => { const qm = imgs(q); return { ...q, image: null, images: qm.map(() => '__img__'), _imgCount: qm.length }; });
+      await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+      saveLoc(); filter(); openView(pid); toast('Sorrend frissítve!');
+    }
 
     // ── STORAGE ──
     function _(id) { return document.getElementById(id); }
@@ -398,135 +394,134 @@
     function saveLoc() { localStorage.setItem('products', JSON.stringify(prods)); localStorage.setItem('categories', JSON.stringify(cats)); localStorage.setItem('currencies', JSON.stringify(currs)); localStorage.setItem('shopOrder', JSON.stringify(shpOrd)); }
 
     async function loadData() {
-        ['products', 'categories', 'currencies', 'shopOrder'].forEach((k, i) => {
-          try { const v = localStorage.getItem(k); if (v) { [prods, cats, currs, shpOrd][i] = JSON.parse(v); } } catch (e) { }
-        });
-        if (!shUrl) return;
-        setLd(true, 'Betöltés...');
-        try {
-          const d = await shGet('getAll');
-          if (d?.ok) {
-            if (d.products) {
-              const sp = JSON.parse(d.products);
-              const allImgs = d.images || {};
-              prods = sp.map(p => {
-                const fetched = [];
-                for (let i = 0; i < (p._imgCount || 0); i++) {
-                  const v = allImgs[`${p.id}_${i}`];
-                  if (v) fetched.push(v);
-                }
-                return { ...p, image: null, images: fetched };
-              });
-              saveLoc(); renderAll();
-            }
-            if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
-            if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
-            if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
+      ['products', 'categories', 'currencies', 'shopOrder'].forEach((k, i) => {
+        try { const v = localStorage.getItem(k); if (v) { [prods, cats, currs, shpOrd][i] = JSON.parse(v); } } catch (e) { }
+      });
+      if (!shUrl) return;
+      setLd(true, 'Betöltés...');
+      try {
+        const d = await shGet('getAll');
+        if (d?.ok) {
+          if (d.products) {
+            const sp = JSON.parse(d.products);
+            const allImgs = d.images || {};
+            prods = sp.map(p => {
+              const fetched = [];
+              for (let i = 0; i < (p._imgCount || 0); i++) {
+                const v = allImgs[`${p.id}_${i}`];
+                if (v) fetched.push(v);
+              }
+              return { ...p, image: null, images: fetched };
+            });
+            saveLoc(); renderAll();
           }
-        } catch (e) { toast('Betöltési hiba – lokális adatok betöltve', 'err'); }
-        setLd(false);
-      }
+          if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
+          if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
+          if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
+        }
+      } catch (e) { toast('Betöltési hiba – lokális adatok betöltve', 'err'); }
+      setLd(false);
+    }
 
     async function save(lite = false) {
-        mkBak(); saveLoc();
-        if (!shUrl) return;
-        setLd(true, 'Mentés...');
-        try {
-          if (!lite) {
-            for (const p of prods) {
-              const im = imgs(p);
-              for (let i = 0; i < im.length; i++) {
-                if (im[i]?.startsWith('data:')) {
-                  await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
-                  p.images[p.images.indexOf(im[i])] = '__img__';
-                }
+      mkBak(); saveLoc();
+      if (!shUrl) return;
+      setLd(true, 'Mentés...');
+      try {
+        if (!lite) {
+          for (const p of prods) {
+            const im = imgs(p);
+            for (let i = 0; i < im.length; i++) {
+              if (im[i]?.startsWith('data:')) {
+                await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
               }
             }
           }
-          const psh = prods.map(p => {
-            const im = imgs(p);
-            return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
-          });
-          await shWrite({
-            action: 'setAll',
-            products: JSON.stringify(psh),
-            categories: JSON.stringify(cats),
-            currencies: JSON.stringify(currs),
-            shopOrder: JSON.stringify(shpOrd)
-          });
-        } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
-        setLd(false);
-      }
-
-    async function saveMeta() {
-        saveLoc(); mkBak();
-        if (!shUrl) return;
+        }
         const psh = prods.map(p => {
           const im = imgs(p);
           return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
         });
-        shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-      }
+        await shWrite({
+          action: 'setAll',
+          products: JSON.stringify(psh),
+          categories: JSON.stringify(cats),
+          currencies: JSON.stringify(currs),
+          shopOrder: JSON.stringify(shpOrd)
+        });
+      } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
+      setLd(false);
+    }
+
+    async function saveMeta() {
+      saveLoc(); mkBak();
+      if (!shUrl) return;
+      const psh = prods.map(p => {
+        const im = imgs(p);
+        return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
+      });
+      shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+    }
 
     // ── BACKUP ──
     function mkBak() {
+      try {
+        const pni = prods.map(p => ({ ...p, image: null, images: [] }));
+        const prodNames = prods.map(p => p.name);
+        localStorage.setItem('bak_' + Date.now(), JSON.stringify({ prods: pni, cats, currs, shpOrd, ts: new Date().toISOString(), prodNames }));
+        Object.keys(localStorage).filter(k => k.startsWith('bak_')).sort().reverse().slice(5).forEach(k => localStorage.removeItem(k));
+      } catch (e) { }
+    }
+
+    function getBaks() {
+      return Object.keys(localStorage).filter(k => k.startsWith('bak_')).sort().reverse().map(k => {
         try {
-          const pni = prods.map(p => ({ ...p, image: null, images: [] }));
-          const prodNames = prods.map(p => p.name);
-          localStorage.setItem('bak_' + Date.now(), JSON.stringify({ prods: pni, cats, currs, shpOrd, ts: new Date().toISOString(), prodNames }));
-          Object.keys(localStorage).filter(k => k.startsWith('bak_')).sort().reverse().slice(5).forEach(k => localStorage.removeItem(k));
-        } catch (e) { }
-      }
+          const d = JSON.parse(localStorage.getItem(k));
+          return { key: k, ts: d.ts, n: d.prods?.length || 0, cats: d.cats?.length || 0, currs: d.currs?.length || 0, prodNames: d.prodNames || [] };
+        } catch (e) { return null; }
+      }).filter(Boolean);
+    }
 
-      function getBaks() {
-        return Object.keys(localStorage).filter(k => k.startsWith('bak_')).sort().reverse().map(k => {
-          try {
-            const d = JSON.parse(localStorage.getItem(k));
-            return { key: k, ts: d.ts, n: d.prods?.length || 0, cats: d.cats?.length || 0, currs: d.currs?.length || 0, prodNames: d.prodNames || [] };
-          } catch (e) { return null; }
-        }).filter(Boolean);
-      }
-
-      function renderBakList() {
-          const baks = getBaks(), el = _('bakList');
-          if (!baks.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup</div>'; return; }
-          el.innerHTML = baks.map((b, i) => {
-            const ds = new Date(b.ts).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            const label = i === 0 ? '(legfrissebb)' : i === 1 ? '(előző)' : '';
-            const names = b.prodNames?.length ? b.prodNames.slice(0, 4).join(', ') + (b.prodNames.length > 4 ? ` +${b.prodNames.length - 4}` : '') : `${b.n} termék`;
-            return `<div style="display:flex;align-items:center;gap:10px;padding:11px;background:var(--cream);border-radius:8px">
-  <div style="flex:1">
-    <div style="font-weight:600;font-size:.84rem">${ds} ${label}</div>
-    <div style="font-size:.74rem;color:var(--muted)">${names} • ${b.cats || 0} kategória • ${b.currs || 0} pénznem</div>
-  </div>
-  <button class="btn bp bsm" onclick="restBak('${b.key}')">Visszaállít</button>
-</div>`;
-          }).join('');
-        }
+    function renderBakList() {
+      const baks = getBaks(), el = _('bakList');
+      if (!baks.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Még nincs backup</div>'; return; }
+      el.innerHTML = baks.map((b, i) => {
+        const ds = new Date(b.ts).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const label = i === 0 ? '(legfrissebb)' : i === 1 ? '(előző)' : '';
+        const names = b.prodNames?.length ? b.prodNames.slice(0, 4).join(', ') + (b.prodNames.length > 4 ? ` +${b.prodNames.length - 4}` : '') : `${b.n} termék`;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:11px;background:var(--cream);border-radius:8px">
+    <div style="flex:1">
+      <div style="font-weight:600;font-size:.84rem">${ds} ${label}</div>
+      <div style="font-size:.74rem;color:var(--muted)">${names} • ${b.cats || 0} kategória • ${b.currs || 0} pénznem</div>
+    </div>
+    <button class="btn bp bsm" onclick="restBak('${b.key}')">Visszaállít</button>
+  </div>`;
+      }).join('');
+    }
 
     async function restBak(k) {
-        if (!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!')) return;
-        try {
-          const b = JSON.parse(localStorage.getItem(k));
-          prods = b.prods || []; cats = b.cats || []; currs = b.currs || []; shpOrd = b.shpOrd || [];
-          if (shUrl) {
-            const d = await shGet('getAll');
-            if (d?.images) {
-              // _imgCount beállítása + setAll küldése helyes adattal
-              prods = prods.map(p => {
-                const count = Object.keys(d.images).filter(imgKey => imgKey.startsWith(p.id + '_') && !isNaN(imgKey.replace(p.id + '_', ''))).length || (d.images[p.id] ? 1 : 0);
-                return { ...p, _imgCount: count, image: null, images: Array(count).fill('__img__') };
-              });
-              await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-            }
+      if (!confirm('Biztosan visszaállítod? Az aktuális adatok elvesznek!')) return;
+      try {
+        const b = JSON.parse(localStorage.getItem(k));
+        prods = b.prods || []; cats = b.cats || []; currs = b.currs || []; shpOrd = b.shpOrd || [];
+        if (shUrl) {
+          const d = await shGet('getAll');
+          if (d?.images) {
+            // _imgCount beállítása + setAll küldése helyes adattal
+            prods = prods.map(p => {
+              const count = Object.keys(d.images).filter(imgKey => imgKey.startsWith(p.id + '_') && !isNaN(imgKey.replace(p.id + '_', ''))).length || (d.images[p.id] ? 1 : 0);
+              return { ...p, _imgCount: count, image: null, images: Array(count).fill('__img__') };
+            });
+            await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
           }
-          saveLoc();
-          localStorage.removeItem('products');
-          await loadData();
-          toast('Backup visszaállítva!');
-          closeM('mBak');
-        } catch (e) { toast('Visszaállítási hiba', 'err'); }
-      }
+        }
+        saveLoc();
+        localStorage.removeItem('products');
+        await loadData();
+        toast('Backup visszaállítva!');
+        closeM('mBak');
+      } catch (e) { toast('Visszaállítási hiba', 'err'); }
+    }
 
     // ── TAGS ──
     function renderTags(t) {
@@ -651,30 +646,30 @@
       const pills = [...aS].map(s => `<span class="pill">🏪 ${esc(s)}</span>`).join('') + [...aC].map(c => `<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
       const sh = [...(p.priceHistory || [])].sort((a, b) => (b.date || '') > (a.date || '') ? 1 : -1);
       const hist = sh.length > 1 ? `<details style="margin-top:4px" onclick="event.stopPropagation()">
-    <summary>📊 Ártörténet (${sh.length})</summary>
-    <div class="ph" style="margin-top:4px">
-      ${sh.slice(0, 4).map(h => { const x = [h.country ? cs(h.country) : '', h.shop ? h.shop : '', h.note ? h.note : ''].filter(Boolean).join(' · '); return `<div class="ph-row"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '–'}</span><span class="ph-v">${h.amount} ${h.currency || p.currency}</span>${x ? `<span class="ph-x">${esc(x)}</span>` : '<span class="ph-x"></span>'}</div>`; }).join('')}
-      ${sh.length > 4 ? `<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length - 4} bejegyzés</div>` : ''}
-    </div></details>`: '';
+      <summary>📊 Ártörténet (${sh.length})</summary>
+      <div class="ph" style="margin-top:4px">
+        ${sh.slice(0, 4).map(h => { const x = [h.country ? cs(h.country) : '', h.shop ? h.shop : '', h.note ? h.note : ''].filter(Boolean).join(' · '); return `<div class="ph-row"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) : '–'}</span><span class="ph-v">${h.amount} ${h.currency || p.currency}</span>${x ? `<span class="ph-x">${esc(x)}</span>` : '<span class="ph-x"></span>'}</div>`; }).join('')}
+        ${sh.length > 4 ? `<div style="text-align:center;padding:5px;color:var(--muted);font-size:.73rem">+ még ${sh.length - 4} bejegyzés</div>` : ''}
+      </div></details>`: '';
       const admin = isAdmin ? `<div class="c-foot">
-  <button class="bi bsm" onclick="event.stopPropagation();openEdit('${p.id}')">✏️</button>
-  <button class="bi bsm" onclick="event.stopPropagation();dupProd('${p.id}')">📋</button>
-  <button class="btn br bsm" onclick="event.stopPropagation();delProd('${p.id}')">Törlés</button>
-</div>`: '';
+    <button class="bi bsm" onclick="event.stopPropagation();openEdit('${p.id}')">✏️</button>
+    <button class="bi bsm" onclick="event.stopPropagation();dupProd('${p.id}')">📋</button>
+    <button class="btn br bsm" onclick="event.stopPropagation();delProd('${p.id}')">Törlés</button>
+  </div>`: '';
       return `<div class="card" data-id="${p.id}">
-    <div class="c-img-wrap">
-      ${li ? `<img class="c-img c-ic" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-src="${li}" alt="${esc(p.name)}" loading="lazy" data-pid="${p.id}">` : `<div class="c-ph" data-pid="${p.id}">🛍️</div>`}
-      ${p.category ? `<span class="c-cat">${esc(p.category)}</span>` : ''}
-      ${im.length > 1 ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.69rem;pointer-events:none">📷 ${im.length}</div>` : ''}
-      ${avg > 0 ? `<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.77rem;display:flex;align-items:center;gap:4px"><span style="color:var(--star)">${'★'.repeat(Math.round(avg))}</span> <span style="color:rgba(255,255,255,.8)">${avg.toFixed(1)}</span></div>` : ''}
-    </div>
-    <div class="c-body" onclick="openView('${p.id}')">
-      <div class="c-name">${esc(p.name)}</div>
-${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
-      <div class="c-meta">${pills}</div>
-      <div class="c-pr-row"><div class="c-pr">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'}</div>${pch}</div>
-      ${hist}
-    </div>${admin}</div>`;
+      <div class="c-img-wrap">
+        ${li ? `<img class="c-img c-ic" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" data-src="${li}" alt="${esc(p.name)}" loading="lazy" data-pid="${p.id}">` : `<div class="c-ph" data-pid="${p.id}">🛍️</div>`}
+        ${p.category ? `<span class="c-cat">${esc(p.category)}</span>` : ''}
+        ${im.length > 1 ? `<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.69rem;pointer-events:none">📷 ${im.length}</div>` : ''}
+        ${avg > 0 ? `<div style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;padding:3px 8px;border-radius:12px;font-size:.77rem;display:flex;align-items:center;gap:4px"><span style="color:var(--star)">${'★'.repeat(Math.round(avg))}</span> <span style="color:rgba(255,255,255,.8)">${avg.toFixed(1)}</span></div>` : ''}
+      </div>
+      <div class="c-body" onclick="openView('${p.id}')">
+        <div class="c-name">${esc(p.name)}</div>
+  ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
+        <div class="c-meta">${pills}</div>
+        <div class="c-pr-row"><div class="c-pr">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'}</div>${pch}</div>
+        ${hist}
+      </div>${admin}</div>`;
     }
 
     function latPr(p) {
@@ -704,50 +699,50 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
     function adminClick() { if (isAdmin) { isAdmin = false; sessionStorage.removeItem('isAdmin'); updAdmin(); return; } openM('mLogin'); }
     function doLogin() { const pw = _('aPw').value; if (pw === ADMIN_PW) { isAdmin = true; sessionStorage.setItem('isAdmin', 'true'); closeM('mLogin'); _('aPw').value = ''; _('aErr').style.display = 'none'; updAdmin(); toast('Admin mód aktív! ✓'); } else _('aErr').style.display = 'block'; }
     function updAdmin() {
-        const bar = _('adminBar');
-        if (isAdmin) { bar.classList.add('on'); } else { bar.classList.remove('on'); }
-        lastFilterIds = '';
-        filter();
-      }
+      const bar = _('adminBar');
+      if (isAdmin) { bar.classList.add('on'); } else { bar.classList.remove('on'); }
+      lastFilterIds = '';
+      filter();
+    }
     function updShSt() {
       const el = _('shSt'); if (!el) return;
       if (shUrl) { el.style.cssText = 'background:#e6f5ec;color:var(--green)'; el.innerHTML = '✓ Google Sheets összekötve'; _('btnSheets').style.background = 'rgba(22,163,74,.3)'; }
       else { el.style.cssText = 'background:#fef3c7;color:#92400e'; el.innerHTML = '⚠ Nincs Sheets kapcsolat'; _('btnSheets').style.background = 'rgba(255,255,255,.15)'; }
     }
     async function saveSh() {
-        const u = _('shUrl').value.trim();
-        if (!u || !u.includes('script.google.com')) { toast('Érvénytelen URL', 'err'); return; }
-        setLd(true, 'Kapcsolat tesztelése...');
-        try {
-          const d = await (await fetch(`${u}?action=getAll`)).json();
-          if (d.ok !== undefined) {
-            shUrl = u; localStorage.setItem('sheetsApiUrl', u);
-            if (!d.products && prods.length > 0) {
-              await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-              toast('Kapcsolódva! Adatok feltöltve.');
-            } else {
-              if (d.products) {
-                const sp = JSON.parse(d.products);
-                const allImgs = d.images || {};
-                prods = sp.map(p => {
-                  const fetched = [];
-                  for (let i = 0; i < (p._imgCount || 0); i++) {
-                    const v = allImgs[`${p.id}_${i}`];
-                    if (v) fetched.push(v);
-                  }
-                  return { ...p, image: null, images: fetched };
-                });
-              }
-              if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
-              if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
-              if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
-              renderAll(); toast('Kapcsolódva! Sheets adatok betöltve.');
+      const u = _('shUrl').value.trim();
+      if (!u || !u.includes('script.google.com')) { toast('Érvénytelen URL', 'err'); return; }
+      setLd(true, 'Kapcsolat tesztelése...');
+      try {
+        const d = await (await fetch(`${u}?action=getAll`)).json();
+        if (d.ok !== undefined) {
+          shUrl = u; localStorage.setItem('sheetsApiUrl', u);
+          if (!d.products && prods.length > 0) {
+            await shWrite({ action: 'setAll', products: JSON.stringify(prods), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+            toast('Kapcsolódva! Adatok feltöltve.');
+          } else {
+            if (d.products) {
+              const sp = JSON.parse(d.products);
+              const allImgs = d.images || {};
+              prods = sp.map(p => {
+                const fetched = [];
+                for (let i = 0; i < (p._imgCount || 0); i++) {
+                  const v = allImgs[`${p.id}_${i}`];
+                  if (v) fetched.push(v);
+                }
+                return { ...p, image: null, images: fetched };
+              });
             }
-            updShSt(); closeM('mSheets');
-          } else toast('Szerver hiba', 'err');
-        } catch (e) { toast('Kapcsolódási hiba', 'err'); }
-        setLd(false);
-      }
+            if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
+            if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
+            if (d.shopOrder) try { shpOrd = JSON.parse(d.shopOrder); } catch (e) { }
+            renderAll(); toast('Kapcsolódva! Sheets adatok betöltve.');
+          }
+          updShSt(); closeM('mSheets');
+        } else toast('Szerver hiba', 'err');
+      } catch (e) { toast('Kapcsolódási hiba', 'err'); }
+      setLd(false);
+    }
     function clearSh() { shUrl = ''; localStorage.removeItem('sheetsApiUrl'); _('shUrl').value = ''; updShSt(); toast('Kapcsolat törölve'); closeM('mSheets'); }
 
     // ── PRODUCT ADD/EDIT ──
@@ -796,8 +791,9 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       });
     }
 
-    function handleQImg(e) {
+    function handleImg(e) {
         const f = e.target.files[0]; if (!f) return;
+        _('iuTxt').textContent = 'Tömörítés...';
         const isMobile = /Mobi|Android/i.test(navigator.userAgent);
         const MAX_DIM = isMobile ? 600 : 1200;
         const quality = isMobile ? 0.6 : 0.82;
@@ -812,7 +808,7 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
           canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
           canvas.toBlob(blob => {
             const r2 = new FileReader();
-            r2.onload = () => { qImgB64 = r2.result; _('qPrv').src = r2.result; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; };
+            r2.onload = () => { imgPend = r2.result; _('iuPrev').src = r2.result; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; };
             r2.readAsDataURL(blob);
           }, 'image/webp', quality);
         };
@@ -844,48 +840,48 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       await save(!hasImg); renderAll(); closeM('mProd');
     }
     async function delProd(id) {
-        if (!isAdmin || !confirm('Biztosan törlöd?')) return;
-        const p = prods.find(x => x.id === id);
-        prods = prods.filter(x => x.id !== id);
-        lastFilterIds = '';
-        filter(); popDL(); toast('Termék törölve.');
-        // Háttérben töröl és ment – nem várja meg
-        if (p && shUrl) {
-          const count = p._imgCount || imgs(p).length;
-          const delPromises = [];
-          for (let i = 0; i < count; i++) delPromises.push(shWrite({ action: 'deleteImage', key: `${id}_${i}` }));
-          await Promise.all(delPromises);
-        }
-        await save();
+      if (!isAdmin || !confirm('Biztosan törlöd?')) return;
+      const p = prods.find(x => x.id === id);
+      prods = prods.filter(x => x.id !== id);
+      lastFilterIds = '';
+      filter(); popDL(); toast('Termék törölve.');
+      // Háttérben töröl és ment – nem várja meg
+      if (p && shUrl) {
+        const count = p._imgCount || imgs(p).length;
+        const delPromises = [];
+        for (let i = 0; i < count; i++) delPromises.push(shWrite({ action: 'deleteImage', key: `${id}_${i}` }));
+        await Promise.all(delPromises);
       }
+      await save();
+    }
 
     function dupProd(id) {
-        const p = prods.find(x => x.id === id); if (!p) return;
-        const copy = {
-          ...p,
-          id: 'p' + Date.now(),
-          name: p.name + ' (másolat)',
-          createdAt: new Date().toISOString(),
-          reviews: [],
-          images: [...imgs(p)],  // ← imgs() szűri a __img__-eket
-          image: null,
-          priceHistory: [...(p.priceHistory || [])]
-        };
-        prods.unshift(copy);
-        save(); filter();
-        toast('Termék másolva! ✓');
-        setTimeout(() => openEdit(copy.id), 300);
-      }
+      const p = prods.find(x => x.id === id); if (!p) return;
+      const copy = {
+        ...p,
+        id: 'p' + Date.now(),
+        name: p.name + ' (másolat)',
+        createdAt: new Date().toISOString(),
+        reviews: [],
+        images: [...imgs(p)],  // ← imgs() szűri a __img__-eket
+        image: null,
+        priceHistory: [...(p.priceHistory || [])]
+      };
+      prods.unshift(copy);
+      save(); filter();
+      toast('Termék másolva! ✓');
+      setTimeout(() => openEdit(copy.id), 300);
+    }
 
     async function delImg(pid, di, e) {
-        e.stopPropagation(); if (!isAdmin || !confirm('Biztosan törlöd a képet?')) return;
-        const p = prods.find(x => x.id === pid); if (!p) return;
-        const arr = imgs(p), rm = arr[parseInt(di)]; if (!rm) return;
-        if (shUrl) await shWrite({ action: 'deleteImage', key: `${pid}_${parseInt(di)}` });
-        if (p.images) p.images = p.images.filter(i => i !== rm);
-        if (p.image === rm) p.image = null;
-        await save(); filter(); openView(pid); toast('Kép törölve!');
-      }
+      e.stopPropagation(); if (!isAdmin || !confirm('Biztosan törlöd a képet?')) return;
+      const p = prods.find(x => x.id === pid); if (!p) return;
+      const arr = imgs(p), rm = arr[parseInt(di)]; if (!rm) return;
+      if (shUrl) await shWrite({ action: 'deleteImage', key: `${pid}_${parseInt(di)}` });
+      if (p.images) p.images = p.images.filter(i => i !== rm);
+      if (p.image === rm) p.image = null;
+      await save(); filter(); openView(pid); toast('Kép törölve!');
+    }
 
     // ── PRICE ──
     function openPr(id) {
@@ -910,7 +906,7 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       const avg = avgR(p), revs = [...(p.reviews || [])];
       if (p.rating > 0) revs.unshift({ name: p.uploader || 'Feltöltő', rating: p.rating, note: p.note, date: p.date });
       const revHtml = revs.length ? revs.map(r => `<div style="padding:7px 0;border-bottom:1px solid var(--bd)"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-weight:600;font-size:.82rem">👤 ${esc(r.name || 'Névtelen')}</span>${r.date ? `<span style="font-size:.69rem;color:var(--muted)">• ${new Date(r.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}</span>` : ''}
-<span style="color:var(--star);font-size:.82rem;margin-left:auto">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span></div>${r.note ? `<div style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">"${esc(r.note)}"</div>` : ''}</div>`).join('')
+  <span style="color:var(--star);font-size:.82rem;margin-left:auto">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span></div>${r.note ? `<div style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">"${esc(r.note)}"</div>` : ''}</div>`).join('')
         : '<div style="color:var(--muted);font-size:.81rem">Még nincs értékelés.</div>';
       const lp = latPr(p);
       const pc = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
@@ -919,28 +915,28 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       const pills = [...aS].map(s => `<span class="pill">🏪 ${esc(s)}</span>`).join('') + [...aC].map(c => `<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
       const im = imgs(p);
       const gal = im.length ? `<div class="gallery" data-id="${p.id}" style="height:270px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
-    <div class="g-track">${im.map((img, i) => `<div class="g-slide"><img src="${img}" style="width:100%;height:270px;object-fit:cover;cursor:zoom-in" class="g-ic" data-i="${i}" data-pid="${p.id}">${isAdmin ? `
-  <div style="position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px">
-    ${i > 0 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},-1,event)">◀</button>` : ''}
-    ${i < im.length - 1 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},1,event)">▶</button>` : ''}
-    <button class="btn br bsm" onclick="delImg('${p.id}','${i}',event)">🗑️</button>
-  </div>`: ''}</div>`).join('')}</div>
-    ${im.length > 1 ? `<div class="g-dots">${im.map((_, i) => `<div class="g-dot${i === 0 ? ' on' : ''}"></div>`).join('')}</div><button onclick="gNav('${p.id}','p',event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button><button onclick="gNav('${p.id}','n',event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>` : ''}
-  </div>`: '';
+      <div class="g-track">${im.map((img, i) => `<div class="g-slide"><img src="${img}" style="width:100%;height:270px;object-fit:cover;cursor:zoom-in" class="g-ic" data-i="${i}" data-pid="${p.id}">${isAdmin ? `
+    <div style="position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px">
+      ${i > 0 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},-1,event)">◀</button>` : ''}
+      ${i < im.length - 1 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},1,event)">▶</button>` : ''}
+      <button class="btn br bsm" onclick="delImg('${p.id}','${i}',event)">🗑️</button>
+    </div>`: ''}</div>`).join('')}</div>
+      ${im.length > 1 ? `<div class="g-dots">${im.map((_, i) => `<div class="g-dot${i === 0 ? ' on' : ''}"></div>`).join('')}</div><button onclick="gNav('${p.id}','p',event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button><button onclick="gNav('${p.id}','n',event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>` : ''}
+    </div>`: '';
       const sh = [...(p.priceHistory || [])].sort((a, b) => (b.date || '') > (a.date || '') ? 1 : -1);
       _('mViewB').innerHTML = `${gal}
-    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${p.category ? `<span class="pill">📂 ${esc(p.category)}</span>` : ''}${pills}${p.date ? `<span class="pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}</div>
-    ${p.desc ? `<div style="font-size:.87rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
-    <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'} ${prCh(p)}</div>
-    ${sh.length > 1 ? `<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h => { const x = [h.country ? cs(h.country) : '', h.shop ? h.shop : '', h.note ? h.note : ''].filter(Boolean).join(' · '); return `<div class="ph-det"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU') : '–'}</span><span class="ph-v">${h.amount} ${h.currency || ''}</span><span class="ph-x">${esc(x)}</span></div>`; }).join('')}</div>` : ''}
-    <div style="margin:10px 0 5px;font-weight:600;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Értékelések (${revs.length})</div>
-    ${avg > 0 ? `<div style="font-size:.95rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</div>` : ''}
-    ${revHtml}`;
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${p.category ? `<span class="pill">📂 ${esc(p.category)}</span>` : ''}${pills}${p.date ? `<span class="pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}</div>
+      ${p.desc ? `<div style="font-size:.87rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
+      <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'} ${prCh(p)}</div>
+      ${sh.length > 1 ? `<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h => { const x = [h.country ? cs(h.country) : '', h.shop ? h.shop : '', h.note ? h.note : ''].filter(Boolean).join(' · '); return `<div class="ph-det"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU') : '–'}</span><span class="ph-v">${h.amount} ${h.currency || ''}</span><span class="ph-x">${esc(x)}</span></div>`; }).join('')}</div>` : ''}
+      <div style="margin:10px 0 5px;font-weight:600;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Értékelések (${revs.length})</div>
+      ${avg > 0 ? `<div style="font-size:.95rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</div>` : ''}
+      ${revHtml}`;
       _('mViewF').innerHTML = `
-    <button class="btn bp" onclick="closeM('mView');openQImg('${id}')">📷 Kép</button>
-    <button class="btn bp" onclick="closeM('mView');openRevM('${id}')">✍ Értékelés</button>
-    <button class="btn bp" onclick="closeM('mView');openPr('${id}')">💰 Ár</button>
-    <button class="btn bg" onclick="closeM('mView')">Bezár</button>`;
+      <button class="btn bp" onclick="closeM('mView');openQImg('${id}')">📷 Kép</button>
+      <button class="btn bp" onclick="closeM('mView');openRevM('${id}')">✍ Értékelés</button>
+      <button class="btn bp" onclick="closeM('mView');openPr('${id}')">💰 Ár</button>
+      <button class="btn bg" onclick="closeM('mView')">Bezár</button>`;
       openM('mView'); setTimeout(initGallery, 80);
     }
 
@@ -961,9 +957,8 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
 
     // ── QUICK IMAGE ──
     function openQImg(pid) { qImgPid = pid; qImgB64 = null; _('qImg').value = ''; _('qPrvA').style.display = 'none'; _('qSave').disabled = true; openM('mImg'); }
-    function handleImg(e) {
+    function handleQImg(e) {
         const f = e.target.files[0]; if (!f) return;
-        _('iuTxt').textContent = 'Tömörítés...';
         const isMobile = /Mobi|Android/i.test(navigator.userAgent);
         const MAX_DIM = isMobile ? 600 : 1200;
         const quality = isMobile ? 0.6 : 0.82;
@@ -978,7 +973,7 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
           canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
           canvas.toBlob(blob => {
             const r2 = new FileReader();
-            r2.onload = () => { imgPend = r2.result; _('iuPrev').src = r2.result; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; };
+            r2.onload = () => { qImgB64 = r2.result; _('qPrv').src = r2.result; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; };
             r2.readAsDataURL(blob);
           }, 'image/webp', quality);
         };
@@ -1309,5 +1304,5 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
     init();
   </script>
 </body>
-
+  
 </html>
