@@ -920,53 +920,50 @@
 
     // ── VIEW ──
     function openView(id) {
-      const p = prods.find(x => x.id === id); if (!p) return;
-      revPid = id; _('mViewT').textContent = p.name;
-      const avg = avgR(p), revs = [...(p.reviews || [])];
-      if (p.rating > 0) revs.unshift({ name: p.uploader || 'Feltöltő', rating: p.rating, note: p.note, date: p.date });
-      const revHtml = revs.length ? revs.map(r => `<div style="padding:7px 0;border-bottom:1px solid var(--bd)"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-weight:600;font-size:.82rem">👤 ${esc(r.name || 'Névtelen')}</span>${r.date ? `<span style="font-size:.69rem;color:var(--muted)">• ${new Date(r.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}</span>` : ''}
-  <span style="color:var(--star);font-size:.82rem;margin-left:auto">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span></div>${r.note ? `<div style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">"${esc(r.note)}"</div>` : ''}</div>`).join('')
-        : '<div style="color:var(--muted);font-size:.81rem">Még nincs értékelés.</div>';
-      const lp = latPr(p);
-      const pc = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
-      const ps = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
-      const aS = new Set(ps), aC = new Set(pc); (p.priceHistory || []).forEach(h => { if (h.shop) aS.add(h.shop); if (h.country) aC.add(h.country); });
-      const pills = [...aS].map(s => `<span class="pill">🏪 ${esc(s)}</span>`).join('') + [...aC].map(c => `<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
-      const im = imgs(p);
-      const gal = im.length ? `<div class="gallery" data-id="${p.id}" style="height:270px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
-      <div class="g-track">${im.map((img, i) => `<div class="g-slide"><img src="${img}" style="width:100%;height:270px;object-fit:cover;cursor:zoom-in" class="g-ic" data-i="${i}" data-pid="${p.id}">${isAdmin ? `
-    <div style="position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px">
-      ${i > 0 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},-1,event)">◀</button>` : ''}
-      ${i < im.length - 1 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},1,event)">▶</button>` : ''}
-      <button class="btn br bsm" onclick="delImg('${p.id}','${i}',event)">🗑️</button>
-    </div>`: ''}</div>`).join('')}</div>
-      ${im.length > 1 ? `<div class="g-dots">${im.map((_, i) => `<div class="g-dot${i === 0 ? ' on' : ''}"></div>`).join('')}</div><button onclick="gNav('${p.id}','p',event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button><button onclick="gNav('${p.id}','n',event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>` : ''}
-    </div>`: '';
-      const sh = [...(p.priceHistory || [])].sort((a, b) => (b.date || '') > (a.date || '') ? 1 : -1);
-      _('mViewB').innerHTML = `${gal}
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${p.category ? `<span class="pill">📂 ${esc(p.category)}</span>` : ''}${pills}${p.date ? `<span class="pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}</div>
-      ${p.desc ? `<div style="font-size:.87rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
-      <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'} ${prCh(p)}</div>
-      ${sh.length > 1 ? `<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h => {         const x = [h.shop || '', h.note || ''].filter(Boolean).join(' · ');
-        const cnt = h.country ? cs(h.country) : '';
-        return `<div class="ph-det">
-        <span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU') : '–'}</span>
-        <span class="ph-v">${h.amount} ${h.currency || ''}</span>
-        <span class="ph-c">${cnt}</span>
-        <span class="ph-x">${esc(x)}</span>
-        </div>` : ''}
-      <div style="margin:10px 0 5px;font-weight:600;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Értékelések (${revs.length})</div>
-      ${avg > 0 ? `<div style="font-size:.95rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</div>` : ''}
-      ${revHtml}`;
-      _('mViewF').innerHTML = `
-      <button class="btn bp" onclick="closeM('mView');openQImg('${id}')">📷 Kép</button>
-      <button class="btn bp" onclick="closeM('mView');openRevM('${id}')">✍ Értékelés</button>
-      <button class="btn bp" onclick="closeM('mView');openPr('${id}')">💰 Ár</button>
-      <button class="btn bg" onclick="closeM('mView')">Bezár</button>`;
-      openM('mView'); setTimeout(initGallery, 80);
-    }
-
-    function gNav(id, dir, e) {
+        const p = prods.find(x => x.id === id); if (!p) return;
+        revPid = id; _('mViewT').textContent = p.name;
+        const avg = avgR(p), revs = [...(p.reviews || [])];
+        if (p.rating > 0) revs.unshift({ name: p.uploader || 'Feltöltő', rating: p.rating, note: p.note, date: p.date });
+        const revHtml = revs.length ? revs.map(r => `<div style="padding:7px 0;border-bottom:1px solid var(--bd)"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-weight:600;font-size:.82rem">👤 ${esc(r.name || 'Névtelen')}</span>${r.date ? `<span style="font-size:.69rem;color:var(--muted)">• ${new Date(r.date).toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}</span>` : ''}
+<span style="color:var(--star);font-size:.82rem;margin-left:auto">${'★'.repeat(r.rating || 0)}${'☆'.repeat(5 - (r.rating || 0))}</span></div>${r.note ? `<div style="font-size:.78rem;color:var(--muted);margin-top:4px;font-style:italic">"${esc(r.note)}"</div>` : ''}</div>`).join('')
+          : '<div style="color:var(--muted);font-size:.81rem">Még nincs értékelés.</div>';
+        const lp = latPr(p);
+        const pc = Array.isArray(p.countries) ? p.countries : (p.country ? [p.country] : []);
+        const ps = Array.isArray(p.shops) ? p.shops : (p.shop ? [p.shop] : []);
+        const aS = new Set(ps), aC = new Set(pc); (p.priceHistory || []).forEach(h => { if (h.shop) aS.add(h.shop); if (h.country) aC.add(h.country); });
+        const pills = [...aS].map(s => `<span class="pill">🏪 ${esc(s)}</span>`).join('') + [...aC].map(c => `<span class="pill">🌍 ${esc(cs(c))}</span>`).join('');
+        const im = imgs(p);
+        const gal = im.length ? `<div class="gallery" data-id="${p.id}" style="height:270px;border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--cream);position:relative;flex-shrink:0">
+  <div class="g-track">${im.map((img, i) => `<div class="g-slide"><img src="${img}" style="width:100%;height:270px;object-fit:cover;cursor:zoom-in" class="g-ic" data-i="${i}" data-pid="${p.id}">${isAdmin ? `
+<div style="position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:4px">
+  ${i > 0 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},-1,event)">◀</button>` : ''}
+  ${i < im.length - 1 ? `<button class="bi bsm" onclick="moveImg('${p.id}',${i},1,event)">▶</button>` : ''}
+  <button class="btn br bsm" onclick="delImg('${p.id}','${i}',event)">🗑️</button>
+</div>` : ''}</div>`).join('')}</div>
+  ${im.length > 1 ? `<div class="g-dots">${im.map((_, i) => `<div class="g-dot${i === 0 ? ' on' : ''}"></div>`).join('')}</div><button onclick="gNav('${p.id}','p',event)" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">‹</button><button onclick="gNav('${p.id}','n',event)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:34px;height:34px;font-size:1.2rem;cursor:pointer;z-index:5;display:flex;align-items:center;justify-content:center">›</button>` : ''}
+</div>` : '';
+        const sh = [...(p.priceHistory || [])].sort((a, b) => (b.date || '') > (a.date || '') ? 1 : -1);
+        _('mViewB').innerHTML = `${gal}
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${p.category ? `<span class="pill">📂 ${esc(p.category)}</span>` : ''}${pills}${p.date ? `<span class="pill">📅 ${new Date(p.date).toLocaleDateString('hu-HU')}</span>` : ''}</div>
+  ${p.desc ? `<div style="font-size:.87rem;color:var(--muted);margin-bottom:8px">${esc(p.desc)}</div>` : ''}
+  <div style="font-size:1.25rem;font-weight:800;margin-bottom:4px">${lp.amount ? lp.amount + ' ' + (lp.currency || '') : '–'} ${prCh(p)}</div>
+  ${sh.length > 1 ? `<div class="ph" style="margin-bottom:8px"><div class="ph-title">Ártörténet</div>${sh.map(h => {
+          const x = [h.shop || '', h.note || ''].filter(Boolean).join(' · ');
+          const cnt = h.country ? cs(h.country) : '';
+          return `<div class="ph-det"><span class="ph-d">${h.date ? new Date(h.date).toLocaleDateString('hu-HU') : '–'}</span><span class="ph-v">${h.amount} ${h.currency || ''}</span><span class="ph-c">${cnt}</span><span class="ph-x">${esc(x)}</span></div>`;
+        }).join('')}</div>` : ''}
+  <div style="margin:10px 0 5px;font-weight:600;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Értékelések (${revs.length})</div>
+  ${avg > 0 ? `<div style="font-size:.95rem;color:var(--star);margin-bottom:6px">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5 - Math.round(avg))} ${avg.toFixed(1)}</div>` : ''}
+  ${revHtml}`;
+        _('mViewF').innerHTML = `
+  <button class="btn bp" onclick="closeM('mView');openQImg('${id}')">📷 Kép</button>
+  <button class="btn bp" onclick="closeM('mView');openRevM('${id}')">✍ Értékelés</button>
+  <button class="btn bp" onclick="closeM('mView');openPr('${id}')">💰 Ár</button>
+  <button class="btn bg" onclick="closeM('mView')">Bezár</button>`;
+        openM('mView'); setTimeout(initGallery, 80);
+      } 
+      
+  function gNav(id, dir, e) {
       e.stopPropagation(); const g = document.querySelector(`.gallery[data-id="${id}"]`); if (!g) return;
       const sl = g.querySelectorAll('.g-slide'), ci = g._ci ? g._ci() : 0;
       const n = dir === 'p' ? (ci > 0 ? ci - 1 : sl.length - 1) : (ci < sl.length - 1 ? ci + 1 : 0);
