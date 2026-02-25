@@ -438,7 +438,6 @@
               for (let i = 0; i < im.length; i++) {
                 if (im[i]?.startsWith('data:')) {
                   await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
-                  // ← azonnal cseréljük, hogy ne töltse fel újra
                   p.images[p.images.indexOf(im[i])] = '__img__';
                 }
               }
@@ -455,7 +454,7 @@
             currencies: JSON.stringify(currs),
             shopOrder: JSON.stringify(shpOrd)
           });
-          saveLoc(); // ← frissített állapot mentése
+          saveLoc();
         } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
         setLd(false);
       }
@@ -798,12 +797,11 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
       });
     }
 
-    function handleImg(e) {
+    function handleQImg(e) {
         const f = e.target.files[0]; if (!f) return;
-        _('iuTxt').textContent = 'Tömörítés...';
         const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-            const MAX_DIM = isMobile ? 600 : 1200; // 800 helyett 600
-            canvas.toBlob(blob => { ... }, 'image/webp', isMobile ? 0.6 : 0.82);
+        const MAX_DIM = isMobile ? 600 : 1200;
+        const quality = isMobile ? 0.6 : 0.82;
         const img = new Image();
         const reader = new FileReader();
         reader.onload = evt => { img.src = evt.target.result; };
@@ -815,9 +813,9 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
           canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
           canvas.toBlob(blob => {
             const r2 = new FileReader();
-            r2.onload = () => { imgPend = r2.result; _('iuPrev').src = r2.result; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; };
+            r2.onload = () => { qImgB64 = r2.result; _('qPrv').src = r2.result; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; };
             r2.readAsDataURL(blob);
-          }, 'image/webp', 0.82);
+          }, 'image/webp', quality);
         };
         reader.readAsDataURL(f);
       }
@@ -964,10 +962,12 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
 
     // ── QUICK IMAGE ──
     function openQImg(pid) { qImgPid = pid; qImgB64 = null; _('qImg').value = ''; _('qPrvA').style.display = 'none'; _('qSave').disabled = true; openM('mImg'); }
-    function handleQImg(e) {
+    function handleImg(e) {
         const f = e.target.files[0]; if (!f) return;
+        _('iuTxt').textContent = 'Tömörítés...';
         const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-        const MAX_DIM = isMobile ? 800 : 1200;
+        const MAX_DIM = isMobile ? 600 : 1200;
+        const quality = isMobile ? 0.6 : 0.82;
         const img = new Image();
         const reader = new FileReader();
         reader.onload = evt => { img.src = evt.target.result; };
@@ -979,9 +979,9 @@ ${p.desc ? `<div class="c-desc">${esc(p.desc)}</div>` : ''}
           canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
           canvas.toBlob(blob => {
             const r2 = new FileReader();
-            r2.onload = () => { qImgB64 = r2.result; _('qPrv').src = r2.result; _('qPrvA').style.display = 'block'; _('qSave').disabled = false; };
+            r2.onload = () => { imgPend = r2.result; _('iuPrev').src = r2.result; _('iuPrev').style.display = 'block'; _('iuIco').style.display = 'none'; _('iuTxt').style.display = 'none'; };
             r2.readAsDataURL(blob);
-          }, 'image/webp', 0.82);
+          }, 'image/webp', quality);
         };
         reader.readAsDataURL(f);
       }
