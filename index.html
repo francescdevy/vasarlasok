@@ -377,20 +377,27 @@
         } catch (e) { }
       }
     async function moveImg(pid, idx, dir, e) {
-      e.stopPropagation();
-      const p = prods.find(x => x.id === pid); if (!p) return;
-      const arr = imgs(p);
-      const newIdx = idx + dir;
-      if (newIdx < 0 || newIdx >= arr.length) return;
-      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-      p.images = arr;
-      for (let i = 0; i < arr.length; i++) {
-        await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: arr[i] });
+        e.stopPropagation();
+        const p = prods.find(x => x.id === pid); if (!p) return;
+        const arr = imgs(p);
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= arr.length) return;
+        [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+        p.images = arr;
+        for (let i = 0; i < arr.length; i++) {
+          await shWrite({ action: 'setImage', key: `${pid}_${i}`, value: arr[i] });
+        }
+        const psh = prods.map(q => {
+          const qm = imgs(q);
+          return { ...q, image: null, images: qm.map(() => '__img__'), _imgCount: qm.length };
+        });
+        await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
+        saveLoc();
+        lastFilterIds = '';
+        filter();
+        openView(pid);
+        toast('Sorrend frissítve!');
       }
-      const psh = prods.map(q => { const qm = imgs(q); return { ...q, image: null, images: qm.map(() => '__img__'), _imgCount: qm.length }; });
-      await shWrite({ action: 'setAll', products: JSON.stringify(psh), categories: JSON.stringify(cats), currencies: JSON.stringify(currs), shopOrder: JSON.stringify(shpOrd) });
-      saveLoc(); filter(); openView(pid); toast('Sorrend frissítve!');
-    }
 
     // ── STORAGE ──
     function _(id) { return document.getElementById(id); }
