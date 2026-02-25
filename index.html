@@ -406,12 +406,15 @@
             const sp = JSON.parse(d.products);
             const allImgs = d.images || {};
             prods = sp.map(p => {
-              const fetched = [];
-              for (let i = 0; i < (p._imgCount || 0); i++) {
+              const keys = Object.keys(allImgs).filter(k =>
+                k.startsWith(p.id + '_') && !isNaN(k.replace(p.id + '_', ''))
+              );
+              const images = [];
+              for (let i = 0; i < keys.length; i++) {
                 const v = allImgs[`${p.id}_${i}`];
-                if (v) fetched.push(v);
+                if (v) images.push(v);
               }
-              return { ...p, image: null, images: fetched };
+              return { ...p, image: null, images, _imgCount: images.length };
             });
             saveLoc(); renderAll();
           }
@@ -725,13 +728,17 @@
               const sp = JSON.parse(d.products);
               const allImgs = d.images || {};
               prods = sp.map(p => {
-                const fetched = [];
-                for (let i = 0; i < (p._imgCount || 0); i++) {
+                const keys = Object.keys(allImgs).filter(k =>
+                  k.startsWith(p.id + '_') && !isNaN(k.replace(p.id + '_', ''))
+                );
+                const images = [];
+                for (let i = 0; i < keys.length; i++) {
                   const v = allImgs[`${p.id}_${i}`];
-                  if (v) fetched.push(v);
+                  if (v) images.push(v);
                 }
-                return { ...p, image: null, images: fetched };
+                return { ...p, image: null, images, _imgCount: images.length };
               });
+              saveLoc(); renderAll();
             }
             if (d.categories) try { cats = JSON.parse(d.categories); } catch (e) { }
             if (d.currencies) try { currs = JSON.parse(d.currencies); } catch (e) { }
