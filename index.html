@@ -432,18 +432,19 @@
         if (!shUrl) return;
         setLd(true, 'Mentés...');
         try {
+          // Képek feltöltése háttérben, nem várjuk meg
           if (!lite) {
             for (const p of prods) {
               const im = imgs(p);
               for (let i = 0; i < im.length; i++) {
                 if (im[i]?.startsWith('data:')) {
-                  await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
-                  // ← azonnal cseréljük, hogy ne töltse fel újra
+                  shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] }); // ← nincs await!
                   p.images[p.images.indexOf(im[i])] = '__img__';
                 }
               }
             }
           }
+          // setAll azonnal megy
           const psh = prods.map(p => {
             const im = imgs(p);
             return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
@@ -455,7 +456,7 @@
             currencies: JSON.stringify(currs),
             shopOrder: JSON.stringify(shpOrd)
           });
-          saveLoc(); // ← frissített állapot mentése
+          saveLoc();
         } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
         setLd(false);
       }
