@@ -133,6 +133,7 @@ header h1 span { color: #93c5fd }
 .ph-row:last-child { border: none }
 .ph-d { color: var(--muted); flex-shrink: 0; min-width: 52px }
 .ph-v { font-weight: 600; flex-shrink: 0 }
+.ph-c { font-size: .71rem; color: var(--muted); }
 .ph-x { color: var(--muted); font-size: .71rem; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0 }
 .ph-det { display: grid; grid-template-columns: 70px 80px 30px 1fr; gap: 10px; font-size: .8rem; padding: 3px 0; border-bottom: 1px dashed var(--bd); align-items: baseline }
 .ph-det:last-child { border: none }
