@@ -362,7 +362,20 @@
         const r = await fetch(url);
         return r.json();
       }
-    async function shWrite(body) { try { await fetch(shUrl, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'text/plain' } }); } catch (e) { } }
+    async function shWrite(body) {
+        try {
+          toast('Küldés: ' + body.action, 'ok');
+          await fetch(shUrl, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: { 'Content-Type': 'text/plain' },
+            mode: 'no-cors'
+          });
+          toast('Elküldve: ' + body.action, 'ok');
+        } catch (e) {
+          toast('HIBA: ' + e.message, 'err');
+        }
+      }
     async function moveImg(pid, idx, dir, e) {
         e.stopPropagation();
         const p = prods.find(x => x.id === pid); if (!p) return;
