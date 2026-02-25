@@ -364,12 +364,16 @@
     }
     async function shWrite(body) {
         try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 15000); // 15 sec timeout
           await fetch(shUrl, {
             method: 'POST',
             body: JSON.stringify(body),
             headers: { 'Content-Type': 'text/plain' },
-            mode: 'no-cors'
+            mode: 'no-cors',
+            signal: controller.signal
           });
+          clearTimeout(timeout);
         } catch (e) { }
       }
     async function moveImg(pid, idx, dir, e) {
@@ -427,34 +431,37 @@
     }
 
     async function save(lite = false) {
-      mkBak(); saveLoc();
-      if (!shUrl) return;
-      setLd(true, 'Mentés...');
-      try {
-        if (!lite) {
-          for (const p of prods) {
-            const im = imgs(p);
-            for (let i = 0; i < im.length; i++) {
-              if (im[i]?.startsWith('data:')) {
-                await shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] });
+        mkBak(); saveLoc();
+        if (!shUrl) return;
+        setLd(true, 'Mentés...');
+        try {
+          if (!lite) {
+            // Képek párhuzamosan, nem sorban
+            const imgPromises = [];
+            for (const p of prods) {
+              const im = imgs(p);
+              for (let i = 0; i < im.length; i++) {
+                if (im[i]?.startsWith('data:')) {
+                  imgPromises.push(shWrite({ action: 'setImage', key: `${p.id}_${i}`, value: im[i] }));
+                }
               }
             }
+            await Promise.all(imgPromises); // párhuzamosan, nem egymás után
           }
-        }
-        const psh = prods.map(p => {
-          const im = imgs(p);
-          return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
-        });
-        await shWrite({
-          action: 'setAll',
-          products: JSON.stringify(psh),
-          categories: JSON.stringify(cats),
-          currencies: JSON.stringify(currs),
-          shopOrder: JSON.stringify(shpOrd)
-        });
-      } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
-      setLd(false);
-    }
+          const psh = prods.map(p => {
+            const im = imgs(p);
+            return { ...p, image: null, images: im.map(() => '__img__'), _imgCount: im.length };
+          });
+          await shWrite({
+            action: 'setAll',
+            products: JSON.stringify(psh),
+            categories: JSON.stringify(cats),
+            currencies: JSON.stringify(currs),
+            shopOrder: JSON.stringify(shpOrd)
+          });
+        } catch (e) { toast('Mentési hiba – lokálisan mentve', 'err'); }
+        setLd(false);
+      }
 
     async function saveMeta() {
       saveLoc(); mkBak();
